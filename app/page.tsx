@@ -20,6 +20,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { BookOpen, Users, Shield, Star, MapPin, Clock, Award } from "lucide-react"
 
+import { addTeacher, addStudent } from "@/lib/actions"
+
+
+
 export default function HomePage() {
   const [teacherModalOpen, setTeacherModalOpen] = useState(false)
   const [studentModalOpen, setStudentModalOpen] = useState(false)
@@ -48,19 +52,36 @@ export default function HomePage() {
     setSelectedSubjects((prev) => (prev.includes(subject) ? prev.filter((s) => s !== subject) : [...prev, subject]))
   }
 
-  const handleTeacherSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Connect to Google Sheets API
-    console.log("Teacher form submitted")
-    setTeacherModalOpen(false)
-  }
+// teacher
+const handleTeacherSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
+  const formData = new FormData(e.currentTarget)
+  
+  // add subjects if they are multiple selection
+  formData.set("subjects", JSON.stringify(selectedSubjects))
 
-  const handleStudentSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Connect to Google Sheets API
-    console.log("Student form submitted")
-    setStudentModalOpen(false)
+  const response = await addTeacher(formData)
+  if (response.successMessage) {
+    console.log(response.successMessage)
+  } else {
+    console.error(response.errorMessage)
   }
+}
+
+// student
+const handleStudentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
+  const formData = new FormData(e.currentTarget)
+
+  formData.set("subjects", JSON.stringify(selectedSubjects))
+
+  const response = await addStudent(formData)
+  if (response.successMessage) {
+    console.log(response.successMessage)
+  } else {
+    console.error(response.errorMessage)
+  }
+}
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,6 +134,7 @@ export default function HomePage() {
       </section>
 
       {/* Are You a Teacher or Student Section */}
+ {/* Are You a Teacher or Student Section */}
       <section className="py-16 px-4 bg-muted/20">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl font-bold text-foreground mb-12">Are You a Teacher or Student?</h2>
@@ -140,63 +162,63 @@ export default function HomePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="teacher-full-name">Full Name *</Label>
-                      <Input id="teacher-full-name" required />
+                      <Input id="teacher-full-name" name="fullName" required />
                     </div>
                     <div>
                       <Label htmlFor="teacher-email">Email Address *</Label>
-                      <Input id="teacher-email" type="email" required />
+                      <Input id="teacher-email" name="email" type="email" required />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="teacher-phone">Phone Number *</Label>
-                      <Input id="teacher-phone" type="tel" required />
+                      <Input id="teacher-phone" name="phone" type="tel" required />
                     </div>
                     <div>
                       <Label htmlFor="teacher-whatsapp">WhatsApp Number *</Label>
-                      <Input id="teacher-whatsapp" type="tel" required />
+                      <Input id="teacher-whatsapp" name="whatsapp" type="tel" required />
                     </div>
                   </div>
 
                   <div>
                     <Label htmlFor="teacher-address">Full Address *</Label>
-                    <Textarea id="teacher-address" placeholder="Street, City, State, Pincode" required />
+                    <Textarea id="teacher-address" name="address" placeholder="Street, City, State, Pincode" required />
                   </div>
 
                   <div>
                     <Label htmlFor="teacher-resume">Resume (Google Drive Link) *</Label>
-                    <Input id="teacher-resume" type="url" placeholder="https://drive.google.com/..." required />
+                    <Input
+                      id="teacher-resume"
+                      name="resume"
+                      type="url"
+                      placeholder="https://drive.google.com/..."
+                      required
+                    />
                     <p className="text-sm text-muted-foreground mt-1">
                       Please share a public Google Drive link to your resume
                     </p>
                   </div>
 
                   <div>
-                    <Label>Subjects/Skills You Teach *</Label>
-                    <div className="flex flex-wrap gap-2 mt-2 p-3 border rounded-lg min-h-[60px]">
-                      {subjects.map((subject) => (
-                        <Badge
-                          key={subject}
-                          variant={selectedSubjects.includes(subject) ? "default" : "outline"}
-                          className="cursor-pointer"
-                          onClick={() => toggleSubject(subject)}
-                        >
-                          {subject}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">Select at least one subject you can teach</p>
+                    <Label htmlFor="teacher-subjects">Subjects/Skills You Teach *</Label>
+                    <Input
+                      id="teacher-subjects"
+                      name="subjects"
+                      placeholder="e.g., Mathematics, Physics, Gittar"
+                      required
+                    />
+                    <p className="text-sm text-muted-foreground mt-1">Enter subjects separated by commas</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="teacher-location">Location (City/Pincode) *</Label>
-                      <Input id="teacher-location" required />
+                      <Input id="teacher-location" name="location" required />
                     </div>
                     <div>
                       <Label htmlFor="teacher-experience">Years of Experience *</Label>
-                      <Select required>
+                      <Select name="experience" required>
                         <SelectTrigger>
                           <SelectValue placeholder="Select experience" />
                         </SelectTrigger>
@@ -214,6 +236,7 @@ export default function HomePage() {
                     <Label htmlFor="teacher-availability">Availability *</Label>
                     <Textarea
                       id="teacher-availability"
+                      name="availability"
                       placeholder="e.g., Weekdays 4-8 PM, Weekends 10 AM-6 PM"
                       required
                     />
@@ -221,7 +244,7 @@ export default function HomePage() {
 
                   <div>
                     <Label htmlFor="teacher-photo">Profile Picture</Label>
-                    <Input id="teacher-photo" type="file" accept="image/*" />
+                    <Input id="teacher-photo" name="photo" type="file" accept="image/*" />
                   </div>
 
                   <Button type="submit" className="w-full">
@@ -254,69 +277,69 @@ export default function HomePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="student-full-name">Full Name *</Label>
-                      <Input id="student-full-name" required />
+                      <Input id="student-full-name" name="fullName" required />
                     </div>
                     <div>
                       <Label htmlFor="student-email">Email Address *</Label>
-                      <Input id="student-email" type="email" required />
+                      <Input id="student-email" name="email" type="email" required />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="student-phone">Phone Number *</Label>
-                      <Input id="student-phone" type="tel" required />
+                      <Input id="student-phone" name="phone" type="tel" required />
                     </div>
                     <div>
                       <Label htmlFor="student-whatsapp">WhatsApp Number *</Label>
-                      <Input id="student-whatsapp" type="tel" required />
+                      <Input id="student-whatsapp" name="whatsapp" type="tel" required />
                     </div>
                   </div>
 
                   <div>
                     <Label htmlFor="student-address">Full Address *</Label>
-                    <Textarea id="student-address" placeholder="Street, City, State, Pincode" required />
+                    <Textarea id="student-address" name="address" placeholder="Street, City, State, Pincode" required />
                   </div>
 
                   <div>
                     <Label htmlFor="student-resume">Resume/CV (Google Drive Link) *</Label>
-                    <Input id="student-resume" type="url" placeholder="https://drive.google.com/..." required />
+                    <Input
+                      id="student-resume"
+                      name="resume"
+                      type="url"
+                      placeholder="https://drive.google.com/..."
+                      required
+                    />
                     <p className="text-sm text-muted-foreground mt-1">
                       Please share a public Google Drive link to your resume or academic profile
                     </p>
                   </div>
 
                   <div>
-                    <Label>Subjects You Want to Learn *</Label>
-                    <div className="flex flex-wrap gap-2 mt-2 p-3 border rounded-lg min-h-[60px]">
-                      {subjects.map((subject) => (
-                        <Badge
-                          key={subject}
-                          variant={selectedSubjects.includes(subject) ? "default" : "outline"}
-                          className="cursor-pointer"
-                          onClick={() => toggleSubject(subject)}
-                        >
-                          {subject}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">Select at least one subject you want to learn</p>
+                    <Label htmlFor="student-subjects">Subjects You Want to Learn *</Label>
+                    <Input
+                      id="student-subjects"
+                      name="subjects"
+                      placeholder="e.g., Mathematics, Physics, Chemistry"
+                      required
+                    />
+                    <p className="text-sm text-muted-foreground mt-1">Enter subjects separated by commas</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="student-location">Location (City/Pincode) *</Label>
-                      <Input id="student-location" required />
+                      <Input id="student-location" name="location" required />
                     </div>
                     <div>
                       <Label htmlFor="student-grade">Age/Grade *</Label>
-                      <Input id="student-grade" placeholder="e.g., Grade 10, Age 25" required />
+                      <Input id="student-grade" name="grade" placeholder="e.g., Grade 10, Age 25" required />
                     </div>
                   </div>
 
                   <div>
                     <Label htmlFor="learning-mode">Preferred Learning Mode *</Label>
-                    <Select required>
+                    <Select name="learningMode" required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select learning preference" />
                       </SelectTrigger>
@@ -337,6 +360,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
 
       {/* Benefits Section */}
       <section className="py-16 px-4">
