@@ -1,0 +1,10 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-tutoring",
+      "description": "A focused student learning at a desk with books.",
+      "imageUrl": "https://picsum.photos/seed/hero-tutoring/1920/1080",
+      "imageHint": "student learning"
+    }
+  ]
+}
