@@ -166,23 +166,23 @@ export default function Home() {
                         <Mail className="h-6 w-6 text-primary mt-1" />
                         <div>
                             <h4 className="font-semibold">Email</h4>
-                            <a href="mailto:support@kaushaly.com" className="text-muted-foreground hover:text-primary transition-colors">support@kaushaly.com</a>
+                            <a href="mailto:contact@kaushaly.in" className="text-muted-foreground hover:text-primary transition-colors">contact@kaushaly.in</a>
                         </div>
                     </div>
                     <div className="flex items-start gap-3">
                         <Phone className="h-6 w-6 text-primary mt-1" />
                         <div>
                             <h4 className="font-semibold">Phone</h4>
-                            <p className="text-muted-foreground">(123) 456-7890</p>
+                            <p className="text-muted-foreground">+91 94072 72540</p>
                         </div>
                     </div>
-                    <div className="flex items-start gap-3">
+                    {/* <div className="flex items-start gap-3">
                         <MapPin className="h-6 w-6 text-primary mt-1" />
                         <div>
                             <h4 className="font-semibold">Address</h4>
-                            <p className="text-muted-foreground">123 Learning Lane, Knowledge City, 12345</p>
+                            <p className="text-muted-foreground">213 </p>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
               </div>
               <div className="md:col-span-3">
