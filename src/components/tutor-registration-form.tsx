@@ -84,21 +84,21 @@ export default function TutorRegistrationForm() {
             </Alert>
           )}
           <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium text-gray-300">Full Name</label>
-            <Input id="name" name="name" value={formState.name} onChange={handleChange} placeholder="John Doe" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name</label>
+            <Input id="name" name="name" value={formState.name} onChange={handleChange} placeholder="John Doe" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
-            <label htmlFor="phone" className="text-sm font-medium text-gray-300">Phone</label>
-            <Input id="phone" name="phone" value={formState.phone} onChange={handleChange} placeholder="9876543210" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone</label>
+            <Input id="phone" name="phone" value={formState.phone} onChange={handleChange} placeholder="9876543210" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-gray-300">Email</label>
-            <Input id="email" name="email" type="email" value={formState.email} onChange={handleChange} placeholder="john@example.com" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
+            <Input id="email" name="email" type="email" value={formState.email} onChange={handleChange} placeholder="john@example.com" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
-            <label htmlFor="gender" className="text-sm font-medium text-gray-300">Gender</label>
+            <label htmlFor="gender" className="text-sm font-medium text-gray-700">Gender</label>
             <Select name="gender" value={formState.gender} onValueChange={handleSelectChange}>
-              <SelectTrigger className="bg-gray-900/50 border-gray-700 focus:border-purple-500">
+              <SelectTrigger className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200">
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
               <SelectContent>
@@ -109,36 +109,36 @@ export default function TutorRegistrationForm() {
             </Select>
           </div>
           <div className="space-y-2">
-            <label htmlFor="age" className="text-sm font-medium text-gray-300">Age</label>
-            <Input id="age" name="age" type="number" value={formState.age} onChange={handleChange} placeholder="25" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="age" className="text-sm font-medium text-gray-700">Age</label>
+            <Input id="age" name="age" type="number" value={formState.age} onChange={handleChange} placeholder="25" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
-            <label htmlFor="education" className="text-sm font-medium text-gray-300">Educational Qualification</label>
-            <Input id="education" name="education" value={formState.education} onChange={handleChange} placeholder="e.g., B.Tech, M.Sc" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="education" className="text-sm font-medium text-gray-700">Educational Qualification</label>
+            <Input id="education" name="education" value={formState.education} onChange={handleChange} placeholder="e.g., B.Tech, M.Sc" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label htmlFor="address" className="text-sm font-medium text-gray-300">Current Address</label>
-            <Textarea id="address" name="address" rows={3} value={formState.address} onChange={handleChange} placeholder="Your current residential address" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="address" className="text-sm font-medium text-gray-700">Current Address</label>
+            <Textarea id="address" name="address" rows={3} value={formState.address} onChange={handleChange} placeholder="Your current residential address" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label htmlFor="locations" className="text-sm font-medium text-gray-300">Available Locations for Tutoring</label>
-            <Input id="locations" name="locations" value={formState.locations} onChange={handleChange} placeholder="e.g., South Delhi, Noida Sector 18" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="locations" className="text-sm font-medium text-gray-700">Available Locations for Tutoring</label>
+            <Input id="locations" name="locations" value={formState.locations} onChange={handleChange} placeholder="e.g., South Delhi, Noida Sector 18" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
-            <label htmlFor="marks10" className="text-sm font-medium text-gray-300">10th Marksheet (Drive Link)</label>
-            <Input id="marks10" name="marks10" value={formState.marks10} onChange={handleChange} placeholder="https://drive.google.com/..." required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="marks10" className="text-sm font-medium text-gray-700">10th Marksheet (Drive Link)</label>
+            <Input id="marks10" name="marks10" value={formState.marks10} onChange={handleChange} placeholder="https://drive.google.com/..." required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
-            <label htmlFor="marks12" className="text-sm font-medium text-gray-300">12th Marksheet (Drive Link)</label>
-            <Input id="marks12" name="marks12" value={formState.marks12} onChange={handleChange} placeholder="https://drive.google.com/..." required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="marks12" className="text-sm font-medium text-gray-700">12th Marksheet (Drive Link)</label>
+            <Input id="marks12" name="marks12" value={formState.marks12} onChange={handleChange} placeholder="https://drive.google.com/..." required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label htmlFor="idProof" className="text-sm font-medium text-gray-300">ID Proof Photo (Drive Link)</label>
-            <Input id="idProof" name="idProof" value={formState.idProof} onChange={handleChange} placeholder="https://drive.google.com/..." required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="idProof" className="text-sm font-medium text-gray-700">ID Proof Photo (Drive Link)</label>
+            <Input id="idProof" name="idProof" value={formState.idProof} onChange={handleChange} placeholder="https://drive.google.com/..." required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label htmlFor="subjects" className="text-sm font-medium text-gray-300">Subjects You Can Teach</label>
-            <Input id="subjects" name="subjects" value={formState.subjects} onChange={handleChange} placeholder="e.g., Algebra, Chemistry, Guitar" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="subjects" className="text-sm font-medium text-gray-700">Subjects You Can Teach</label>
+            <Input id="subjects" name="subjects" value={formState.subjects} onChange={handleChange} placeholder="e.g., Algebra, Chemistry, Guitar" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <Button type="submit" disabled={isSubmitting} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 md:col-span-2 py-6">
             {isSubmitting ? (

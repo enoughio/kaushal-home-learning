@@ -62,20 +62,20 @@ export default function ContactForm() {
             </Alert>
           )}
           <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium text-gray-300">Full Name</label>
-            <Input id="name" name="name" value={formState.name} onChange={handleChange} placeholder="Alex Ray" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name</label>
+            <Input id="name" name="name" value={formState.name} onChange={handleChange} placeholder="Alex Ray" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-gray-300">Email</label>
-            <Input id="email" name="email" type="email" value={formState.email} onChange={handleChange} placeholder="alex@example.com" required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
+            <Input id="email" name="email" type="email" value={formState.email} onChange={handleChange} placeholder="alex@example.com" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
-            <label htmlFor="phone" className="text-sm font-medium text-gray-300">Phone</label>
-            <Input id="phone" name="phone" value={formState.phone} onChange={handleChange} placeholder="9876543210" className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone</label>
+            <Input id="phone" name="phone" value={formState.phone} onChange={handleChange} placeholder="9876543210" className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
-            <label htmlFor="message" className="text-sm font-medium text-gray-300">Message</label>
-            <Textarea id="message" name="message" rows={5} value={formState.message} onChange={handleChange} placeholder="Your message here..." required className="bg-gray-900/50 border-gray-700 focus:border-purple-500" />
+            <label htmlFor="message" className="text-sm font-medium text-gray-700">Message</label>
+            <Textarea id="message" name="message" rows={5} value={formState.message} onChange={handleChange} placeholder="Your message here..." required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? (
