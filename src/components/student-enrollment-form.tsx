@@ -83,7 +83,7 @@ export default function StudentEnrollmentForm() {
                     </div>
                     <div className="space-y-2">
                         <label htmlFor="parentPhone" className="text-sm font-medium text-gray-700">Parent/Guardian Phone</label>
-                        <Input id="parentPhone" name="parentPhone" value={formState.parentPhone} onChange={handleChange} placeholder="9876543210" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
+                        <Input id="parentPhone" name="parentPhone" value={formState.parentPhone} onChange={handleChange} placeholder="Phone" required className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
                     </div>
                     <div className="space-y-2">
                         <label htmlFor="parentEmail" className="text-sm font-medium text-gray-700">Parent/Guardian Email</label>

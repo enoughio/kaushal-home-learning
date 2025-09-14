@@ -71,7 +71,7 @@ export default function ContactForm() {
           </div>
           <div className="space-y-2">
             <label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone</label>
-            <Input id="phone" name="phone" value={formState.phone} onChange={handleChange} placeholder="9876543210" className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
+            <Input id="phone" name="phone" value={formState.phone} onChange={handleChange} placeholder="Phone" className="bg-white border-gray-300 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200" />
           </div>
           <div className="space-y-2">
             <label htmlFor="message" className="text-sm font-medium text-gray-700">Message</label>
