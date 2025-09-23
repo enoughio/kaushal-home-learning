@@ -1,27 +1,17 @@
 import type { Metadata } from "next";
 import { Urbanist, Syne } from "next/font/google";
 import "./globals.css";
-import NavBar from '@/components/NavBar';
+import NavBar from "@/components/NavBar";
 
-import  localFont  from 'next/font/local';
+import localFont from "next/font/local";
 
 const centuryGothic = localFont({
-  variable: '--century-gothic',
-  display: 'swap',
-  src: [
-    {
-      path: '/font/century_gothic/CenturyGothicBold.ttf',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: '/font/century_gothic/CenturyGothic.ttf',
-      weight: '400',
-      style: 'normal',
-    },
-  ]
+  variable: "--century-gothic",
+  display: "swap",
+  src: "/font/century_gothic/CenturyGothicBold.ttf",
+  weight: "700",
+  style: "normal",
 });
-
 
 // Configure Google Fonts
 const urbanist = Urbanist({
