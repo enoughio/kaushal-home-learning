@@ -1,10 +1,8 @@
 import React from "react";
 import skillsUnderline from "../../public/skills underline.svg";
-import missionIcon from "../../public/missionIcon.svg";
-import visionIcon from "../../public/visionIcon.svg";
 import changeUnderline from "../../public/change underline.svg";
 import tutorImage from "../../public/tutorImage.svg";
-// import studentImage from "../../../public/studentImage.svg";
+import studentImage from "../../public/studentImage.svg";
 import Image from "next/image";
 import NumberedCard from "@/components/numberCard";
 import {
@@ -26,6 +24,14 @@ const About = () => {
             Home of{" "}
             <span className="font-bold relative inline-block">
               <Underline text={"Skills"} imageSrc={skillsUnderline} />
+              <Image
+                src={"./skillsDecoration.svg"}
+                alt=""
+                aria-hidden={true}
+                width={100}
+                height={100}
+                className="absolute top-0 right-0 -translate-y-[70%] translate-x-[55%] size-[70%]"
+              />
             </span>
           </h1>
         </div>
@@ -71,18 +77,30 @@ const About = () => {
         <div className="w-[3px] lg:w-[5px] bg-gray-300 xl:bg-gray-700" />
         <div className="space-y-10 w-full lg:px-20">
           <div>
-            <div className="flex gap-3">
-              <span className="text-6xl">Mission</span>
-              <Image src={missionIcon} alt="Mission Icon"></Image>
+            <div className="flex gap-3 items-center">
+              <h3 className="text-6xl">Mission</h3>
+              <Image
+                src="./missionIcon.svg"
+                alt=""
+                aria-hidden="true"
+                width={52}
+                height={52}
+              />
             </div>
             <p className="text-xl">
               To inspire lifelong <br /> learners across India.
             </p>
           </div>
           <div>
-            <div className="flex flex-row-reverse gap-3">
-              <span className="text-6xl">Vision</span>
-              <Image src={visionIcon} alt="Vision Icon"></Image>
+            <div className="flex flex-row-reverse gap-3 items-center">
+              <h3 className="text-6xl">Vision</h3>
+              <Image
+                src="/visionIcon.svg"
+                alt=""
+                aria-hidden="true"
+                width={52}
+                height={52}
+              />
             </div>
             <div className="text-end">
               <p className="text-xl ">
@@ -107,11 +125,13 @@ const About = () => {
         <div className="text-4xl md:text-5xl lg:text-6xl hidden tracking-wider sm:flex">
           <div className="relative">
             <span className="inline mr-[1vw]">Every</span>
-            <div className="absolute left-0 bottom-4 sm:w-28 md:w-28 lg:w-42 xl:w-48">
+            <div className="absolute left-0 bottom-4 sm:w-28 md:w-28 lg:w-44 xl:w-48 h-6">
               <Image
-                src={changeUnderline}
-                alt="Change Underline"
-                className="w-full"
+                src="/change underline.svg"
+                alt=""
+                aria-hidden="true"
+                fill
+                className="object-contain"
               />
             </div>
           </div>
@@ -123,7 +143,9 @@ const About = () => {
         <StatCards />
       </div>
       <div className="space-y-12">
-        <p className="text-5xl md:text-6xl xl:text-7xl tracking-wide text-center">What We Do</p>
+        <p className="text-5xl md:text-6xl xl:text-7xl tracking-wide text-center">
+          What We Do
+        </p>
         <TutorStudentJoin
           role={"Tutor"}
           text={
@@ -136,7 +158,7 @@ const About = () => {
           text={
             "Career-focused skill development programs designed to prepare students for the modern workforce and future challenges."
           }
-          roleImage={tutorImage}
+          roleImage={studentImage}
         />
       </div>
     </div>

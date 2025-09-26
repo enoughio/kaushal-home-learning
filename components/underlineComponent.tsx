@@ -7,28 +7,22 @@ interface UnderlineProps {
   underlineWidthInPer?: number;
 }
 
-const Underline = ({
-  text,
-  imageSrc,
-  underlineWidthInPer,
-}: UnderlineProps) => {
-
+const Underline = ({ text, imageSrc, underlineWidthInPer }: UnderlineProps) => {
   return (
-    <span
-      className={`inline-block relative pb-2`}
-    >
+    <span className={`inline-block relative pb-2`}>
       {text}
       <Image
         src={imageSrc}
-        alt="Change Underline"
+        alt=""
+        aria-hidden="true"
+        width={800}
+        height={40}
         style={{
-          width: `${underlineWidthInPer}%`,
-          left: `${
-            underlineWidthInPer ? (100 - underlineWidthInPer) / 2 : 0
-          }%`,
+          width: `${underlineWidthInPer ?? 100}%`,
+          left: `${underlineWidthInPer ? (100 - underlineWidthInPer) / 2 : 0}%`,
         }}
-        className={`absolute bottom-0 left-0 translate-y-1`}
-      ></Image>
+        className="absolute bottom-0 left-0 translate-y-1 pointer-events-none"
+      />
     </span>
   );
 };
