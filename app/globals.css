@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 :root {
   --background: #ffffff;
   --primary: #0a85d1;
@@ -12,9 +13,9 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
-  --font-sans: var(--font-urbanist);
-  --font-serif: var(--font-century-gothic);
-  --font-mono: var(--font-syne);
+  --font-urbanist: var(--font-urbanist);
+  --font-gothic: var(--font-gothic);
+  --font-syne: var(--font-syne);
 }
 
 @media (prefers-color-scheme: dark) {
