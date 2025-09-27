@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --primary: #0a85d1;
+  --secondary: #feb401;
+  --foreground: #000000;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --font-sans: var(--font-urbanist);
+  --font-serif: var(--font-century-gothic);
+  --font-mono: var(--font-syne);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--background);
+    --foreground: var(--foreground);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-urbanist), Arial, Helvetica, sans-serif;
+}
+
+/* Desktop: 140px horizontal padding */
+.section {
+  padding-left: 140px;
+  padding-right: 140px;
+  max-width: 1440px; /* 15 inches ≈ 1440px (96 DPI) */
+  margin-right : auto; /* Center the content */
+  margin-left : auto; /* Center the content */
+}
+
+/*  horizontal padding for tablet */
+@media (max-width: 1024px) {
+  .section {
+    padding-left: 118px;
+    padding-right: 118px;
+    max-width: none; /* Remove max-width constraint on smaller screens */
+    margin: 0; /* Remove auto margin on smaller screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    /* Mobile: 26px horizontal padding */
+    padding-left: 26px;
+    padding-right: 26px;
+    max-width: none;
+    margin: 0;
+  }
+}
