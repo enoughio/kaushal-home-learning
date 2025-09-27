@@ -1,0 +1,966 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Kaushaly Home Learning API",
+    "description": "Comprehensive API documentation for the Kaushaly Home Learning tutoring platform",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Kaushaly Support",
+      "email": "support@kaushaly.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.kaushaly.com/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["student", "teacher", "admin"] },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "phone": { "type": "string" },
+          "address": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "pincode": { "type": "string" },
+          "profileImageUrl": { "type": "string" },
+          "isActive": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Student": {
+        "allOf": [
+          { "$ref": "#/components/schemas/User" },
+          {
+            "type": "object",
+            "properties": {
+              "grade": { "type": "string" },
+              "schoolName": { "type": "string" },
+              "parentName": { "type": "string" },
+              "parentPhone": { "type": "string" },
+              "parentEmail": { "type": "string" },
+              "subjectsInterested": { "type": "array", "items": { "type": "string" } },
+              "monthlyFee": { "type": "number" },
+              "paymentStatus": { "type": "string", "enum": ["paid", "pending", "overdue", "grace_period"] },
+              "enrollmentDate": { "type": "string", "format": "date" }
+            }
+          }
+        ]
+      },
+      "Teacher": {
+        "allOf": [
+          { "$ref": "#/components/schemas/User" },
+          {
+            "type": "object",
+            "properties": {
+              "qualification": { "type": "string" },
+              "experienceYears": { "type": "integer" },
+              "subjectsTaught": { "type": "array", "items": { "type": "string" } },
+              "teachingMode": { "type": "string", "enum": ["online", "offline", "both"] },
+              "hourlyRate": { "type": "number" },
+              "monthlySalary": { "type": "number" },
+              "approvalStatus": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+              "rating": { "type": "number" },
+              "totalReviews": { "type": "integer" },
+              "maxStudents": { "type": "integer" },
+              "currentStudents": { "type": "integer" }
+            }
+          }
+        ]
+      },
+      "Assignment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "teacherId": { "type": "integer" },
+          "studentId": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "subject": { "type": "string" },
+          "dueDate": { "type": "string", "format": "date" },
+          "assignmentType": { "type": "string", "enum": ["homework", "test", "project", "quiz"] },
+          "maxMarks": { "type": "integer" },
+          "status": { "type": "string", "enum": ["assigned", "submitted", "graded", "overdue"] },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Attendance": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "studentId": { "type": "integer" },
+          "teacherId": { "type": "integer" },
+          "date": { "type": "string", "format": "date" },
+          "status": { "type": "string", "enum": ["present", "absent", "late", "excused"] },
+          "notes": { "type": "string" },
+          "sessionDuration": { "type": "integer" },
+          "subject": { "type": "string" }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "studentId": { "type": "integer" },
+          "amount": { "type": "number" },
+          "paymentType": { "type": "string", "enum": ["monthly_fee", "registration", "late_fee", "other"] },
+          "paymentMethod": { "type": "string", "enum": ["cash", "online", "bank_transfer", "upi", "card"] },
+          "paymentStatus": { "type": "string", "enum": ["pending", "completed", "failed", "refunded"] },
+          "transactionId": { "type": "string" },
+          "paymentDate": { "type": "string", "format": "date" },
+          "dueDate": { "type": "string", "format": "date" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "message": { "type": "string" },
+          "code": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string" },
+                    "user": { "$ref": "#/components/schemas/User" },
+                    "expiresIn": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User registration",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "firstName", "lastName", "role"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "role": { "type": "string", "enum": ["student", "teacher"] },
+                  "phone": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "userId": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/students": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Get all students (Admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10 }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Students retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "students": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Student" }
+                    },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Students"],
+        "summary": "Create student profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["grade", "parentName", "parentPhone"],
+                "properties": {
+                  "grade": { "type": "string" },
+                  "schoolName": { "type": "string" },
+                  "parentName": { "type": "string" },
+                  "parentPhone": { "type": "string" },
+                  "parentEmail": { "type": "string" },
+                  "subjectsInterested": { "type": "array", "items": { "type": "string" } },
+                  "learningGoals": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Student profile created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Student" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/students/{id}": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Get student by ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Student retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Student" }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Students"],
+        "summary": "Update student profile",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "grade": { "type": "string" },
+                  "schoolName": { "type": "string" },
+                  "parentName": { "type": "string" },
+                  "parentPhone": { "type": "string" },
+                  "subjectsInterested": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Student updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Student" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teachers": {
+      "get": {
+        "tags": ["Teachers"],
+        "summary": "Get all teachers",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10 }
+          },
+          {
+            "name": "subject",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "approvalStatus",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Teachers retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "teachers": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Teacher" }
+                    },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teachers/{id}/approve": {
+      "post": {
+        "tags": ["Teachers"],
+        "summary": "Approve teacher application (Admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Teacher approved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "teacher": { "$ref": "#/components/schemas/Teacher" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assignments": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get assignments",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "teacherId",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["assigned", "submitted", "graded", "overdue"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignments retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Assignment" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Assignments"],
+        "summary": "Create new assignment (Teacher only)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["studentId", "title", "subject", "dueDate"],
+                "properties": {
+                  "studentId": { "type": "integer" },
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "subject": { "type": "string" },
+                  "dueDate": { "type": "string", "format": "date" },
+                  "assignmentType": { "type": "string", "enum": ["homework", "test", "project", "quiz"] },
+                  "maxMarks": { "type": "integer" },
+                  "instructions": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Assignment created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Assignment" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assignments/{id}/submit": {
+      "post": {
+        "tags": ["Assignments"],
+        "summary": "Submit assignment (Student only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "submissionText": { "type": "string" },
+                  "file": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assignment submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "submissionId": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Get attendance records",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "teacherId",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance records retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Attendance" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Attendance"],
+        "summary": "Mark attendance",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["studentId", "date", "status"],
+                "properties": {
+                  "studentId": { "type": "integer" },
+                  "date": { "type": "string", "format": "date" },
+                  "status": { "type": "string", "enum": ["present", "absent", "late", "excused"] },
+                  "notes": { "type": "string" },
+                  "sessionDuration": { "type": "integer" },
+                  "subject": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Attendance marked successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Attendance" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Get payment records",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["pending", "completed", "failed", "refunded"] }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment records retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Payment" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Process payment",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["studentId", "amount", "paymentMethod"],
+                "properties": {
+                  "studentId": { "type": "integer" },
+                  "amount": { "type": "number" },
+                  "paymentType": { "type": "string", "enum": ["monthly_fee", "registration", "late_fee", "other"] },
+                  "paymentMethod": { "type": "string", "enum": ["cash", "online", "bank_transfer", "upi", "card"] },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment processed successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Payment" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/analytics": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get platform analytics (Admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Analytics data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalUsers": { "type": "integer" },
+                    "totalStudents": { "type": "integer" },
+                    "totalTeachers": { "type": "integer" },
+                    "approvedTeachers": { "type": "integer" },
+                    "pendingTeachers": { "type": "integer" },
+                    "totalRevenue": { "type": "number" },
+                    "monthlyGrowth": { "type": "number" },
+                    "yearlyGrowth": { "type": "number" },
+                    "monthlyData": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "month": { "type": "string" },
+                          "students": { "type": "integer" },
+                          "teachers": { "type": "integer" },
+                          "revenue": { "type": "number" },
+                          "expenses": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/salary-payments": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get salary payment records (Admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "teacherId",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Salary payment records retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "teacherId": { "type": "integer" },
+                      "teacherName": { "type": "string" },
+                      "month": { "type": "integer" },
+                      "year": { "type": "integer" },
+                      "baseSalary": { "type": "number" },
+                      "bonus": { "type": "number" },
+                      "deductions": { "type": "number" },
+                      "totalAmount": { "type": "number" },
+                      "paymentStatus": { "type": "string" },
+                      "paymentDate": { "type": "string", "format": "date" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Process salary payment (Admin only)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["teacherId", "month", "year", "baseSalary"],
+                "properties": {
+                  "teacherId": { "type": "integer" },
+                  "month": { "type": "integer" },
+                  "year": { "type": "integer" },
+                  "baseSalary": { "type": "number" },
+                  "bonus": { "type": "number" },
+                  "deductions": { "type": "number" },
+                  "paymentMethod": { "type": "string", "enum": ["bank_transfer", "cash", "cheque"] },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Salary payment processed successfully"
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get user notifications",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "isRead",
+            "in": "query",
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["assignment", "payment", "attendance", "general", "system"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifications retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "title": { "type": "string" },
+                      "message": { "type": "string" },
+                      "type": { "type": "string" },
+                      "priority": { "type": "string" },
+                      "isRead": { "type": "boolean" },
+                      "createdAt": { "type": "string", "format": "date-time" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Send notification (Admin/Teacher only)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userId", "title", "message", "type"],
+                "properties": {
+                  "userId": { "type": "integer" },
+                  "title": { "type": "string" },
+                  "message": { "type": "string" },
+                  "type": { "type": "string", "enum": ["assignment", "payment", "attendance", "general", "system"] },
+                  "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
+                  "deliveryMethod": { "type": "string", "enum": ["in_app", "email", "whatsapp", "sms"] },
+                  "scheduledAt": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notification sent successfully"
+          }
+        }
+      }
+    }
+  }
+}
