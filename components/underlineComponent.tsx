@@ -9,7 +9,7 @@ interface UnderlineProps {
 
 const Underline = ({ text, imageSrc, underlineWidthInPer }: UnderlineProps) => {
   return (
-    <span className={`inline-block relative pb-2`}>
+    <span className={`inline-block relative pb-[5px] md:pb-[15px]`}>
       {text}
       <Image
         src={imageSrc}

@@ -35,10 +35,10 @@ const About = () => {
             </span>
           </h1>
         </div>
-        <div className="flex flex-col md:flex-row md:gap-14 gap-8">
-          <p className="text-xl text-justify">{startingText}</p>
+        <div className="flex flex-col md:flex-row  gap-8 md:gap-14 2xl:gap-20">
+          <p className="text-xl 2xl:text-2xl text-justify">{startingText}</p>
           <div className="md:w-48 text-right">
-            <p className="text-4xl sm:text-3xl">
+            <p className="text-4xl sm:text-3xl 2xl:text-4xl">
               Skills are not just learned, they are nurtured —{" "}
               <span className="text-[#FEB401] font-semibold">
                 they light the path from curiosity to confidence.
@@ -71,11 +71,11 @@ const About = () => {
         </div>
       </div>
       <div className="flex flex-col sm:flex-row gap-10">
-        <p className="whitespace-pre-line text-[14px] sm:max-w-[40%] sm:px-5 lg:px-10 sm:py-2">
+        <p className="whitespace-pre-line text-[14px] 2xl:text-[16px] sm:max-w-[40%] sm:px-5 lg:px-10 sm:py-2">
           {textAfterValues}
         </p>
-        <div className="w-[3px] lg:w-[5px] bg-gray-300 xl:bg-gray-700" />
-        <div className="space-y-10 w-full lg:px-20">
+        <div className="w-[3px] bg-gray-300 xl:bg-gray-700" />
+        <div className="space-y-12 w-full xl:max-w-[45%] flex flex-col px-10 xl:px-20">
           <div>
             <div className="flex gap-3 items-center">
               <h3 className="text-6xl">Mission</h3>
@@ -83,11 +83,12 @@ const About = () => {
                 src="./missionIcon.svg"
                 alt=""
                 aria-hidden="true"
-                width={52}
-                height={52}
+                width={60}
+                height={60}
+                className="sm:size-16"
               />
             </div>
-            <p className="text-xl">
+            <p className="text-xl xl:text-2xl">
               To inspire lifelong <br /> learners across India.
             </p>
           </div>
@@ -98,12 +99,13 @@ const About = () => {
                 src="/visionIcon.svg"
                 alt=""
                 aria-hidden="true"
-                width={52}
-                height={52}
+                width={60}
+                height={60}
+                className="sm:size-16"
               />
             </div>
             <div className="text-end">
-              <p className="text-xl ">
+              <p className="text-xl  xl:text-2xl">
                 To transform home learning <br />
                 through affordable,
                 <br />
@@ -113,32 +115,34 @@ const About = () => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-10">
-        <p className="text-3xl sm:hidden tracking-wide">
-          Every skill learned here <br /> creates a{" "}
-          <Underline
-            text={"Change"}
-            imageSrc={changeUnderline}
-            underlineWidthInPer={70}
-          />
-        </p>
-        <div className="text-4xl md:text-5xl lg:text-6xl hidden tracking-wider sm:flex">
-          <div className="relative">
-            <span className="inline mr-[1vw]">Every</span>
-            <div className="absolute left-0 bottom-4 sm:w-28 md:w-28 lg:w-44 xl:w-48 h-6">
-              <Image
-                src="/change underline.svg"
-                alt=""
-                aria-hidden="true"
-                fill
-                className="object-contain"
-              />
-            </div>
-          </div>
-          <p>
-            skill learned here <br />{" "}
-            <span className="inline-block w-20"></span> creates a Change
+      <div className="flex flex-col gap-10 w-[70%]">
+        <div className="self-center">
+          <p className="text-3xl sm:hidden tracking-wide">
+            Every skill learned here <br /> creates a{" "}
+            <Underline
+              text={"Change"}
+              imageSrc={changeUnderline}
+              underlineWidthInPer={70}
+            />
           </p>
+          <div className="text-4xl md:text-5xl lg:text-6xl 2xl:text-7xl hidden tracking-wider sm:flex">
+            <div className="relative">
+              <span className="inline mr-[1vw]">Every</span>
+              <div className=" absolute left-0 bottom-2 2xl:bottom-4 sm:w-28 md:w-28 lg:w-44 xl:w-48 h-10 2xl:w-56">
+                <Image
+                  src="/change underline.svg"
+                  alt=""
+                  aria-hidden="true"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+            <p>
+              skill learned here <br />{" "}
+              <span className="inline-block w-20"></span> creates a Change
+            </p>
+          </div>
         </div>
         <StatCards />
       </div>

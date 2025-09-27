@@ -33,7 +33,7 @@ const NumberedCard: React.FC<NumberedCardProps> = ({ number, alignment, heading,
             alignment == "right" ? "col-start-1" : "col-start-2"
           }`}
         >
-          <p className="text-[70%] xl:text-[80%]">{text}</p>
+          <p className="text-[70%] xl:text-[80%] 2xl:text-sm">{text}</p>
         </div>
       </div>
       <div className="bg-[#FEB401] h-48 w-full absolute top-3 left-3 md:border-3 -z-10"></div>

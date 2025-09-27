@@ -14,7 +14,7 @@ const Contact = () => {
       <div className="sm:hidden">
         <ContactForm />
       </div>
-      <div className="relative hidden sm:grid grid-cols-[30%_60%] border-3 px-[5%] py-8 my-10 gap-[8%] shadow-[8px_8px_0_rgba(0,0,0,1)]">
+      <div className="relative hidden sm:grid grid-cols-[30%_60%] border-[3px] px-[5%] py-8 my-10 gap-[8%] shadow-[8px_8px_0_rgba(0,0,0,1)]">
         <div className="flex flex-col">
           <p className="sm:text-5xl md:text-6xl xl:text-7xl font-semibold my-10">Contact</p>
           <p className="sm:text-2xl lg:text-3xl">
@@ -23,12 +23,13 @@ const Contact = () => {
           </p>
         </div>
         <ContactForm />
-        <div className="absolute top-0 right-5 sm:w-48 sm:h-48 sm:-translate-y-[80%]   lg:w-64 lg:h-60 md:-translate-y-[80%]">
+        <div className="absolute top-0 right-5 sm:w-48 sm:h-48 sm:-translate-y-[80%]   lg:w-64 lg:h-60 md:-translate-y-[81%]">
           <Image
-            src={"./contactFormImage.svg"}
+            src={"/contactFormImage.svg"}
             alt=""
             fill
-            className="object-contain  "
+            sizes="(max-width: 640px) 12rem, (max-width: 1024px) 16rem, 16rem"
+            className="object-contain  z-20"
             aria-hidden={true}
           />
         </div>

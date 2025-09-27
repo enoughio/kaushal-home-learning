@@ -45,7 +45,7 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Kaushalay Home Learning",
+  title: "Kaushalya Home Learning",
   description: "Nurture Skills, Build Future",
 };
 
