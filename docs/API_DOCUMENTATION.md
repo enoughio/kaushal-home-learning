@@ -108,7 +108,7 @@ Get list of students (Admin only).
 
 **Query Parameters:**
 - `page` (integer, default: 1) - Page number
-- `limit` (integer, default: 10) - Items per page
+- `limit` (integer, default: 15) - Items per page
 - `search` (string) - Search by name or email
 - `city` (string) - Filter by city
 - `paymentStatus` (string) - Filter by payment status
