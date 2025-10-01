@@ -2,7 +2,7 @@ import Image from "next/image";
 
 const WhyChooseUs = () => {
   return (
-    <div className=" w-screen min-h-screen section mt-10 flex flex-col items-center gap-6 py-10">
+    <div className=" w-screen min-h-screen section flex flex-col items-center gap-6 pb-10">
       <header>
         <div className="flex flex-col relative  w-fit mx-auto">
           <div className="flex justify-center mt-4 h-[50px] w-[50px] absolute bottom-14 -left-10  ">
@@ -35,61 +35,54 @@ const WhyChooseUs = () => {
         </div>
       </header>
 
-      <p className="max-w-[71%] text-center text-md leading-6">
+      <p className="sm:max-w-[71%] sm:text-center text-md leading-5 sm:leading-6">
         Kaushaly is more than just tutoring. We are a personalized learning
         platform designed to help every learner grow at their own pace — whether
         it's mastering a subject, preparing for exams, or simply falling in love
         with learning again.
       </p>
 
-      <div className="container">
-        <div className="box red pl-3 pt-3 flex justify-between items-center gap-2 ">
+      <div className="container ">
+
+        <div className="box red border-2 pl-3 pt-3 flex justify-between items-center gap-2 relative bg-white" 
+             style={{backgroundImage: 'url(/grid1.png)', backgroundSize: '70% 80%', backgroundPosition: 'bottom right', backgroundRepeat: 'no-repeat'}}>
          
-          <div className="max-w-[32%]">
+          <div className="max-w-[52%] pb-15">
             <h2 className="text-xl font-bold mb-2 leading-none ">
               Comprehensive
               <br />
               <span className="text-primary"> Learning </span>{" "}
             </h2>
 
-            <p className="text-sm leading-5  mt-2 ">
+            <p className="text-xs md:text-sm leading-4 md:leading-5  mt-2 ">
               At Kaushaly, we believe no subject is too hard when learning is
               guided the right way. From mathematics to machine learning, from
               languages to life skills
             </p>
           </div>
 
-          <div className="w-[300px] h-[300px]  bg-amber-300">
-            <Image 
-                src={'/grid1.png'}
-                alt="Grid"
-                width={300}
-                height={300}
-                className="w-full h-full object-cover"
-            />
-          </div>
-
+          <div className="w-full h-full  absolute top-3 left-3 bg-black -z-10" />
         </div>
-        <div className="box purple flex  items-center justify-center p-3 gap-3">
 
-          <h2 className="text-xl font-bold mb-2 leading-none ">
-          Personalized Approch
+
+        <div className="box purple flex items-center justify-center px-3 gap-3 relative bg-white border-2"
+             style={{backgroundImage: 'url(/grid2.png)', backgroundSize: '50% 40%', backgroundPosition: 'bottom right', backgroundRepeat: 'no-repeat'}}>
+
+          <h2 className="text-xl font-bold leading-none ">
+          <span className="text-primary">Personalized </span>
+          
+          Approch
           </h2>
-
-          <div>
-            <Image 
-                src={'/grid2.png'}
-                alt="Grid"
-                width={40}
-                height={60}
-                className="w-full h-full object-cover"
-            />
-          </div>
 
           <p>Tailered session for individual grouth</p>
           
+<div className="w-full h-full  absolute top-3 left-3 bg-black -z-10" />
+
         </div>
-        <div className="box yellow"></div>
+        <div className="box yellow bg-white border-2 relative"
+             style={{backgroundImage: 'url(/grid3.png)', backgroundSize: '50% 40%', backgroundPosition: 'bottom right', backgroundRepeat: 'no-repeat'}}>
+          <div className="w-full h-full absolute top-3 left-3 bg-black -z-10" />
+        </div>
       </div>
     </div>
   );

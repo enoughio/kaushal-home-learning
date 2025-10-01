@@ -16,6 +16,14 @@
   --font-urbanist: var(--font-urbanist);
   --font-gothic: var(--font-gothic);
   --font-syne: var(--font-syne);
+  
+  /* Custom breakpoints */
+  --breakpoint-xs: 375px; /* iPhone SE and similar small devices */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -72,10 +80,11 @@ body {
   display: grid;
   max-width: 16in; /* Maximum width of 16 inches */
   margin: 0 auto;
-  border: 10px solid limegreen; /* Green border around the container */
+  /* border: 10px solid ; Green border around the container */
   box-sizing: border-box;
-  overflow: hidden; /* Prevent expansion beyond limits */
-  gap: 20px; 
+  /* overflow: hidden; Prevent expansion beyond limits */
+  gap: 30px; /* Space between grid items */
+  min-height: 40vh;
 }
 
 .box {
@@ -87,7 +96,7 @@ body {
 }
 
 .purple {
-  background-color: #9370db; /* Approximate purple color */
+  /* background-color: #9370db; Approximate purple color */
 }
 
 .yellow {
@@ -99,7 +108,7 @@ body {
   .container {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    grid-gap: 0;
+    gap: 20px;
   }
 
   .red {
@@ -123,7 +132,7 @@ body {
   .container {
     grid-template-columns: 1fr;
     grid-template-rows: 2fr 1fr 1fr;
-    grid-gap: 0;
+    gap: 20px;
   }
 
   .red {
