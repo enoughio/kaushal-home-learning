@@ -32,7 +32,7 @@ const Family = () => {
             </h1>
           </div>
           <p className="text-md md:text-xl text-gray-700 italic">
-            "Alone we learn, together we thrive."
+            &ldquo;Alone we learn, together we thrive.&rdquo;
           </p>
         </div>
 

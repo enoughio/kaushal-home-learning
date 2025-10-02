@@ -38,7 +38,7 @@ const What = () => {
       <p className="sm:max-w-[71%] sm:text-center text-md leading-5 sm:leading-6">
         Kaushaly is more than just tutoring. We are a personalized learning
         platform designed to help every learner grow at their own pace — whether
-        it's mastering a subject, preparing for exams, or simply falling in love
+        it&apos;s mastering a subject, preparing for exams, or simply falling in love
         with learning again.
       </p>
 
@@ -77,11 +77,11 @@ const What = () => {
           </h2>
 
           <div className=" min-w-[25%] max-w-[28%] h-[100%] flex items-center justify-center  ">
-            <img
+            <Image
               src="/grid2.png"
               alt="Personalized"
-              // width={200}
-              // height={200}
+              width={200}
+              height={200}
               className="w-full h-full object-fill"
             />
           </div>

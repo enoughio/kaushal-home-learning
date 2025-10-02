@@ -28,10 +28,9 @@ const Registration = () => {
                 </h2>
               </div>
 
-              {/* Right Side - Description Text */}
               <div className="lg:pt-4">
                 <p className="text-sm md:text-base leading-relaxed text-gray-800">
-                  Don't wait for tomorrow to build the skills you need today. At Kaushalya, every registration is the first step towards personalized learning, expert mentorship, and a community that grows with you. Whether you're a student ready to master new subjects or a tutor eager to share knowledge, your journey starts here.
+                  Don&apos;t wait for tomorrow to build the skills you need today. At Kaushalya, every registration is the first step towards personalized learning, expert mentorship, and a community that grows with you. Whether you&apos;re a student ready to master new subjects or a tutor eager to share knowledge, your journey starts here.
                 </p>
               </div>
 

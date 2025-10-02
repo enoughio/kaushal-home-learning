@@ -10,7 +10,7 @@ const Stats = () => {
           </h1>
           <p className="text-gray-600 text-base  md:text-lg leading-6">
             At Kaushaly, we believe in the power of partnership. By collaborating
-            with schools, educators, and communities, we've built a learning
+            with schools, educators, and communities, we&apos;ve built a learning
             ecosystem that extends beyond just tutoring.
           </p>
         </div>
