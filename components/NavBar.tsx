@@ -2,95 +2,132 @@ import Image from "next/image";
 import Link from "next/link";
 
 const NavBar = () => {
-    return (
-<nav className="bg-white border-gray-200 dark:bg-gray-900/50 absolute w-screen px-12">
-        <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-3">
+  return (
+    <nav className="bg-white w-full  px-6 md:px-12 lg:px-16 sticky top-0 z-50 shadow-sm ">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        
+        {/* Logo */}
+        <Link href="/" className="flex-shrink-0">
+          <Image
+            src="/logo.svg"
+            alt="Kaushalay Home Learning Logo"
+            width={80}
+            height={80}
+            className="h-16 w-auto"
+          />
+        </Link>
+
+        {/* Desktop Navigation Links */}
+        <div className="hidden lg:flex items-start space-x-8">
           <Link
-            href="/home"
-            className="flex items-center space-x-3 rtl:space-x-reverse"
+            href="/"
+            className="text-blue-500 font-medium hover:text-blue-600 transition-colors"
           >
-            <Image
-              src="/logo.svg"
-              className="h-8"
-              alt="Kaushalay Home Learning Logo"
-              width={32}
-              height={32}
-            />
+            Home
           </Link>
-          <button
-            data-collapse-toggle="navbar-default"
-            type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-            aria-controls="navbar-default"
-            aria-expanded="false"
+          <Link
+            href="/about"
+            className="text-gray-700 font-medium hover:text-blue-500 transition-colors"
           >
-            <span className="sr-only">Open main menu</span>
-            <svg
-              className="w-5 h-5"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 17 14"
+            About Us
+          </Link>
+
+          <Link
+            href="/contact"
+            className="text-gray-700 font-medium hover:text-blue-500 transition-colors"
+          >
+            Contact
+          </Link>
+         
+        </div>
+
+        {/* Action Buttons */}
+        <div className="hidden lg:flex items-center space-x-4">
+          <Link
+            href="/auth/login"
+            className="px-6 py-2.5 border-2 text-black border-black rounded-full font-medium hover:bg-gray-50 transition-colors"
+          >
+           Login
+          </Link>
+          <Link
+            href="/free-call"
+            className="px-6 py-2.5 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors"
+          >
+            Free Call
+          </Link>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          type="button"
+          className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+          aria-controls="mobile-menu"
+          aria-expanded="false"
+        >
+          <span className="sr-only">Open main menu</span>
+          <svg
+            className="h-6 w-6"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile Menu (hidden by default) */}
+      <div className="lg:hidden hidden" id="mobile-menu">
+        <div className="pt-4 pb-3 space-y-3">
+          <Link
+            href="/"
+            className="block px-4 py-2 text-blue-500 font-medium"
+          >
+            Home
+          </Link>
+          <Link
+            href="/about"
+            className="block px-4 py-2 text-gray-700 font-medium hover:bg-gray-50"
+          >
+            About Us
+          </Link>
+          <Link
+            href="/services"
+            className="block px-4 py-2 text-gray-700 font-medium hover:bg-gray-50"
+          >
+            Contact
+          </Link>
+          <Link
+            href="/tutors"
+            className="block px-4 py-2 text-gray-700 font-medium hover:bg-gray-50"
+          >
+            Tutors
+          </Link>
+        
+          <div className="px-4 pt-3 space-y-2">
+            <Link
+              href="/auth/login"
+              className="block w-full text-center text-black px-6 py-2.5 border-2 border-black rounded-full font-medium hover:bg-gray-50"
             >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M1 1h15M1 7h15M1 13h15"
-              />
-            </svg>
-          </button>
-          <div className="hidden w-full md:block md:w-auto" id="navbar-default">
-            <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-              <li>
-                <Link
-                  href="#"
-                  className="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500"
-                  aria-current="page"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Services
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
+              Login
+            </Link>
+            <Link
+              href="/free-call"
+              className="block w-full text-center px-6 py-2.5 bg-black text-white rounded-full font-medium hover:bg-gray-800"
+            >
+              Free Call
+            </Link>
           </div>
         </div>
-      </nav>
-
-    )
-}
-
+      </div>
+    </nav>
+  );
+};
 
 export default NavBar;

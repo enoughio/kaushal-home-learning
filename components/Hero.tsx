@@ -2,7 +2,7 @@ import Image from "next/image";
 
 const Hero = () => {
   return (
-    <div className="lg:section max-w-screen max-h-[88vh] sm:max-h-screen  pt-14">
+    <div className="lg:section max-w-screen max-h-[88vh] sm:max-h-screen  pb-10">
       <main className="w-full h-full bg-white sm:flex flex-col items-center justify-start hidden  ">
         <header className="font-gothic md:text-[3rem] leading-none lg:text-[2.8rem]  mt-2 sm:mx-15 md:mx-0 text-center">
           <h1>
@@ -14,8 +14,6 @@ const Hero = () => {
         <div className=" h-full w-full flex flex-col items-center justify-start ">
 
           <div className="max-w-full  ">
-
-
 
             <Image 
               src="/hero.png" 

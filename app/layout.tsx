@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Urbanist, Syne,Gothic_A1 } from "next/font/google";
 import "./globals.css";
 import NavBar from '@/components/NavBar';
+import Fotter from "@/components/Fotter";
 
 
 // Configure Google Fonts
@@ -44,6 +45,7 @@ export default function RootLayout({
       >
         <NavBar />
         {children}
+        <Fotter />
       </body>
     </html>
   );

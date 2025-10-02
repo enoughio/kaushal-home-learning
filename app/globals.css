@@ -19,11 +19,12 @@
   
   /* Custom breakpoints */
   --breakpoint-xs: 375px; /* iPhone SE and similar small devices */
-  --breakpoint-sm: 640px;
+  /* --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
-  --breakpoint-xl: 1280px;
+  --breakpoint-xl: 1280px; */
   --breakpoint-2xl: 1536px;
+  --breakpoint-ip : 834px; /* iPhone Pro Max in landscape mode  834-1194*/ 
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,16 +61,69 @@ body {
   }
 }
 
+
+/* iPhone Pro Max in landscape mode */
+@media screen and (min-width: 834px) and (max-width: 1194px) {
+    .section {
+      padding-left: 150px;
+      padding-right: 150px;
+      padding-bottom: 30px;
+      padding-top: 45px;
+      max-width: none;
+      margin: 0;
+    }
+} 
+    
+  
+/* ipad mini  */
+/* @media screen and (min-width: 768px) and (max-width: 833px) {
+    .section {
+      iPad Mini in landscape mode
+      padding-left: 100px;
+      padding-right: 100px;
+      padding-bottom: 30px;
+      padding-top: 45px;
+      max-width: none;
+      margin: 0;
+    }
+} */
+
+
 @media (max-width: 768px) {
   .section {
     /* Mobile: 26px horizontal padding */
     padding-left: 26px;
     padding-right: 26px;
+    padding-bottom: 30px;
+    padding-top: 25px;
     max-width: none;
     margin: 0;
   }
 }
 
+@media (max-width: 375px) {
+  .section {
+    /* iPhone SE and similar small devices */
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 25px;
+    padding-top: 45px;
+    max-width: none;
+    margin: 0;
+  }
+}
+
+@media (max-width: 368px) {
+  .section {
+    /* Very small mobile devices */
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 30px;
+    padding-top: 45px;
+    max-width: none;
+    margin: 0;
+  }
+}
 
 
 /* ---------------------------------------------- */
@@ -79,7 +133,7 @@ body {
 .container {
   display: grid;
   max-width: 16in; /* Maximum width of 16 inches */
-  margin: 0 auto;
+  margin: 0 0;
   /* border: 10px solid ; Green border around the container */
   box-sizing: border-box;
   /* overflow: hidden; Prevent expansion beyond limits */
@@ -100,11 +154,11 @@ body {
 }
 
 .yellow {
-  background-color: #ffd700; /* Approximate yellow color */
+  /* Approximate yellow color */
 }
 
 /* Desktop view (assuming >= 1024px) */
-@media (min-width: 1024px) {
+@media (min-width: 1050px) {
   .container {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
@@ -147,3 +201,11 @@ body {
     grid-row: 3;
   }
 }
+
+
+
+
+
+
+/* ------------------------------------ */
+
