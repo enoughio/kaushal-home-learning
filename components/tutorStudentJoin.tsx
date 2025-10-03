@@ -1,5 +1,5 @@
 import Image from "next/image";
-const joinButtonSrc = "/Join Button.svg";
+const joinButtonSrc = "/arrow.png";
 
 interface TutorStudentJoinProps {
   role: string;

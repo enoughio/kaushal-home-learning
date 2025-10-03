@@ -1,8 +1,4 @@
 import React from "react";
-import skillsUnderline from "../../public/skills underline.svg";
-import changeUnderline from "../../public/change underline.svg";
-import tutorImage from "../../public/tutorImage.svg";
-import studentImage from "../../public/studentImage.svg";
 import Image from "next/image";
 import NumberedCard from "@/components/numberCard";
 import {
@@ -10,8 +6,15 @@ import {
   textAfterValues,
   valueCards,
 } from "@/data/About-page-data";
+
+interface ValueCard {
+  number: string;
+  alignment: 'left' | 'right';
+  heading: string;
+  text: string;
+}
 import Underline from "@/components/underlineComponent";
-import StatCards from "@/components/statCards";
+import Stats from "@/components/Stats";
 import TutorStudentJoin from "@/components/tutorStudentJoin";
 
 const About = () => {
@@ -23,9 +26,9 @@ const About = () => {
             We Are The <br />
             Home of{" "}
             <span className="font-bold relative inline-block">
-              <Underline text={"Skills"} imageSrc={skillsUnderline} />
+              <Underline text={"Skills"} imageSrc="/skills-underline.svg" />
               <Image
-                src={"./skillsDecoration.svg"}
+                src="/skillsDecoration.svg"
                 alt=""
                 aria-hidden={true}
                 width={100}
@@ -59,7 +62,7 @@ const About = () => {
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-10">
-          {valueCards.map((card) => (
+          {valueCards.map((card: ValueCard) => (
             <NumberedCard
               key={card.number}
               number={card.number}
@@ -80,7 +83,7 @@ const About = () => {
             <div className="flex gap-3 items-center">
               <h3 className="text-6xl">Mission</h3>
               <Image
-                src="./missionIcon.svg"
+                src="/missionIcon.svg"
                 alt=""
                 aria-hidden="true"
                 width={60}
@@ -121,7 +124,7 @@ const About = () => {
             Every skill learned here <br /> creates a{" "}
             <Underline
               text={"Change"}
-              imageSrc={changeUnderline}
+              imageSrc="/change-underline.svg"
               underlineWidthInPer={70}
             />
           </p>
@@ -130,7 +133,7 @@ const About = () => {
               <span className="inline mr-[1vw]">Every</span>
               <div className=" absolute left-0 bottom-2 2xl:bottom-4 sm:w-28 md:w-28 lg:w-44 xl:w-48 h-10 2xl:w-56">
                 <Image
-                  src="/change underline.svg"
+                  src="/change-underline.svg"
                   alt=""
                   aria-hidden="true"
                   fill
@@ -144,7 +147,7 @@ const About = () => {
             </p>
           </div>
         </div>
-        <StatCards />
+        <Stats />
       </div>
       <div className="space-y-12">
         <p className="text-5xl md:text-6xl xl:text-7xl tracking-wide text-center">
@@ -155,14 +158,14 @@ const About = () => {
           text={
             "A comprehensive platform for educators to share knowledge, connect with learners, and build meaningful teaching experiences."
           }
-          roleImage={tutorImage}
+          roleImage="/tutorImage.png"
         />
         <TutorStudentJoin
           role={"Student"}
           text={
             "Career-focused skill development programs designed to prepare students for the modern workforce and future challenges."
           }
-          roleImage={studentImage}
+          roleImage="/studentImage.svg"
         />
       </div>
     </div>
