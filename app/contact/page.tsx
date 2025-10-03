@@ -1,4 +1,4 @@
-import ContactForm from "@/components/contactForm";
+import ContactForm from "@/components/ui/contact/contactForm";
 import Image from "next/image";
 
 const Contact = () => {

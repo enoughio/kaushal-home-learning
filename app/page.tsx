@@ -1,12 +1,12 @@
-import Family from "@/components/Family";
-import Hero from "@/components/Hero";
-import Marqui from "@/components/Marqui";
+import Family from "@/components/ui/home/Family";
+import Hero from "@/components/ui/home/Hero";
+import Marqui from "@/components/ui/home/Marqui";
 // import MissionVision from "@/components/MissionVision";
-import Registration from "@/components/Registration";
-import Reviews from "@/components/Reviews";
-import Stats from "@/components/Stats";
-import What from "@/components/what";
-import Why from "@/components/why/Why";
+import Registration from "@/components/ui/home/Registration";
+import Reviews from "@/components/ui/home/Reviews";
+import Stats from "@/components/ui/home/Stats";
+import What from "@/components/ui/home/what";
+import Why from "@/components/ui/home/why/Why";
 
 export default function Home() {
   return (

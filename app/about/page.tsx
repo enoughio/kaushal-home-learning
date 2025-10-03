@@ -13,9 +13,9 @@ interface ValueCard {
   heading: string;
   text: string;
 }
-import Underline from "@/components/underlineComponent";
-import Stats from "@/components/Stats";
-import TutorStudentJoin from "@/components/tutorStudentJoin";
+import Underline from "@/components/ui/about/underlineComponent";
+import Stats from "@/components/ui/home/Stats";
+import TutorStudentJoin from "@/components/ui/about/tutorStudentJoin";
 
 const About = () => {
   return (
