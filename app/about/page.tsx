@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import NumberedCard from "@/components/numberCard";
+// import NumberedCard from "@/components/numberCard";
 import {
   startingText,
   textAfterValues,
@@ -61,17 +61,19 @@ const About = () => {
             shape who we are
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-10">
+        {/* <div className="grid md:grid-cols-2 gap-10">
           {valueCards.map((card: ValueCard) => (
             <NumberedCard
-              key={card.number}
-              number={card.number}
-              alignment={card.alignment}
+            key={card.number}
+            number={card.number}
+            alignment={card.alignment}
               heading={card.heading}
               text={card.text}
-            />
-          ))}
-        </div>
+              />
+              ))}
+              </div> */}
+              <Stats />
+      
       </div>
       <div className="flex flex-col sm:flex-row gap-10">
         <p className="whitespace-pre-line text-[14px] 2xl:text-[16px] sm:max-w-[40%] sm:px-5 lg:px-10 sm:py-2">
