@@ -5,16 +5,27 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) DEFAULT NULL,
     role VARCHAR(20) NOT NULL CHECK (role IN ('student', 'teacher', 'admin')),
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
+    first_name VARCHAR(100) ,
+    last_name VARCHAR(100) ,
     phone VARCHAR(20),
     address TEXT,
     city VARCHAR(100),
     state VARCHAR(100),
     pincode VARCHAR(10),
     date_of_birth DATE,
+
+------verification & security------
+
+    is_varifaied BOOLEAN DEFAULT false,
+    verification_token VARCHAR(100),
+    verification_token_expires TIMESTAMP,
+    reset_token VARCHAR(100),
+    reset_token_expires TIMESTAMP,
+    
+-----
+
     profile_image_url VARCHAR(500),
     is_active BOOLEAN DEFAULT true,
     is_deleted BOOLEAN DEFAULT false,

@@ -67,6 +67,7 @@ export default function UserManagementPage() {
 
     setFilteredUsers(filtered)
   }, [searchTerm, roleFilter, statusFilter, users])
+  
 
   const handleStatusUpdate = async (userId: string, newStatus: "active" | "inactive") => {
     setUpdating(userId)
