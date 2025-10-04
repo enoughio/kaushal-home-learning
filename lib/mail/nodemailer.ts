@@ -1,0 +1,44 @@
+import nodemailer, { Transporter } from 'nodemailer'
+import { EmailTemplate, EmailOptions, TransportConfig } from './types'
+
+const createTransporter = (): Transporter => {
+  const config: TransportConfig = {
+    host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
+    port: parseInt(process.env.SMTP_PORT || "2525"),
+    auth: {
+      user: process.env.SMTP_USER || "2e09ea2a5f16b4",
+      pass: process.env.SMTP_PASS || "8c278a9c77969b"
+    }
+  }
+  return nodemailer.createTransport(config)
+}
+
+const transporter = createTransporter()
+
+export const sendEmail = async (options: EmailOptions): Promise<void> => {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.FROM_EMAIL || '"Your App" <noreply@yourapp.com>',
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
+    })
+
+    console.log("Message sent:", info.messageId)
+  } catch (error) {
+    console.error("Email sending failed:", error)
+    throw error
+  }
+}
+
+export const sendTemplateEmail = async (to: string, template: EmailTemplate): Promise<void> => {
+  await sendEmail({
+    to,
+    subject: template.subject,
+    text: template.text,
+    html: template.html
+  })
+}
+  
+// export const emailService = new EmailService()

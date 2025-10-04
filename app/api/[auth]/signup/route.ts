@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "../../../../database/db";
+import { sendVerificationEmail } from "../../../../lib/mail/emailHelpers";
+import crypto from 'crypto';
 
 export async function POST(req: NextRequest) { 
     try {
@@ -26,7 +28,6 @@ export async function POST(req: NextRequest) {
                     error: "VALIDATION_ERROR",
                     message: "Invalid email format",
                     code: 400,
-                    details: { email: "Please provide a valid email address" }
                 },
                 { status: 400 }
             );
@@ -40,25 +41,40 @@ export async function POST(req: NextRequest) {
                     error: "VALIDATION_ERROR",
                     message: "Invalid role",
                     code: 400,
-                    details: { role: "Role must be one of: student, teacher, admin" }
                 },
                 { status: 400 }
             );
         }
 
-        // create temporary user object in database until email verification is don
+        // Generate verification token
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
+        // create temporary user object in database until email verification is done
         const result = await query(
-            'INSERT INTO temp_users (email, first_name, last_name, role, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING id',
-            [email, firstName, lastName, role]
+            'INSERT INTO temp_users (email, first_name, last_name, role, verification_token, token_expiry, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING id',
+            [email, firstName, lastName, role, verificationToken, tokenExpiry]
         );
         const userId = result.rows[0].id;
         
-        // TODO: Send email verification token
-        
+        // Send email verification
+        try {
+            const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/verify?token=${verificationToken}`;
+            
+            await sendVerificationEmail(email, {
+                name: firstName,
+                verificationToken,
+                verificationUrl
+            });
+            
+            console.log(`Verification email sent to ${email}`);
+        } catch (emailError) {
+            // Don't fail the registration if email fails, but log it
+            console.error('Failed to send verification email:', emailError);
+        }
         
         return NextResponse.json({ 
-            message: "Registration successful. Please verify your email.",
+            message: "Registration successful. Please check your email to verify your account.",
             userId
         }, { status: 201 });
 
@@ -72,7 +88,6 @@ export async function POST(req: NextRequest) {
                     error: "DUPLICATE_EMAIL",
                     message: "Email already exists",
                     code: 400,
-                    details: { email: "This email is already registered" }
                 },
                 { status: 400 }
             );
@@ -83,7 +98,6 @@ export async function POST(req: NextRequest) {
                 error: "INTERNAL_ERROR",
                 message: "Failed to create user",
                 code: 500,
-                details: {}
             },
             { status: 500 }
         );
