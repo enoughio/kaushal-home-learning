@@ -29,7 +29,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className=" bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className=" bg-gradient-to-br min-h-screen from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-2">
         {/* Header */}
         <div className="text-center ">

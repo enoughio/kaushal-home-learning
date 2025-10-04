@@ -15,6 +15,7 @@ CREATE TABLE users (
     state VARCHAR(100),
     pincode VARCHAR(10),
     date_of_birth DATE,
+    localion TEXT,
 
 ------verification & security------
     is_varifaied BOOLEAN DEFAULT false,
@@ -51,6 +52,7 @@ CREATE TABLE students (
     fee_due_date DATE,
     payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('paid', 'pending', 'overdue', 'grace_period')),
     grace_period_end DATE,
+    loca
     enrollment_date DATE DEFAULT CURRENT_DATE,
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -123,6 +125,7 @@ CREATE TABLE assignments (
     max_marks INTEGER DEFAULT 100,
     file_url VARCHAR(500),
     instructions TEXT,
+    grade VARCHAR(5) CHECK (grade IN ('A+', 'A', 'B+', 'B', 'C+', 'C', 'D')),
     status VARCHAR(20) DEFAULT 'assigned' CHECK (status IN ('assigned', 'submitted', 'graded', 'overdue')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -204,6 +207,7 @@ CREATE TABLE salary_payments (
 );
 
 -- Notifications table
+-- do not use this table 
 CREATE TABLE notifications (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,

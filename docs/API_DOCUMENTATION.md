@@ -8,18 +8,16 @@ This document provides comprehensive information about the Kaushaly Home Learnin
 - **Development**: `http://localhost:3000/api`
 
 ## Authentication
-All API endpoints (except login and register) require authentication using cookies for auth and RBAC.
+All API endpoints (except login and signup) require authentication using HTTP-only cookies for session management and Role-Based Access Control (RBAC).
 
 ### Headers Required
-\`\`\`
-<!-- Authorization: Bearer <your_jwt_token> -->
-no headers needs to be provided --  it is cookies based auth
+```
 Content-Type: application/json
-\`\`\`
+```
+*Note: No additional authentication headers are required as authentication is handled via secure HTTP-only cookies.*
 
-### Token Expiration
-- Access tokens expire after 15 days
-<!-- - Refresh tokens expire after 30 days -->
+### Session Expiration
+- Session cookies expire after 15 days of inactivity
 
 ## Rate Limiting
 - **General endpoints**: 300 requests per hour per IP
@@ -30,16 +28,13 @@ Content-Type: application/json
 ## Error Handling
 All errors follow a consistent format:
 
-\`\`\`json
+```json
 {
   "error": "ERROR_CODE",
   "message": "Human readable error message",
   "code": 400,
-  "details": {
-    "field": "validation error details"
-  }
 }
-\`\`\`
+```
 
 ### Common Error Codes
 - `400` - Bad Request (validation errors)
@@ -52,120 +47,138 @@ All errors follow a consistent format:
 ## Authentication Endpoints
 
 ### POST /auth/login
-Login with email and password.
+Authenticate user with email and password.
 
 **Request Body:**
-\`\`\`json
+```json
 {
   "email": "user@example.com",
   "password": "password123"
 }
-\`\`\`
+```
 
 **Response (200):**
-\`\`\`json
+```json
 {
-  sets cookies to user browser
+  "message": "Login successful",
   "user": {
     "id": 1,
     "email": "user@example.com",
     "role": "student",
     "firstName": "John",
     "lastName": "Doe"
-  },
-  "expiresIn": 86400
+  }
 }
-\`\`\`
+```
+*Note: Authentication cookies are automatically set in the response headers.*
 
 ### POST /auth/signup
-Register a new user account.
+Register a new user account (initial signup).
 
 **Request Body:**
-\`\`\`json
+```json
 {
-
   "email": "newuser@example.com",
   "firstName": "Jane",
   "lastName": "Smith",
-  "role": "student or teacher"
+  "role": "student"
 }
-\`\`\`
+```
 
 **Response (201):**
-\`\`\`json
-{  
-
-  <!-- sends email varification token to user email -->
-
+```json
+{
   "message": "Registration successful. Please verify your email.",
   "userId": 123
 }
-\`\`\`
-
-
+```
+*Note: Email verification token is sent to the provided email address.*
 
 ### POST /auth/register/student
-Register/complete a user account based on user role.
+Complete student registration with additional profile information after verification.
 
 **Request Body:**
-\`\`\`json
+```json
 {
-
-  "email": "newuser@example.com",  // these fields should be already filled form database
+  "email": "newuser@example.com",
   "firstName": "Jane",
   "lastName": "Smith",
-  "role": "student or teacher"
-  <!-- ----thse field to be takend form the student -->
-    "grade": "10th",
-    "schoolName": "ABC School",
-    "parentName": "Jane Doe",
-    "parentPhone": "+91-9876543210",
-    "subjectsInterested": ["Mathematics", "Science"],
-    "monthlyFee": 5000,
-    "paymentStatus": "paid",
-    "enrollmentDate": "2024-01-15"
-
+  "role": "student",
+  "grade": "10th",
+  "schoolName": "ABC School",
+  "parentName": "Jane Doe",
+  "parentPhone": "+91-9876543210",
+  "subjectsInterested": ["Mathematics", "Science"],
+  "monthlyFee": 5000,
+  "paymentStatus": "pending",
+  "enrollmentDate": "2024-01-15"
 }
+```
 
 **Response (201):**
-\`\`\`json
+```json
 {
   "message": "Student registration successful.",
   "studentId": 123
 }
-
-\`\`\`
-
+```
 
 ### POST /auth/register/teacher
-Register/complete a user account based on user role.
+Complete teacher registration with qualification details.
 
 **Request Body:**
-\`\`\`json
+```json
 {
-  "email": "newuser@example.com",  // these fields should be already filled form database
+  "email": "newuser@example.com",
   "firstName": "Jane",
   "lastName": "Smith",
-  "role": "student or teacher"
-  <!-- ----thse field to be takend form the student -->
+  "role": "teacher",
   "qualification": "M.Sc Mathematics",
   "experienceYears": 5,
   "subjectsTaught": ["Mathematics", "Physics"],
   "teachingMode": "both",
-  <!-- "hourlyRate": 500, --> there is no hourlyRate anymore
-  <!-- also require opther document upload -->
-  markssheet  
+  "documents": {
+    "marksheet": "file_url_or_id",
+    "govtId": "file_url_or_id"
+  }
 }
-\`\`\`
+```
 
 **Response (201):**
-\`\`\`json
+```json
 {
   "message": "Teacher registration successful. Pending approval.",
-  "teacherId": 456
+  "teacherId": 456,
+  "approvalStatus": "pending"
 }
+```
 
+### POST /auth/logout
+Logout user and clear authentication cookies.
 
+**Response (200):**
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+### POST /auth/verify-email
+Verify user email with verification token.
+
+**Request Body:**
+```json
+{
+  "token": "verification_token_from_email"
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Email verified successfully"
+}
+```
 
 ## User Management
 
@@ -180,7 +193,7 @@ Get list of students (Admin only).
 - `paymentStatus` (string) - Filter by payment status
 
 **Response (200):**
-\`\`\`json
+```json
 {
   "students": [
     {
@@ -202,7 +215,7 @@ Get list of students (Admin only).
   "page": 1,
   "totalPages": 15
 }
-\`\`\`
+```
 
 ### GET /teachers
 Get list of teachers.
@@ -215,7 +228,7 @@ Get list of teachers.
 - `approvalStatus` (string) - Filter by approval status
 
 **Response (200):**
-\`\`\`json
+```json
 {
   "teachers": [
     {
@@ -239,7 +252,7 @@ Get list of teachers.
   "page": 1,
   "totalPages": 5
 }
-\`\`\`
+```
 
 ## Assignment Management
 
@@ -247,7 +260,7 @@ Get list of teachers.
 Create a new assignment (Teacher only).
 
 **Request Body:**
-\`\`\`json
+```json
 {
   "studentId": 123,
   "title": "Algebra Practice Problems",
@@ -258,11 +271,11 @@ Create a new assignment (Teacher only).
   "maxMarks": 100,
   "instructions": "Show all working steps clearly"
 }
-\`\`\`
+```
 
 
 **Response (201):**
-\`\`\`json
+```json
 {
   "id": 456,
   "teacherId": 789,
@@ -276,26 +289,26 @@ Create a new assignment (Teacher only).
   "status": "assigned",
   "createdAt": "2024-02-01T10:00:00Z"
 }
-\`\`\`
+```
 
 
 ### POST /assignments/{id}/submit
 Submit an assignment (Student only).
 
 **Request (multipart/form-data):**
-\`\`\`
+```
 submissionText: "Here is my solution to the problems..."
 file: [uploaded file]
-\`\`\`
+```
 
 **Response (200):**
-\`\`\`json
+```json
 {
   "message": "Assignment submitted successfully",
   "submissionId": 789,
   "submittedAt": "2024-02-14T15:30:00Z"
 }
-\`\`\`
+```
 
 ## Attendance Management
 
@@ -303,7 +316,7 @@ file: [uploaded file]
 Mark attendance.
 
 **Request Body:**
-\`\`\`json
+```json
 {
   "studentId": 123,
   "date": "2024-02-01",
@@ -312,10 +325,10 @@ Mark attendance.
   "sessionDuration": 60,
   "subject": "Mathematics"
 }
-\`\`\`
+```
 
 **Response (201):**
-\`\`\`json
+```json
 {
   "id": 456,
   "studentId": 123,
@@ -327,7 +340,7 @@ Mark attendance.
   "subject": "Mathematics",
   "markedAt": "2024-02-01T10:00:00Z"
 }
-\`\`\`
+```
 
 ### GET /attendance
 Get attendance records.
@@ -345,7 +358,7 @@ Get attendance records.
 Process a payment.
 
 **Request Body:**
-\`\`\`json
+```json
 {
   "studentId": 123,
   "amount": 5000,
@@ -353,10 +366,10 @@ Process a payment.
   "paymentMethod": "upi",
   "notes": "February 2024 fee payment"
 }
-\`\`\`
+```
 
 **Response (201):**
-\`\`\`json
+```json
 {
   "id": 789,
   "studentId": 123,
@@ -368,7 +381,7 @@ Process a payment.
   "paymentDate": "2024-02-01",
   "dueDate": "2024-02-01"
 }
-\`\`\`
+```
 
 ## Admin Analytics
 
@@ -376,7 +389,7 @@ Process a payment.
 Get comprehensive platform analytics (Admin only).
 
 **Response (200):**
-\`\`\`json
+```json
 {
   "totalUsers": 500,
   "totalStudents": 350,
@@ -410,7 +423,7 @@ Get comprehensive platform analytics (Admin only).
     }
   ]
 }
-\`\`\`
+```
 
 ## Notification System
 
@@ -418,7 +431,7 @@ Get comprehensive platform analytics (Admin only).
 Send a notification.
 
 **Request Body:**
-\`\`\`json
+```json
 {
   "userId": 123,
   "title": "Assignment Due Reminder",
@@ -428,7 +441,7 @@ Send a notification.
   "deliveryMethod": "email",
   "scheduledAt": "2024-02-14T09:00:00Z"
 }
-\`\`\`
+```
 
 ### GET /notifications
 Get user notifications.
@@ -444,27 +457,27 @@ Get user notifications.
 Upload files (assignments, documents, profile images).
 
 **Request (multipart/form-data):**
-\`\`\`
+```
 file: [uploaded file]
 type: "assignment" | "profile" | "document"
-\`\`\`
+```
 
 **Response (200):**
-\`\`\`json
+```json
 {
   "url": "https://storage.kaushaly.com/files/abc123.pdf",
   "filename": "assignment.pdf",
   "size": 1024000,
   "type": "application/pdf"
 }
-\`\`\`
+```
 
 ## Webhook Events
 
 The platform sends webhook events for important actions:
 
 ### Payment Completed
-\`\`\`json
+```json
 {
   "event": "payment.completed",
   "data": {
@@ -475,10 +488,10 @@ The platform sends webhook events for important actions:
   },
   "timestamp": "2024-02-01T10:00:00Z"
 }
-\`\`\`
+```
 
 ### Teacher Approved
-\`\`\`json
+```json
 {
   "event": "teacher.approved",
   "data": {
@@ -488,12 +501,12 @@ The platform sends webhook events for important actions:
   },
   "timestamp": "2024-02-01T10:00:00Z"
 }
-\`\`\`
+```
 
 ## SDK Examples
 
 ### JavaScript/Node.js
-\`\`\`javascript
+```javascript
 const KaushalyAPI = require('@kaushaly/api-client');
 
 const client = new KaushalyAPI({
@@ -515,10 +528,10 @@ const assignment = await client.assignments.create({
   subject: 'Mathematics',
   dueDate: '2024-02-15'
 });
-\`\`\`
+```
 
 ### Python
-\`\`\`python
+```python
 from kaushaly_api import KaushalyClient
 
 client = KaushalyClient(
@@ -538,7 +551,7 @@ attendance = client.attendance.create(
     date='2024-02-01',
     status='present'
 )
-\`\`\`
+```
 
 ## Testing
 
