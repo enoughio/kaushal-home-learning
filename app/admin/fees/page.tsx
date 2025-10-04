@@ -72,14 +72,12 @@ export default function StudentFeesPage() {
 
   if (loading) {
     return (
-      <AdminLayout activeTab="fees">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Loading student fees...</p>
           </div>
         </div>
-      </AdminLayout>
     )
   }
 
@@ -88,7 +86,6 @@ export default function StudentFeesPage() {
   const overdueCount = fees.filter((f) => f.status === "overdue").length
 
   return (
-    <AdminLayout activeTab="fees">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Student Fees</h1>
@@ -205,6 +202,5 @@ export default function StudentFeesPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

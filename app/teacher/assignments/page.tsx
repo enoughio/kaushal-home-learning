@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { TeacherLayout } from "@/components/layout/TeacherLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -126,19 +125,16 @@ export default function TeacherAssignmentsPage() {
 
   if (loading) {
     return (
-      <TeacherLayout activeTab="assignments">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Loading assignments...</p>
           </div>
         </div>
-      </TeacherLayout>
     )
   }
 
   return (
-    <TeacherLayout activeTab="assignments">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -366,6 +362,5 @@ export default function TeacherAssignmentsPage() {
           )}
         </div>
       </div>
-    </TeacherLayout>
   )
 }

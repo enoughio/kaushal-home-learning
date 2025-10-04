@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { StudentLayout } from "@/components/layout/StudentLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -70,7 +69,6 @@ export default function FindTeachersPage() {
   }
 
   return (
-    <StudentLayout activeTab="teachers">
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -202,6 +200,5 @@ export default function FindTeachersPage() {
           )}
         </div>
       </div>
-    </StudentLayout>
   )
 }

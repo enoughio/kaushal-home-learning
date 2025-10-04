@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -69,14 +68,12 @@ export default function TeacherSalariesPage() {
 
   if (loading) {
     return (
-      <AdminLayout activeTab="salaries">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Loading salaries...</p>
           </div>
         </div>
-      </AdminLayout>
     )
   }
 
@@ -84,7 +81,6 @@ export default function TeacherSalariesPage() {
   const totalPending = salaries.filter((s) => s.status === "pending").reduce((sum, s) => sum + s.totalSalary, 0)
 
   return (
-    <AdminLayout activeTab="salaries">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Teacher Salaries</h1>
@@ -236,6 +232,5 @@ export default function TeacherSalariesPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

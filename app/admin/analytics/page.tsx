@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AdminDataService, type MonthlyData, type PlatformStats } from "@/lib/adminData"
 import {
@@ -93,21 +92,18 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <AdminLayout activeTab="analytics">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Loading analytics...</p>
           </div>
         </div>
-      </AdminLayout>
     )
   }
 
   if (!stats) return null
 
   return (
-    <AdminLayout activeTab="analytics">
       <div className="space-y-8">
         {/* Header */}
         <div>
@@ -573,6 +569,5 @@ export default function AnalyticsPage() {
           </Card>
         </div>
       </div>
-    </AdminLayout>
   )
 }

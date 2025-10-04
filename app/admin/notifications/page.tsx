@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AdminDataService, type NotificationStats } from "@/lib/adminData"
 import { Mail, MessageSquare, Bell, AlertCircle, CheckCircle, Clock } from "lucide-react"
@@ -27,21 +26,18 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <AdminLayout activeTab="notifications">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Loading notification stats...</p>
           </div>
         </div>
-      </AdminLayout>
     )
   }
 
   if (!stats) return null
 
   return (
-    <AdminLayout activeTab="notifications">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Notification System</h1>
@@ -252,6 +248,5 @@ export default function NotificationsPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -84,19 +83,16 @@ export default function AdminPaymentsPage() {
 
   if (loading) {
     return (
-      <AdminLayout activeTab="payments">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Loading payment data...</p>
           </div>
         </div>
-      </AdminLayout>
     )
   }
 
   return (
-    <AdminLayout activeTab="payments">
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -231,6 +227,5 @@ export default function AdminPaymentsPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

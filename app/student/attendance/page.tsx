@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { StudentLayout } from "@/components/layout/StudentLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -57,19 +56,16 @@ export default function AttendancePage() {
 
   if (loading) {
     return (
-      <StudentLayout activeTab="attendance">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Loading attendance...</p>
           </div>
         </div>
-      </StudentLayout>
     )
   }
 
   return (
-    <StudentLayout activeTab="attendance">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -186,6 +182,5 @@ export default function AttendancePage() {
           </CardContent>
         </Card>
       </div>
-    </StudentLayout>
   )
 }

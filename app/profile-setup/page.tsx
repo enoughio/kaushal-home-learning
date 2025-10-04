@@ -1,40 +1,40 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { AuthService, type User } from "@/lib/auth"
-import { StudentProfileForm } from "@/components/profile/student-profile-form"
-import { TeacherProfileForm } from "@/components/profile/teacher-profile-form"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { AuthService, type User } from "@/lib/auth";
+import { StudentProfileForm } from "@/components/profile/StudentProfileForm";
+import { TeacherProfileForm } from "@/components/profile/TeacherProfileForm";
 
 export default function ProfileSetupPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const currentUser = AuthService.getCurrentUser()
+    const currentUser = AuthService.getCurrentUser();
     if (!currentUser) {
-      router.push("/")
-      return
+      router.push("/");
+      return;
     }
 
     if (currentUser.profileComplete) {
       // Redirect to appropriate dashboard
       switch (currentUser.role) {
         case "student":
-          router.push("/student")
-          break
+          router.push("/student");
+          break;
         case "teacher":
-          router.push("/teacher")
-          break
+          router.push("/teacher");
+          break;
         case "admin":
-          router.push("/admin")
-          break
+          router.push("/admin");
+          break;
       }
-      return
+      return;
     }
 
-    setUser(currentUser)
-  }, [router])
+    setUser(currentUser);
+  }, [router]);
 
   if (!user) {
     return (
@@ -44,7 +44,7 @@ export default function ProfileSetupPage() {
           <p className="mt-2 text-muted-foreground">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -53,12 +53,17 @@ export default function ProfileSetupPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Complete Your Profile</h1>
           <p className="text-muted-foreground">
-            Please fill in your details to get started with Kaushaly Home Learning
+            Please fill in your details to get started with Kaushaly Home
+            Learning
           </p>
         </div>
 
-        {user.role === "student" ? <StudentProfileForm user={user} /> : <TeacherProfileForm user={user} />}
+        {user.role === "student" ? (
+          <StudentProfileForm user={user} />
+        ) : (
+          <TeacherProfileForm user={user} />
+        )}
       </div>
     </div>
-  )
+  );
 }

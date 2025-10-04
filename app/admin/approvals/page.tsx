@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -54,19 +53,16 @@ export default function TeacherApprovalsPage() {
 
   if (loading) {
     return (
-      <AdminLayout activeTab="approvals">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Loading teacher applications...</p>
           </div>
         </div>
-      </AdminLayout>
     )
   }
 
   return (
-    <AdminLayout activeTab="approvals">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
@@ -181,6 +177,5 @@ export default function TeacherApprovalsPage() {
           )}
         </div>
       </div>
-    </AdminLayout>
   )
 }
