@@ -1,5 +1,5 @@
 import type React from "react"
-import { AdminLayout as AdminLayoutWrapper } from "./admin-layout-wrapper"
+import { AdminLayout as AdminLayoutWrapper } from "./AdminLayoutWrapper"
 
 interface AdminLayoutProps {
   children: React.ReactNode

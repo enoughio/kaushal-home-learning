@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/admin-layout"
+import { AdminLayout } from "@/components/layout/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AdminDataService, type TeacherSalary } from "@/lib/admin-data"
+import { AdminDataService, type TeacherSalary } from "@/lib/adminData"
 import { DollarSign, Edit, Check, X, Plus } from "lucide-react"
 
 export default function TeacherSalariesPage() {

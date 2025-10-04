@@ -17,14 +17,13 @@ CREATE TABLE users (
     date_of_birth DATE,
 
 ------verification & security------
-
     is_varifaied BOOLEAN DEFAULT false,
-    verification_token VARCHAR(100),
+    verification_token VARCHAR(255),
     verification_token_expires TIMESTAMP,
-    reset_token VARCHAR(100),
+    reset_token VARCHAR(255),
     reset_token_expires TIMESTAMP,
-    
------
+    access_token VARCHAR(255),
+-------------------------------------
 
     profile_image_url VARCHAR(500),
     is_active BOOLEAN DEFAULT true,
@@ -33,6 +32,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
 );
+
 
 -- Students table (extends users)
 CREATE TABLE students (
@@ -56,6 +56,7 @@ CREATE TABLE students (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- Teachers table (extends users)
 CREATE TABLE teachers (
@@ -90,6 +91,7 @@ CREATE TABLE teachers (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
 -- Teacher-Student assignments
 CREATE TABLE teacher_student_assignments (
     id SERIAL PRIMARY KEY,
@@ -106,6 +108,7 @@ CREATE TABLE teacher_student_assignments (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(teacher_id, student_id, subject)
 );
+
 
 -- Assignments table
 CREATE TABLE assignments (
@@ -124,6 +127,7 @@ CREATE TABLE assignments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- Assignment submissions
 CREATE TABLE assignment_submissions (
@@ -148,6 +152,7 @@ CREATE TABLE attendance (
     student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
     teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
     date DATE NOT NULL,
+    location TEXT,
     status VARCHAR(20) DEFAULT 'present' CHECK (status IN ('present', 'absent', 'late', 'excused')),
     notes TEXT,
     marked_by INTEGER REFERENCES users(id),

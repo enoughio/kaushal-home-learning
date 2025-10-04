@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { AuthService } from "@/lib/auth"
 import type { User as UserType } from "@/lib/auth"
-import { AdminLayoutServer } from "./admin-layout-server"
+import { AdminLayoutServer } from "./AdminLayoutServer"
 
 interface AdminLayoutProps {
   children: React.ReactNode

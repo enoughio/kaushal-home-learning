@@ -4,26 +4,28 @@
 This document provides comprehensive information about the Kaushaly Home Learning platform API endpoints, authentication, request/response formats, and usage examples.
 
 ## Base URL
-- **Production**: `https://api.kaushaly.com/v1`
+- **Production**: `https://www.kaushaly.in/api`
 - **Development**: `http://localhost:3000/api`
 
 ## Authentication
-All API endpoints (except login and register) require authentication using JWT Bearer tokens.
+All API endpoints (except login and register) require authentication using cookies for auth and RBAC.
 
 ### Headers Required
 \`\`\`
-Authorization: Bearer <your_jwt_token>
+<!-- Authorization: Bearer <your_jwt_token> -->
+no headers needs to be provided --  it is cookies based auth
 Content-Type: application/json
 \`\`\`
 
 ### Token Expiration
-- Access tokens expire after 24 hours
-- Refresh tokens expire after 30 days
+- Access tokens expire after 15 days
+<!-- - Refresh tokens expire after 30 days -->
 
 ## Rate Limiting
-- **General endpoints**: 100 requests per minute per IP
+- **General endpoints**: 300 requests per hour per IP
 - **Authentication endpoints**: 10 requests per minute per IP
 - **File upload endpoints**: 20 requests per minute per IP
+
 
 ## Error Handling
 All errors follow a consistent format:
@@ -63,8 +65,7 @@ Login with email and password.
 **Response (200):**
 \`\`\`json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  sets cookies to user browser
   "user": {
     "id": 1,
     "email": "user@example.com",
@@ -76,30 +77,95 @@ Login with email and password.
 }
 \`\`\`
 
-### POST /auth/register
+### POST /auth/signup
 Register a new user account.
 
 **Request Body:**
 \`\`\`json
 {
+
   "email": "newuser@example.com",
-  "password": "password123",
   "firstName": "Jane",
   "lastName": "Smith",
-  "role": "student",
-  "phone": "+91-9876543210",
-  "city": "Mumbai",
-  "state": "Maharashtra"
+  "role": "student or teacher"
+}
+\`\`\`
+
+**Response (201):**
+\`\`\`json
+{  
+
+  <!-- sends email varification token to user email -->
+
+  "message": "Registration successful. Please verify your email.",
+  "userId": 123
+}
+\`\`\`
+
+
+
+### POST /auth/register/student
+Register/complete a user account based on user role.
+
+**Request Body:**
+\`\`\`json
+{
+
+  "email": "newuser@example.com",  // these fields should be already filled form database
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "role": "student or teacher"
+  <!-- ----thse field to be takend form the student -->
+    "grade": "10th",
+    "schoolName": "ABC School",
+    "parentName": "Jane Doe",
+    "parentPhone": "+91-9876543210",
+    "subjectsInterested": ["Mathematics", "Science"],
+    "monthlyFee": 5000,
+    "paymentStatus": "paid",
+    "enrollmentDate": "2024-01-15"
+
+}
+
+**Response (201):**
+\`\`\`json
+{
+  "message": "Student registration successful.",
+  "studentId": 123
+}
+
+\`\`\`
+
+
+### POST /auth/register/teacher
+Register/complete a user account based on user role.
+
+**Request Body:**
+\`\`\`json
+{
+  "email": "newuser@example.com",  // these fields should be already filled form database
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "role": "student or teacher"
+  <!-- ----thse field to be takend form the student -->
+  "qualification": "M.Sc Mathematics",
+  "experienceYears": 5,
+  "subjectsTaught": ["Mathematics", "Physics"],
+  "teachingMode": "both",
+  <!-- "hourlyRate": 500, --> there is no hourlyRate anymore
+  <!-- also require opther document upload -->
+  markssheet  
 }
 \`\`\`
 
 **Response (201):**
 \`\`\`json
 {
-  "message": "Registration successful. Please complete your profile.",
-  "userId": 123
+  "message": "Teacher registration successful. Pending approval.",
+  "teacherId": 456
 }
-\`\`\`
+
+
 
 ## User Management
 
@@ -194,6 +260,7 @@ Create a new assignment (Teacher only).
 }
 \`\`\`
 
+
 **Response (201):**
 \`\`\`json
 {
@@ -210,6 +277,7 @@ Create a new assignment (Teacher only).
   "createdAt": "2024-02-01T10:00:00Z"
 }
 \`\`\`
+
 
 ### POST /assignments/{id}/submit
 Submit an assignment (Student only).

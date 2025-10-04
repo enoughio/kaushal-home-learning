@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { StudentLayout } from "@/components/layout/student-layout"
+import { StudentLayout } from "@/components/layout/StudentLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { MockDataService, type TeacherSearchResult } from "@/lib/mock-data"
+import { MockDataService, type TeacherSearchResult } from "@/lib/mockData"
 import { AuthService, type StudentProfile } from "@/lib/auth"
 import { Search, MapPin, Star, Clock, Phone } from "lucide-react"
 

@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/admin-layout"
+import { AdminLayout } from "@/components/layout/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AdminDataService, type TeacherApproval } from "@/lib/admin-data"
+import { AdminDataService, type TeacherApproval } from "@/lib/adminData"
 import { UserCheck, UserX, Phone, MapPin, Calendar, BookOpen, Award, AlertCircle } from "lucide-react"
 
 export default function TeacherApprovalsPage() {

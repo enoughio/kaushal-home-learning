@@ -1,6 +1,6 @@
 import type React from "react"
-import { AdminSideNav } from "./admin-sidenav"
-import { AdminMobileHeader } from "./admin-mobile-header"
+import { AdminSideNav } from "./AdminSideNav"
+import { AdminMobileHeader } from "./AdminMobileHeader"
 
 interface AdminLayoutServerProps {
   children: React.ReactNode

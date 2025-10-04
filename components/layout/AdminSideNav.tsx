@@ -1,7 +1,7 @@
 import Link from "next/link"
-import { AdminNavLinks } from "./admin-nav-links"
-import { AdminLogout } from "./admin-logout"
-import { AdminUserInfo } from "./admin-user-info"
+import { AdminNavLinks } from "./AdminNavLinks"
+import { AdminLogout } from "./AdminLogout"
+import { AdminUserInfo } from "./AdminUserInfo"
 
 export function AdminSideNav() {
   return (

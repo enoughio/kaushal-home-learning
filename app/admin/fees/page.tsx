@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/admin-layout"
+import { AdminLayout } from "@/components/layout/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AdminDataService, type StudentFee } from "@/lib/admin-data"
+import { AdminDataService, type StudentFee } from "@/lib/adminData"
 import { DollarSign, AlertTriangle, CheckCircle, Clock, Mail } from "lucide-react"
 
 export default function StudentFeesPage() {

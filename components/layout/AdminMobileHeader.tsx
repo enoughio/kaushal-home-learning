@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
-import { AdminSideNav } from "./admin-sidenav"
+import { AdminSideNav } from "./AdminSideNav"
 
 export function AdminMobileHeader() {
   const [sidebarOpen, setSidebarOpen] = useState(false)

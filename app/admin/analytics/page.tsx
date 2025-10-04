@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/admin-layout"
+import { AdminLayout } from "@/components/layout/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AdminDataService, type MonthlyData, type PlatformStats } from "@/lib/admin-data"
+import { AdminDataService, type MonthlyData, type PlatformStats } from "@/lib/adminData"
 import {
   BarChart,
   Bar,
