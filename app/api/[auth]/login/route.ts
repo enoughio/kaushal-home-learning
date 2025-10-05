@@ -36,7 +36,7 @@ export async function POST (req : NextRequest ) {
 
         // Query user from database (assuming you have a 'users' table for verified users)
         const result = await query(
-            'SELECT id, email, password, role, first_name, last_name, is_active FROM users WHERE email = $1',
+            'SELECT id, email, password_hash, role, first_name, last_name, is_active FROM users WHERE email = $1',
             [email]
         );
 
@@ -67,7 +67,7 @@ export async function POST (req : NextRequest ) {
         }
 
         // Compare password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
         
         if (!isPasswordValid) {
             return NextResponse.json(

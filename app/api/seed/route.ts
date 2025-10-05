@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
                 reset_token VARCHAR(255),
                 reset_token_expires TIMESTAMP,
                 access_token VARCHAR(255),
-                
+
                 profile_image_url VARCHAR(500),
                 is_active BOOLEAN DEFAULT true,
                 is_deleted BOOLEAN DEFAULT false,
@@ -51,145 +51,196 @@ export async function GET(req: NextRequest) {
             );
         `);
 
-        // Create students table for additional student info
+        // Create students table (expanded to match schema.sql)
         await query(`
             CREATE TABLE IF NOT EXISTS students (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                 grade VARCHAR(20),
                 school_name VARCHAR(200),
-                parent_name VARCHAR(100),
+                parent_name VARCHAR(200),
                 parent_phone VARCHAR(20),
+                parent_email VARCHAR(255),
+                emergency_contact VARCHAR(20),
                 subjects_interested TEXT[],
-                monthly_fee DECIMAL(10,2),
-                payment_status VARCHAR(20) DEFAULT 'pending',
+                learning_goals TEXT,
+                preferred_schedule VARCHAR(100),
+                monthly_fee DECIMAL(10,2) DEFAULT 0,
+                fee_due_date DATE,
+                payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('paid', 'pending', 'overdue', 'grace_period')),
+                grace_period_end DATE,
                 enrollment_date DATE DEFAULT CURRENT_DATE,
+                is_active BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
-        // Create teachers table for additional teacher info
+        // Create teachers table (expanded to match schema.sql)
         await query(`
             CREATE TABLE IF NOT EXISTS teachers (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-                qualification VARCHAR(200),
+                qualification VARCHAR(500),
                 experience_years INTEGER,
                 subjects_taught TEXT[],
-                teaching_mode VARCHAR(20) CHECK (teaching_mode IN ('online', 'offline', 'both')),
-                hourly_rate DECIMAL(10,2),
+                teaching_mode VARCHAR(50) CHECK (teaching_mode IN ('online', 'offline', 'both')),
+                hourly_rate DECIMAL(8,2),
+                monthly_salary DECIMAL(10,2) DEFAULT 0,
+                salary_status VARCHAR(20) DEFAULT 'pending' CHECK (salary_status IN ('paid', 'pending', 'processing')),
+                bank_account_number VARCHAR(50),
+                bank_ifsc_code VARCHAR(20),
+                bank_name VARCHAR(200),
+                account_holder_name VARCHAR(200),
+                pan_number VARCHAR(20),
+                aadhar_number VARCHAR(20),
+                resume_url VARCHAR(500),
+                certificates_url TEXT[],
                 approval_status VARCHAR(20) DEFAULT 'pending' CHECK (approval_status IN ('pending', 'approved', 'rejected')),
-                rating DECIMAL(3,2) DEFAULT 0.0,
-                total_reviews INTEGER DEFAULT 0,
-                current_students INTEGER DEFAULT 0,
+                approved_by INTEGER REFERENCES users(id),
+                approved_at TIMESTAMP,
+                rejection_reason TEXT,
+                availability_schedule JSONB,
                 max_students INTEGER DEFAULT 20,
-                documents JSONB,
+                current_students INTEGER DEFAULT 0,
+                rating DECIMAL(3,2) DEFAULT 0,
+                total_reviews INTEGER DEFAULT 0,
+                is_active BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
-        // Create assignments table
+        // Assignments: reference teachers.id and students.id (match schema.sql)
         await query(`
             CREATE TABLE IF NOT EXISTS assignments (
                 id SERIAL PRIMARY KEY,
-                teacher_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-                student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
+                student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
                 title VARCHAR(200) NOT NULL,
                 description TEXT,
                 subject VARCHAR(100),
                 due_date DATE,
-                assignment_type VARCHAR(50),
-                max_marks INTEGER,
+                assignment_type VARCHAR(50) CHECK (assignment_type IN ('homework', 'test', 'project', 'quiz')),
+                max_marks INTEGER DEFAULT 100,
+                file_url VARCHAR(500),
                 instructions TEXT,
-                status VARCHAR(20) DEFAULT 'assigned' CHECK (status IN ('assigned', 'submitted', 'graded')),
+                grade VARCHAR(5) CHECK (grade IN ('A+', 'A', 'B+', 'B', 'C+', 'C', 'D')),
+                status VARCHAR(20) DEFAULT 'assigned' CHECK (status IN ('assigned', 'submitted', 'graded', 'overdue')),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
-        // Create attendance table
+        // Attendance: reference students.id and teachers.id
         await query(`
             CREATE TABLE IF NOT EXISTS attendance (
                 id SERIAL PRIMARY KEY,
-                student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-                teacher_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+                teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
                 date DATE NOT NULL,
-                status VARCHAR(20) CHECK (status IN ('present', 'absent', 'late')),
+                location TEXT,
+                status VARCHAR(20) DEFAULT 'present' CHECK (status IN ('present', 'absent', 'late', 'excused')),
                 notes TEXT,
+                marked_by INTEGER REFERENCES users(id),
+                marked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 session_duration INTEGER,
                 subject VARCHAR(100),
-                marked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(student_id, teacher_id, date, subject)
             );
         `);
 
-        // Create payments table
+        // Payments: reference students.id
         await query(`
             CREATE TABLE IF NOT EXISTS payments (
                 id SERIAL PRIMARY KEY,
-                student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
                 amount DECIMAL(10,2) NOT NULL,
-                payment_type VARCHAR(50),
-                payment_method VARCHAR(50),
+                payment_type VARCHAR(50) DEFAULT 'monthly_fee' CHECK (payment_type IN ('monthly_fee', 'registration', 'late_fee', 'other')),
+                payment_method VARCHAR(50) CHECK (payment_method IN ('cash', 'online', 'bank_transfer', 'upi', 'card')),
                 payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'completed', 'failed', 'refunded')),
-                transaction_id VARCHAR(100) UNIQUE,
-                payment_date DATE DEFAULT CURRENT_DATE,
+                transaction_id VARCHAR(100),
+                payment_date DATE,
                 due_date DATE,
+                late_fee DECIMAL(8,2) DEFAULT 0,
+                discount DECIMAL(8,2) DEFAULT 0,
                 notes TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                processed_by INTEGER REFERENCES users(id),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
-        // Create notifications table
+        // Notifications, system_settings, and indexes (keep as before)
         await query(`
             CREATE TABLE IF NOT EXISTS notifications (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                 title VARCHAR(200) NOT NULL,
                 message TEXT NOT NULL,
-                type VARCHAR(50),
-                priority VARCHAR(20) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
+                type VARCHAR(50) CHECK (type IN ('assignment', 'payment', 'attendance', 'general', 'system')),
+                priority VARCHAR(20) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
                 is_read BOOLEAN DEFAULT false,
-                delivery_method VARCHAR(20) DEFAULT 'email',
+                delivery_method VARCHAR(50) CHECK (delivery_method IN ('in_app', 'email', 'whatsapp', 'sms')),
+                delivery_status VARCHAR(20) DEFAULT 'pending' CHECK (delivery_status IN ('pending', 'sent', 'delivered', 'failed')),
                 scheduled_at TIMESTAMP,
                 sent_at TIMESTAMP,
+                read_at TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
-        // Create indexes for better performance
+        await query(`
+            CREATE TABLE IF NOT EXISTS system_settings (
+                id SERIAL PRIMARY KEY,
+                setting_key VARCHAR(100) UNIQUE NOT NULL,
+                setting_value TEXT,
+                setting_type VARCHAR(50) CHECK (setting_type IN ('string', 'number', 'boolean', 'json')),
+                description TEXT,
+                is_public BOOLEAN DEFAULT false,
+                updated_by INTEGER REFERENCES users(id),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        await query(`
+            CREATE TABLE IF NOT EXISTS audit_logs (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                action VARCHAR(100) NOT NULL,
+                table_name VARCHAR(100),
+                record_id INTEGER,
+                old_values JSONB,
+                new_values JSONB,
+                ip_address INET,
+                user_agent TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Indexes for better performance
         await query(`
             CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
             CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
-            CREATE INDEX IF NOT EXISTS idx_temp_users_email ON temp_users(email);
-            CREATE INDEX IF NOT EXISTS idx_assignments_student ON assignments(student_id);
-            CREATE INDEX IF NOT EXISTS idx_assignments_teacher ON assignments(teacher_id);
-            CREATE INDEX IF NOT EXISTS idx_attendance_student ON attendance(student_id);
-            CREATE INDEX IF NOT EXISTS idx_attendance_date ON attendance(date);
-            CREATE INDEX IF NOT EXISTS idx_payments_student ON payments(student_id);
-            CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+            CREATE INDEX IF NOT EXISTS idx_students_user_id ON students(user_id);
+            CREATE INDEX IF NOT EXISTS idx_teachers_user_id ON teachers(user_id);
+            CREATE INDEX IF NOT EXISTS idx_assignments_teacher_student ON assignments(teacher_id, student_id);
+            CREATE INDEX IF NOT EXISTS idx_attendance_student_date ON attendance(student_id, date);
+            CREATE INDEX IF NOT EXISTS idx_payments_student_id ON payments(student_id);
+            CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
         `);
 
         return NextResponse.json({
-            message: "Database tables created successfully",
-            tables: [
-                "users", 
-                "temp_users", 
-                "students", 
-                "teachers", 
-                "assignments", 
-                "attendance", 
-                "payments", 
-                "notifications"
-            ],
-            indexes: "Created performance indexes",
+            message: "Database tables created/validated successfully",
+            tables: ["users", "temp_users", "students", "teachers", "assignments", "attendance", "payments", "notifications", "system_settings", "audit_logs"],
             timestamp: new Date().toISOString()
         });
 
     } catch (error: any) {
         console.error('Seed error:', error);
-        
+
         return NextResponse.json(
             {
                 error: "SEED_ERROR",

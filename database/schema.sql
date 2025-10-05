@@ -1,6 +1,19 @@
 -- Kaushaly Home Learning Database Schema
 -- Created for comprehensive tutoring platform management
 
+CREATE TABLE temp_users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    verification_token VARCHAR(255),
+    expires_at TIMESTAMP DEFAULT (NOW() + INTERVAL '24 hours'),
+    created_at TIMESTAMP DEFAULT NOW(),
+    verified BOOLEAN DEFAULT FALSE
+);
+
+
 -- Users table (base table for all user types)
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -15,10 +28,10 @@ CREATE TABLE users (
     state VARCHAR(100),
     pincode VARCHAR(10),
     date_of_birth DATE,
-    localion TEXT,
+    location TEXT, -- fixed typo from `localion`
 
 ------verification & security------
-    is_varifaied BOOLEAN DEFAULT false,
+    is_verified BOOLEAN DEFAULT false, -- fixed typo from `is_varifaied`
     verification_token VARCHAR(255),
     verification_token_expires TIMESTAMP,
     reset_token VARCHAR(255),
@@ -52,8 +65,7 @@ CREATE TABLE students (
     fee_due_date DATE,
     payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('paid', 'pending', 'overdue', 'grace_period')),
     grace_period_end DATE,
-    loca
-    enrollment_date DATE DEFAULT CURRENT_DATE,
+    enrollment_date DATE DEFAULT CURRENT_DATE, -- removed stray token `loca`
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -276,4 +288,5 @@ INSERT INTO system_settings (setting_key, setting_value, setting_type, descripti
 ('max_students_per_teacher', '20', 'number', 'Maximum students per teacher', false),
 ('notification_email_enabled', 'true', 'boolean', 'Enable email notifications', false),
 ('notification_whatsapp_enabled', 'true', 'boolean', 'Enable WhatsApp notifications', false),
+('auto_assignment_enabled', 'false', 'boolean', 'Enable automatic teacher-student assignment', false);
 ('auto_assignment_enabled', 'false', 'boolean', 'Enable automatic teacher-student assignment', false);

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Mail, User, UserCheck, ArrowRight, CheckCircle, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+
 export default function SignupPage() {
   const [formData, setFormData] = useState({
     email: '',

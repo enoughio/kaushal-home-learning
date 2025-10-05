@@ -4,7 +4,9 @@ import nodemailer, { Transporter } from "nodemailer";
 import { EmailTemplate, EmailOptions, TransportConfig } from "./types";
 
 const createTransporter = (): Transporter => {
-  
+
+  // for offical SMTP server 
+
   // const config: TransportConfig = {
   //   host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
   //   port: parseInt(process.env.SMTP_PORT || "2525"),
@@ -14,10 +16,13 @@ const createTransporter = (): Transporter => {
   //   }
   // }
 
+// TODO: Remove it on Production 
+  // temprary Setup with gmail
+
   const config: TransportConfig = {
     service: "gmail",
     auth: {
-      user: "me@gmail.com",
+      user: process.env.FROM_EMAIL!,
       pass: process.env.GOOGLE_APP_PASSWORD!,
     },
   };
@@ -26,17 +31,20 @@ const createTransporter = (): Transporter => {
 
 const transporter = createTransporter();
 
+
+// main sender function
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   try {
     const info = await transporter.sendMail({
       from: process.env.FROM_EMAIL!,
       to: options.to,
       subject: options.subject,
-      text: options.text,
-      html: options.html,
+      text: options.text,  // fallback for text
+      html: options.html,  // main content
   });
+  
+  console.log("Message sent:", info.messageId);
 
-    console.log("Message sent:", info.messageId);
   } catch (error) {
     console.error("Email sending failed:", error);
     throw error;
