@@ -7,7 +7,7 @@ import crypto from "crypto";
 export async function POST(req: NextRequest) {
   try {
     const { email, firstName, lastName, role } = await req.json();
-
+    
     // Validate required fields
     if (!email || !firstName || !lastName || !role) {
       return NextResponse.json(

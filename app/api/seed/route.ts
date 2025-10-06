@@ -63,6 +63,7 @@ export async function GET(req: NextRequest) {
                 parent_email VARCHAR(255),
                 emergency_contact VARCHAR(20),
                 subjects_interested TEXT[],
+                teacher_assigned REFERENCES teachers(id),
                 learning_goals TEXT,
                 preferred_schedule VARCHAR(100),
                 monthly_fee DECIMAL(10,2) DEFAULT 0,

@@ -4,6 +4,10 @@ Rewrote the entire API documentation to include common conventions and complete 
 
 This document defines the complete backend API contract for the Kaushaly Home Learning platform across Admin, Teacher, and Student roles.
 
+
+- Verify user Id formate in routes and db
+- Ensure consistent naming conventions (camelCase for JSON fields, snake_case for DB columns)
+
 Base URL
 - Production: https://api.kaushaly.example.com
 - Staging: https://staging.kaushaly.example.com
@@ -32,10 +36,13 @@ Pagination & Filtering
 Error Response (all endpoints)
 - 400/401/403/404/409/422/500
 {
-  "error": {
-    "code": "string_identifier",
+  {
+    "Error": "string_identifier",
     "message": "Human-readable error",
-    "details": { "field": "validation detail if any" }
+    "code" : 400
+  }
+  {
+    status: 400,
   }
 }
 
@@ -118,7 +125,7 @@ Response 200:
   "activePairs": 240,
   "monthlyRevenue": 850000,
   "monthlySalaries": 1450000,
-  "netBalance": -600000
+  "netBalance": 600000
 }
 
 #### GET /admin/analytics/revenue
@@ -163,10 +170,12 @@ Response 200:
   "totals": { "fees": 10800000, "salaries": 16800000 }
 }
 
+
+--------------------------------------------------------------------
 ### Users & Roles
 
 #### GET /admin/users
-Query: role (admin|teacher|student), search, city, status (active|inactive|deleted), page, limit
+Query: role (admin), search, city, status (active|inactive|deleted), page, limit
 
 Response 200:
 {
@@ -177,6 +186,7 @@ Response 200:
   "total": 120,
   "totalPages": 12
 }
+
 
 #### GET /admin/users/{id}
 Response 200: user object with role-specific profile if expanded=true
@@ -228,6 +238,8 @@ Body:
 }
 Response 200: { "teacherId": 42, "status": "rejected" }
 
+
+
 ### Teacher–Student Pairing
 
 #### GET /admin/pairings
@@ -254,6 +266,9 @@ Unpair a teacher and student.
 Response 204
 
 ### Student Fees & Payments
+
+<!-- ---------------------- -->
+
 
 #### GET /admin/fees
 Query: studentId, status (due|paid|overdue|grace_period), year, month
@@ -363,6 +378,12 @@ Response 200:
   ],
   "page": 1, "total": 5, "totalPages": 1
 }
+
+
+
+
+
+<!-- -----------------------DND -->
 
 ### System
 

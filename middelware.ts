@@ -34,6 +34,7 @@ const RBAC_PREFIXES: { prefix: string; allowed: Role[] }[] = [
 	// API routes that need role checks can be added, e.g. { prefix: "/api/admin", allowed: ["admin"] } ccurrently nuterilized for development
 ];
 
+
 function isPublicPath(pathname: string) {
 	// exact match or startsWith for some public prefixes (e.g. static assets)
 	if (PUBLIC_PATHS.includes(pathname)) return true;
