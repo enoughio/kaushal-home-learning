@@ -142,6 +142,78 @@
           "message": { "type": "string" },
           "code": { "type": "integer" }
         }
+      },
+      "Submission": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "assignmentId": { "type": "integer" },
+          "studentId": { "type": "integer" },
+          "submittedAt": { "type": "string", "format": "date-time" },
+          "submissionText": { "type": "string" },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "filename": { "type": "string" },
+                "url": { "type": "string" },
+                "size": { "type": "integer" }
+              }
+            }
+          },
+          "status": { "type": "string", "enum": ["submitted", "graded"] },
+          "marks": { "type": "integer", "nullable": true },
+          "feedback": { "type": "string", "nullable": true }
+        }
+      },
+      "TeacherSalary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "teacherId": { "type": "integer" },
+          "baseSalary": { "type": "number" },
+          "bonuses": { "type": "number" },
+          "deductions": { "type": "number" },
+          "totalSalary": { "type": "number" },
+          "month": { "type": "integer" },
+          "year": { "type": "integer" },
+          "status": { "type": "string", "enum": ["pending", "processing", "paid"] },
+          "paymentDate": { "type": "string", "format": "date" }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "type": { "type": "string", "enum": ["assignment", "payment", "attendance", "system"] },
+          "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+          "isRead": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TeacherAnalyticsOverview": {
+        "type": "object",
+        "properties": {
+          "activeStudents": { "type": "integer" },
+          "sessionsThisMonth": { "type": "integer" },
+          "avgAttendanceRate": { "type": "number" },
+          "assignmentsPending": { "type": "integer" },
+          "assignmentsOverdue": { "type": "integer" },
+          "upcomingDueDates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "assignmentId": { "type": "integer" },
+                "studentId": { "type": "integer" },
+                "dueDate": { "type": "string", "format": "date" }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -174,6 +246,7 @@
                   "type": "object",
                   "properties": {
                     "token": { "type": "string" },
+                    "refreshToken": { "type": "string" },
                     "user": { "$ref": "#/components/schemas/User" },
                     "expiresIn": { "type": "integer" }
                   }
@@ -263,6 +336,16 @@
             "name": "search",
             "in": "query",
             "schema": { "type": "string" }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "paymentStatus",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["paid", "pending", "overdue", "grace_period"] }
           }
         ],
         "responses": {
@@ -806,49 +889,29 @@
         }
       }
     },
-    "/admin/salary-payments": {
+    "/admin/analytics/annual-revenue": {
       "get": {
         "tags": ["Admin"],
-        "summary": "Get salary payment records (Admin only)",
+        "summary": "Annual revenue totals",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
-          {
-            "name": "teacherId",
-            "in": "query",
-            "schema": { "type": "integer" }
-          },
-          {
-            "name": "month",
-            "in": "query",
-            "schema": { "type": "integer" }
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "schema": { "type": "integer" }
-          }
+          { "name": "fromYear", "in": "query", "schema": { "type": "integer" } },
+          { "name": "toYear", "in": "query", "schema": { "type": "integer" } }
         ],
         "responses": {
           "200": {
-            "description": "Salary payment records retrieved successfully",
+            "description": "Annual revenue data",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": { "type": "integer" },
-                      "teacherId": { "type": "integer" },
-                      "teacherName": { "type": "string" },
-                      "month": { "type": "integer" },
-                      "year": { "type": "integer" },
-                      "baseSalary": { "type": "number" },
-                      "bonus": { "type": "number" },
-                      "deductions": { "type": "number" },
-                      "totalAmount": { "type": "number" },
-                      "paymentStatus": { "type": "string" },
-                      "paymentDate": { "type": "string", "format": "date" }
+                  "type": "object",
+                  "properties": {
+                    "years": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": { "year": { "type": "integer" }, "revenue": { "type": "number" } }
+                      }
                     }
                   }
                 }
@@ -856,10 +919,273 @@
             }
           }
         }
-      },
+      }
+    },
+    "/admin/analytics/user-growth": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "User growth (students/teachers)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "granularity",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["annual", "monthly"], "default": "annual" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Growth data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "series": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "year": { "type": "integer" },
+                          "students": { "type": "integer" },
+                          "teachers": { "type": "integer" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/analytics/payments": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Monthly fees vs salaries",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "year", "in": "query", "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Monthly payment breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "months": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "month": { "type": "string" },
+                          "studentFees": { "type": "number" },
+                          "teacherSalaries": { "type": "number" },
+                          "profit": { "type": "number" }
+                        }
+                      }
+                    },
+                    "totals": {
+                      "type": "object",
+                      "properties": {
+                        "fees": { "type": "number" },
+                        "salaries": { "type": "number" },
+                        "net": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/analytics/attendance": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Attendance analytics",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Attendance KPIs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalSessions": { "type": "integer" },
+                    "attendedSessions": { "type": "integer" },
+                    "missedSessions": { "type": "integer" },
+                    "attendanceRate": { "type": "number" },
+                    "byMonth": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": { "month": { "type": "string" }, "rate": { "type": "number" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/analytics/subjects": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Subject popularity",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Subjects distribution",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "subjects": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": { "subject": { "type": "string" }, "students": { "type": "integer" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/teachers/pending": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Pending teacher applications",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Pending teachers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "teachers": { "type": "array", "items": { "type": "object" } } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/teachers/{id}/reject": {
       "post": {
         "tags": ["Admin"],
-        "summary": "Process salary payment (Admin only)",
+        "summary": "Reject teacher",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "type": "object", "properties": { "reason": { "type": "string" } } } }
+          }
+        },
+        "responses": { "200": { "description": "Rejected" } }
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List users",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "role", "in": "query", "schema": { "type": "string", "enum": ["student", "teacher", "admin"] } },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["active", "inactive", "pending"] } }
+        ],
+        "responses": { "200": { "description": "Users list" } }
+      }
+    },
+    "/admin/users/{id}/status": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "Update user status",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": { "status": { "type": "string", "enum": ["active", "inactive"] } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Status updated" } }
+      }
+    },
+    "/admin/users/{id}": {
+      "delete": {
+        "tags": ["Admin"],
+        "summary": "Soft delete user",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "User soft-deleted" } }
+      }
+    },
+    "/admin/payments/dues": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Payment dues",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["paid", "due", "overdue"] } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Dues list" } }
+      }
+    },
+    "/admin/fees": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Student fees",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Fees list" } }
+      }
+    },
+    "/admin/fees/{id}": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "Update fee status",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "status": { "type": "string" }, "paidDate": { "type": "string", "format": "date" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Fee updated" } }
+      }
+    },
+    "/admin/assignments/assign-teacher": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Assign teacher to student",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -867,63 +1193,146 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["teacherId", "month", "year", "baseSalary"],
+                "required": ["teacherId", "studentId", "subject"],
                 "properties": {
                   "teacherId": { "type": "integer" },
-                  "month": { "type": "integer" },
-                  "year": { "type": "integer" },
-                  "baseSalary": { "type": "number" },
-                  "bonus": { "type": "number" },
-                  "deductions": { "type": "number" },
-                  "paymentMethod": { "type": "string", "enum": ["bank_transfer", "cash", "cheque"] },
+                  "studentId": { "type": "integer" },
+                  "subject": { "type": "string" },
                   "notes": { "type": "string" }
                 }
               }
             }
           }
         },
+        "responses": { "201": { "description": "Assigned" } }
+      }
+    },
+    "/admin/notifications/stats": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Notification stats",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Stats returned" } }
+      }
+    },
+    "/teacher/me": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "Get current teacher profile",
+        "security": [{ "bearerAuth": [] }],
         "responses": {
-          "201": {
-            "description": "Salary payment processed successfully"
+          "200": {
+            "description": "Teacher profile",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Teacher" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Teacher"],
+        "summary": "Update current teacher profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "qualification": { "type": "string" },
+                  "experienceYears": { "type": "integer" },
+                  "subjectsTaught": { "type": "array", "items": { "type": "string" } },
+                  "teachingMode": { "type": "string", "enum": ["online", "offline", "both"] },
+                  "hourlyRate": { "type": "number" },
+                  "maxStudents": { "type": "integer" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Teacher updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Teacher" } } }
           }
         }
       }
     },
-    "/notifications": {
+    "/teacher/students": {
       "get": {
-        "tags": ["Notifications"],
-        "summary": "Get user notifications",
+        "tags": ["Teacher"],
+        "summary": "List teacher's students",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
-          {
-            "name": "isRead",
-            "in": "query",
-            "schema": { "type": "boolean" }
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "schema": { "type": "string", "enum": ["assignment", "payment", "attendance", "general", "system"] }
-          }
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "city", "in": "query", "schema": { "type": "string" } },
+          { "name": "grade", "in": "query", "schema": { "type": "string" } }
         ],
         "responses": {
           "200": {
-            "description": "Notifications retrieved successfully",
+            "description": "Students list",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": { "type": "integer" },
-                      "title": { "type": "string" },
-                      "message": { "type": "string" },
-                      "type": { "type": "string" },
-                      "priority": { "type": "string" },
-                      "isRead": { "type": "boolean" },
-                      "createdAt": { "type": "string", "format": "date-time" }
-                    }
+                  "type": "object",
+                  "properties": {
+                    "students": { "type": "array", "items": { "$ref": "#/components/schemas/Student" } },
+                    "page": { "type": "integer" },
+                    "total": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teacher/students/{id}": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "Get a student's details (assigned to teacher)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Student",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Student" } } }
+          }
+        }
+      }
+    },
+    "/teacher/assignments": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "List teacher assignments",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["assigned", "submitted", "graded", "overdue"] }
+          },
+          { "name": "studentId", "in": "query", "schema": { "type": "integer" } },
+          { "name": "subject", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "assignments": { "type": "array", "items": { "$ref": "#/components/schemas/Assignment" } },
+                    "page": { "type": "integer" },
+                    "total": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
                   }
                 }
               }
@@ -932,8 +1341,8 @@
         }
       },
       "post": {
-        "tags": ["Notifications"],
-        "summary": "Send notification (Admin/Teacher only)",
+        "tags": ["Teacher"],
+        "summary": "Create assignment",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -941,15 +1350,16 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["userId", "title", "message", "type"],
+                "required": ["studentId", "title", "subject", "dueDate"],
                 "properties": {
-                  "userId": { "type": "integer" },
+                  "studentId": { "type": "integer" },
                   "title": { "type": "string" },
-                  "message": { "type": "string" },
-                  "type": { "type": "string", "enum": ["assignment", "payment", "attendance", "general", "system"] },
-                  "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
-                  "deliveryMethod": { "type": "string", "enum": ["in_app", "email", "whatsapp", "sms"] },
-                  "scheduledAt": { "type": "string", "format": "date-time" }
+                  "description": { "type": "string" },
+                  "subject": { "type": "string" },
+                  "dueDate": { "type": "string", "format": "date" },
+                  "assignmentType": { "type": "string", "enum": ["homework", "test", "project", "quiz"] },
+                  "maxMarks": { "type": "integer" },
+                  "instructions": { "type": "string" }
                 }
               }
             }
@@ -957,7 +1367,950 @@
         },
         "responses": {
           "201": {
-            "description": "Notification sent successfully"
+            "description": "Created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Assignment" } } }
+          }
+        }
+      }
+    },
+    "/teacher/assignments/{id}": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "Get assignment by ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Assignment",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Assignment" } } }
+          }
+        }
+      }
+    },
+    "/teacher/assignments/{id}/submissions": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "List submissions for an assignment",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Submissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "submissions": { "type": "array", "items": { "$ref": "#/components/schemas/Submission" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teacher/assignments/{id}/grade": {
+      "post": {
+        "tags": ["Teacher"],
+        "summary": "Grade a submission",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["submissionId", "marks", "status"],
+                "properties": {
+                  "submissionId": { "type": "integer" },
+                  "marks": { "type": "integer" },
+                  "feedback": { "type": "string" },
+                  "status": { "type": "string", "enum": ["graded"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Graded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "assignmentId": { "type": "integer" },
+                    "submissionId": { "type": "integer" },
+                    "marks": { "type": "integer" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teacher/attendance": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "List attendance",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "studentId", "in": "query", "schema": { "type": "integer" } },
+          { "name": "subject", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "records": { "type": "array", "items": { "$ref": "#/components/schemas/Attendance" } },
+                    "page": { "type": "integer" },
+                    "total": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Teacher"],
+        "summary": "Mark attendance",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["studentId", "date", "status"],
+                "properties": {
+                  "studentId": { "type": "integer" },
+                  "date": { "type": "string", "format": "date" },
+                  "status": { "type": "string", "enum": ["present", "absent", "late", "excused"] },
+                  "notes": { "type": "string" },
+                  "sessionDuration": { "type": "integer" },
+                  "subject": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Attendance" } } }
+          }
+        }
+      }
+    },
+    "/teacher/attendance/{id}": {
+      "patch": {
+        "tags": ["Teacher"],
+        "summary": "Update attendance",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "status": { "type": "string" }, "notes": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Attendance" } } }
+          }
+        }
+      }
+    },
+    "/teacher/salary": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "List teacher salaries",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "year", "in": "query", "schema": { "type": "integer" } },
+          { "name": "month", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 12 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Salaries list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "salaries": { "type": "array", "items": { "$ref": "#/components/schemas/TeacherSalary" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teacher/salary/{id}": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "Get salary record",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Salary",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeacherSalary" } } }
+          }
+        }
+      }
+    },
+    "/teacher/notifications": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "List notifications",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "isRead", "in": "query", "schema": { "type": "boolean" } },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["assignment", "payment", "attendance", "system"] }
+          },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notifications": { "type": "array", "items": { "$ref": "#/components/schemas/Notification" } },
+                    "page": { "type": "integer" },
+                    "total": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teacher/notifications/{id}/read": {
+      "patch": {
+        "tags": ["Teacher"],
+        "summary": "Mark notification as read",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Read set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "id": { "type": "integer" }, "isRead": { "type": "boolean" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teacher/analytics/overview": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "Teacher KPIs",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Overview KPIs",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeacherAnalyticsOverview" } } }
+          }
+        }
+      }
+    },
+    "/teacher/analytics/monthly": {
+      "get": {
+        "tags": ["Teacher"],
+        "summary": "Monthly teacher analytics",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "year", "in": "query", "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Monthly series",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "months": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "month": { "type": "string" },
+                          "sessions": { "type": "integer" },
+                          "assigned": { "type": "integer" },
+                          "submitted": { "type": "integer" },
+                          "graded": { "type": "integer" },
+                          "attendanceRate": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+
+--------------student-portal-api-documentation.json--------------
+
+
+
+{
+  "components": {
+    "schemas": {
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "studentId": { "type": "integer" },
+          "amount": { "type": "number" },
+          "periodMonth": { "type": "integer" },
+          "periodYear": { "type": "integer" },
+          "dueDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "enum": ["due", "paid", "overdue", "grace_period"] },
+          "graceUntil": { "type": "string", "format": "date", "nullable": true }
+        }
+      },
+      "StudentAnalyticsOverview": {
+        "type": "object",
+        "properties": {
+          "assigned": { "type": "integer" },
+          "submitted": { "type": "integer" },
+          "graded": { "type": "integer" },
+          "upcomingDueDates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "assignmentId": { "type": "integer" },
+                "title": { "type": "string" },
+                "dueDate": { "type": "string", "format": "date" }
+              }
+            }
+          },
+          "attendanceRate": { "type": "number" }
+        }
+      },
+      "Student": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string", "format": "email" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "grade": { "type": "string" },
+          "schoolName": { "type": "string" },
+          "parentName": { "type": "string" },
+          "parentPhone": { "type": "string" },
+          "parentEmail": { "type": "string", "format": "email", "nullable": true },
+          "subjectsInterested": { "type": "array", "items": { "type": "string" } },
+          "monthlyFee": { "type": "number" },
+          "paymentStatus": { "type": "string", "enum": ["due", "paid", "overdue", "grace_period"] },
+          "enrollmentDate": { "type": "string", "format": "date" },
+          "city": { "type": "string" },
+          "state": { "type": "string" }
+        }
+      },
+      "Teacher": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string", "format": "email", "nullable": true },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "qualification": { "type": "string" },
+          "experienceYears": { "type": "integer" },
+          "subjectsTaught": { "type": "array", "items": { "type": "string" } },
+          "teachingMode": { "type": "string", "enum": ["online", "offline", "both"] },
+          "hourlyRate": { "type": "number", "nullable": true },
+          "monthlySalary": { "type": "number", "nullable": true },
+          "approvalStatus": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+          "rating": { "type": "number", "nullable": true },
+          "totalReviews": { "type": "integer", "nullable": true },
+          "maxStudents": { "type": "integer", "nullable": true },
+          "currentStudents": { "type": "integer", "nullable": true },
+          "city": { "type": "string" },
+          "state": { "type": "string" }
+        }
+      },
+      "Assignment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "teacherId": { "type": "integer" },
+          "studentId": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "subject": { "type": "string" },
+          "dueDate": { "type": "string", "format": "date" },
+          "assignmentType": { "type": "string" },
+          "maxMarks": { "type": "integer" },
+          "status": { "type": "string", "enum": ["assigned", "submitted", "graded", "overdue"] },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Submission": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "assignmentId": { "type": "integer" },
+          "studentId": { "type": "integer" },
+          "submittedAt": { "type": "string", "format": "date-time" },
+          "submissionText": { "type": "string", "nullable": true },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "filename": { "type": "string" },
+                "url": { "type": "string", "format": "uri" },
+                "size": { "type": "integer" }
+              }
+            }
+          },
+          "status": { "type": "string", "enum": ["submitted", "graded"] },
+          "marks": { "type": "integer", "nullable": true },
+          "feedback": { "type": "string", "nullable": true }
+        }
+      },
+      "Attendance": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "studentId": { "type": "integer" },
+          "teacherId": { "type": "integer" },
+          "date": { "type": "string", "format": "date" },
+          "status": { "type": "string", "enum": ["present", "absent", "excused"] },
+          "notes": { "type": "string", "nullable": true },
+          "sessionDuration": { "type": "integer", "description": "minutes" },
+          "subject": { "type": "string" }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "studentId": { "type": "integer" },
+          "amount": { "type": "number" },
+          "paymentType": { "type": "string", "enum": ["monthly_fee", "other"] },
+          "paymentMethod": { "type": "string", "enum": ["upi", "card", "netbanking", "cash"] },
+          "paymentStatus": { "type": "string", "enum": ["pending", "completed", "failed", "refunded"] },
+          "transactionId": { "type": "string", "nullable": true },
+          "paymentDate": { "type": "string", "format": "date" },
+          "dueDate": { "type": "string", "format": "date", "nullable": true },
+          "notes": { "type": "string", "nullable": true }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "type": { "type": "string", "enum": ["assignment", "payment", "attendance", "system"] },
+          "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+          "isRead": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/student/me": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "Get current student profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Student profile",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Student" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Student"],
+        "summary": "Update current student profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Student" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Student updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Student" } } }
+          }
+        }
+      }
+    },
+    "/student/teachers": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "Discover and list assigned teachers",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "subject", "in": "query", "schema": { "type": "string" } },
+          { "name": "city", "in": "query", "schema": { "type": "string" } },
+          { "name": "assignedOnly", "in": "query", "schema": { "type": "boolean", "default": false } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Teachers list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "teachers": { "type": "array", "items": { "$ref": "#/components/schemas/Teacher" } },
+                    "page": { "type": "integer" },
+                    "total": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teachers/{id}": {
+      "get": {
+        "tags": ["Teachers"],
+        "summary": "Get teacher public profile by ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Teacher",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Teacher" } } }
+          },
+          "404": {
+            "description": "Teacher not found"
+          }
+        }
+      }
+    },
+    "/student/assignments": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "List assignments for the student",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["assigned", "submitted", "graded", "overdue"] }
+          },
+          { "name": "subject", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignments list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "assignments": { "type": "array", "items": { "$ref": "#/components/schemas/Assignment" } },
+                    "page": { "type": "integer" },
+                    "total": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/assignments/{id}": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "Get assignment and student's submission",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Assignment with submission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "assignment": { "$ref": "#/components/schemas/Assignment" },
+                    "submission": { "$ref": "#/components/schemas/Submission" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/assignments/{id}/submit": {
+      "post": {
+        "tags": ["Student"],
+        "summary": "Submit an assignment",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "submissionText": { "type": "string" },
+                  "file": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "submissionId": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/attendance": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "List attendance for the student",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "subject", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "records": { "type": "array", "items": { "$ref": "#/components/schemas/Attendance" } },
+                    "page": { "type": "integer" },
+                    "total": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/fees": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "List fee invoices for the student",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "year", "in": "query", "schema": { "type": "integer" } },
+          { "name": "month", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 12 } },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["due", "paid", "overdue", "grace_period"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invoices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "invoices": { "type": "array", "items": { "$ref": "#/components/schemas/Invoice" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/payments": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "List student's payments",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["pending", "completed", "failed", "refunded"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "payments": { "type": "array", "items": { "$ref": "#/components/schemas/Payment" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments": {
+      "post": {
+        "tags": ["Student"],
+        "summary": "Process a student payment",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "studentId": { "type": "integer" },
+                  "amount": { "type": "number" },
+                  "paymentType": { "type": "string", "enum": ["monthly_fee", "other"] },
+                  "paymentMethod": { "type": "string", "enum": ["upi", "card", "netbanking", "cash"] },
+                  "notes": { "type": "string" }
+                },
+                "required": ["studentId", "amount", "paymentType", "paymentMethod"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Payment" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/notifications": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "List notifications",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "isRead", "in": "query", "schema": { "type": "boolean" } },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["assignment", "payment", "attendance", "system"] }
+          },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notifications": { "type": "array", "items": { "$ref": "#/components/schemas/Notification" } },
+                    "page": { "type": "integer" },
+                    "total": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/notifications/{id}/read": {
+      "patch": {
+        "tags": ["Student"],
+        "summary": "Mark notification as read",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "isRead": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/history": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "Student progress summary",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "assignmentsTotal": { "type": "integer" },
+                    "submitted": { "type": "integer" },
+                    "graded": { "type": "integer" },
+                    "averageMarks": { "type": "number" },
+                    "attendanceRate": { "type": "number" },
+                    "bySubject": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "subject": { "type": "string" },
+                          "avgMarks": { "type": "number" },
+                          "attendanceRate": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/analytics/overview": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "Student KPIs",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Overview",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StudentAnalyticsOverview" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/student/analytics/monthly": {
+      "get": {
+        "tags": ["Student"],
+        "summary": "Monthly series",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "year", "in": "query", "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "Series",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "months": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "month": { "type": "string" },
+                          "assigned": { "type": "integer" },
+                          "submitted": { "type": "integer" },
+                          "graded": { "type": "integer" },
+                          "attendanceRate": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

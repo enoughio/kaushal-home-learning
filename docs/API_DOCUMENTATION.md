@@ -1,579 +1,786 @@
-# Kaushaly Home Learning API Documentation
+Rewrote the entire API documentation to include common conventions and complete Admin, Teacher, and Student routes with request/response details. 
 
-## Overview
-This document provides comprehensive information about the Kaushaly Home Learning platform API endpoints, authentication, request/response formats, and usage examples.
+# Kaushaly Home Learning — API Documentation
 
-## Base URL
-- **Production**: `https://www.kaushaly.in/api`
-- **Development**: `http://localhost:3000/api`
+This document defines the complete backend API contract for the Kaushaly Home Learning platform across Admin, Teacher, and Student roles.
 
-## Authentication
-All API endpoints (except login and signup) require authentication using HTTP-only cookies for session management and Role-Based Access Control (RBAC).
+Base URL
+- Production: https://api.kaushaly.example.com
+- Staging: https://staging.kaushaly.example.com
+- Local: http://localhost:3000 (configurable)
 
-### Headers Required
-```
-Content-Type: application/json
-```
-*Note: No additional authentication headers are required as authentication is handled via secure HTTP-only cookies.*
+Authentication
+- All protected routes require Authorization: Bearer <accessToken>
+- Token format: JWT
+- Roles: admin | teacher | student
 
-### Session Expiration
-- Session cookies expire after 15 days of inactivity
+Common Headers
+- Authorization: Bearer <token>
+- Content-Type: application/json (unless multipart/form-data is specified)
+- Idempotency-Key: <uuid> (optional, for safe retries on POST/PATCH)
 
-## Rate Limiting
-- **General endpoints**: 300 requests per hour per IP
-- **Authentication endpoints**: 10 requests per minute per IP
-- **File upload endpoints**: 20 requests per minute per IP
+Date/Time and IDs
+- Timestamps use ISO 8601 strings (e.g., 2025-02-06T10:45:00Z)
+- Dates use YYYY-MM-DD
+- IDs are integers unless otherwise specified
 
+Pagination & Filtering
+- Query params: page (default 1), limit (default 10)
+- Responses include page, total, totalPages when listing
+- Common filters: search, city, subject, status, year, month, startDate, endDate
 
-## Error Handling
-All errors follow a consistent format:
-
-```json
+Error Response (all endpoints)
+- 400/401/403/404/409/422/500
 {
-  "error": "ERROR_CODE",
-  "message": "Human readable error message",
-  "code": 400,
+  "error": {
+    "code": "string_identifier",
+    "message": "Human-readable error",
+    "details": { "field": "validation detail if any" }
+  }
 }
-```
 
-### Common Error Codes
-- `400` - Bad Request (validation errors)
-- `401` - Unauthorized (invalid/missing token)
-- `403` - Forbidden (insufficient permissions)
-- `404` - Not Found
-- `429` - Too Many Requests (rate limit exceeded)
-- `500` - Internal Server Error
+--------------------------------------------------------------------
 
-## Authentication Endpoints
+## Auth APIs
 
 ### POST /auth/login
-Authenticate user with email and password.
+Authenticate a user.
 
-**Request Body:**
-```json
+Body:
 {
   "email": "user@example.com",
-  "password": "password123"
+  "password": "secret"
 }
-```
 
-**Response (200):**
-```json
+Response 200:
 {
-  "message": "Login successful",
+  "accessToken": "jwt",
+  "refreshToken": "jwt",
   "user": {
     "id": 1,
+    "role": "admin",
     "email": "user@example.com",
-    "role": "student",
-    "firstName": "John",
-    "lastName": "Doe"
+    "firstName": "Asha",
+    "lastName": "Verma"
   }
 }
-```
-*Note: Authentication cookies are automatically set in the response headers.*
 
-### POST /auth/signup
-Register a new user account (initial signup).
+Errors: 401 invalid_credentials
 
-**Request Body:**
-```json
+### POST /auth/refresh
+Refresh tokens.
+
+Body:
 {
-  "email": "newuser@example.com",
-  "firstName": "Jane",
-  "lastName": "Smith",
-  "role": "student"
+  "refreshToken": "jwt"
 }
-```
 
-**Response (201):**
-```json
+Response 200:
 {
-  "message": "Registration successful. Please verify your email.",
-  "userId": 123
+  "accessToken": "jwt",
+  "refreshToken": "jwt"
 }
-```
-*Note: Email verification token is sent to the provided email address.*
 
-### POST /auth/register/student
-Complete student registration with additional profile information after verification.
-
-**Request Body:**
-```json
-{
-  "email": "newuser@example.com",
-  "firstName": "Jane",
-  "lastName": "Smith",
-  "role": "student",
-  "grade": "10th",
-  "schoolName": "ABC School",
-  "parentName": "Jane Doe",
-  "parentPhone": "+91-9876543210",
-  "subjectsInterested": ["Mathematics", "Science"],
-  "monthlyFee": 5000,
-  "paymentStatus": "pending",
-  "enrollmentDate": "2024-01-15"
-}
-```
-
-**Response (201):**
-```json
-{
-  "message": "Student registration successful.",
-  "studentId": 123
-}
-```
-
-### POST /auth/register/teacher
-Complete teacher registration with qualification details.
-
-**Request Body:**
-```json
-{
-  "email": "newuser@example.com",
-  "firstName": "Jane",
-  "lastName": "Smith",
-  "role": "teacher",
-  "qualification": "M.Sc Mathematics",
-  "experienceYears": 5,
-  "subjectsTaught": ["Mathematics", "Physics"],
-  "teachingMode": "both",
-  "documents": {
-    "marksheet": "file_url_or_id",
-    "govtId": "file_url_or_id"
-  }
-}
-```
-
-**Response (201):**
-```json
-{
-  "message": "Teacher registration successful. Pending approval.",
-  "teacherId": 456,
-  "approvalStatus": "pending"
-}
-```
+Errors: 401 invalid_refresh_token
 
 ### POST /auth/logout
-Logout user and clear authentication cookies.
+Invalidate refresh token for current session.
 
-**Response (200):**
-```json
+Response 204 (no body)
+
+### GET /auth/me
+Return current authenticated user profile.
+
+Response 200:
 {
-  "message": "Logout successful"
+  "id": 1,
+  "role": "teacher",
+  "email": "teacher@example.com",
+  "firstName": "Asha",
+  "lastName": "Verma"
 }
-```
 
-### POST /auth/verify-email
-Verify user email with verification token.
+--------------------------------------------------------------------
 
-**Request Body:**
-```json
+## Admin Dashboard APIs
+
+All endpoints require role=admin.
+
+### Analytics
+
+#### GET /admin/analytics/overview
+KPIs for dashboard cards.
+
+Response 200:
 {
-  "token": "verification_token_from_email"
+  "totalStudents": 320,
+  "totalTeachers": 58,
+  "activePairs": 240,
+  "monthlyRevenue": 850000,
+  "monthlySalaries": 1450000,
+  "netBalance": -600000
 }
-```
 
-**Response (200):**
-```json
+#### GET /admin/analytics/revenue
+Query: year (number)
+
+Response 200:
 {
-  "message": "Email verified successfully"
+  "year": 2025,
+  "months": [
+    { "month": "Jan", "fees": 820000, "salaries": 1400000, "net": -580000 },
+    { "month": "Feb", "fees": 900000, "salaries": 1450000, "net": -550000 }
+  ],
+  "annual": { "fees": 10800000, "salaries": 16800000, "net": -6000000 }
 }
-```
 
+#### GET /admin/analytics/user-growth
+Query: year
 
+Response 200:
+{
+  "year": 2025,
+  "teacherGrowth": [
+    { "month": "Jan", "count": 52 },
+    { "month": "Feb", "count": 58 }
+  ],
+  "studentGrowth": [
+    { "month": "Jan", "count": 300 },
+    { "month": "Feb", "count": 320 }
+  ]
+}
 
+#### GET /admin/analytics/payments-breakdown
+Query: year
 
+Response 200:
+{
+  "year": 2025,
+  "monthly": [
+    { "month": "Jan", "fees": 820000, "salaries": 1400000 },
+    { "month": "Feb", "fees": 900000, "salaries": 1450000 }
+  ],
+  "totals": { "fees": 10800000, "salaries": 16800000 }
+}
 
-## User Management
+### Users & Roles
 
-### GET admin/students
-Get list of students (Admin only).
+#### GET /admin/users
+Query: role (admin|teacher|student), search, city, status (active|inactive|deleted), page, limit
 
-**Query Parameters:**
-- `page` (integer, default: 1) - Page number
-- `limit` (integer, default: 15) - Items per page
-- `search` (string) - Search by name or email
-- `city` (string) - Filter by city
-- `paymentStatus` (string) - Filter by payment status
+Response 200:
+{
+  "users": [
+    { "id": 1, "role": "teacher", "email": "t@example.com", "firstName": "Asha", "lastName": "Verma", "status": "active", "city": "Mumbai" }
+  ],
+  "page": 1,
+  "total": 120,
+  "totalPages": 12
+}
 
-**Response (200):**
-```json
+#### GET /admin/users/{id}
+Response 200: user object with role-specific profile if expanded=true
+
+#### PATCH /admin/users/{id}
+Body (any subset):
+{
+  "status": "inactive",
+  "firstName": "Asha",
+  "lastName": "Verma",
+  "city": "Mumbai"
+}
+Response 200: updated user
+
+#### DELETE /admin/users/{id}
+Soft delete a user.
+Response 204
+
+#### POST /admin/users/{id}/restore
+Restore soft-deleted user.
+Response 200: restored user
+
+### Teacher Approvals
+
+#### GET /admin/approvals
+Query: status (pending|approved|rejected), page, limit
+
+Response 200:
+{
+  "applications": [
+    { "teacherId": 42, "submittedAt": "2025-01-05T10:00:00Z", "status": "pending", "city": "Pune", "subjects": ["Math","Physics"] }
+  ],
+  "page": 1,
+  "total": 5,
+  "totalPages": 1
+}
+
+#### POST /admin/approvals/{teacherId}/approve
+Body:
+{
+  "notes": "Verified documents."
+}
+Response 200: { "teacherId": 42, "status": "approved" }
+
+#### POST /admin/approvals/{teacherId}/reject
+Body:
+{
+  "reason": "Insufficient experience."
+}
+Response 200: { "teacherId": 42, "status": "rejected" }
+
+### Teacher–Student Pairing
+
+#### GET /admin/pairings
+Query: teacherId, studentId, page, limit
+
+Response 200:
+{
+  "pairs": [
+    { "id": 900, "teacherId": 42, "studentId": 101, "since": "2024-12-01" }
+  ],
+  "page": 1, "total": 1, "totalPages": 1
+}
+
+#### POST /admin/pairings
+Body:
+{
+  "teacherId": 42,
+  "studentId": 101
+}
+Response 201: { "id": 900, "teacherId": 42, "studentId": 101, "since": "2025-02-01" }
+
+#### DELETE /admin/pairings/{id}
+Unpair a teacher and student.
+Response 204
+
+### Student Fees & Payments
+
+#### GET /admin/fees
+Query: studentId, status (due|paid|overdue|grace_period), year, month
+
+Response 200:
+{
+  "invoices": [
+    { "id": 501, "studentId": 101, "amount": 5000, "periodMonth": 2, "periodYear": 2025, "dueDate": "2025-02-10", "status": "grace_period", "graceUntil": "2025-02-20" }
+  ]
+}
+
+#### POST /admin/fees/generate
+Body:
+{
+  "studentId": 101,
+  "amount": 5000,
+  "periodMonth": 2,
+  "periodYear": 2025,
+  "dueDate": "2025-02-10",
+  "graceDays": 10
+}
+Response 201: invoice object
+
+#### PATCH /admin/fees/{invoiceId}
+Body (any subset):
+{
+  "status": "paid",
+  "dueDate": "2025-02-12",
+  "graceUntil": "2025-02-22"
+}
+Response 200: updated invoice
+
+#### GET /admin/payments
+Query: paymentType (monthly_fee|salary), status (pending|completed|failed|refunded), studentId, teacherId, startDate, endDate, page, limit
+
+Response 200:
+{
+  "payments": [
+    { "id": 9001, "paymentType": "monthly_fee", "studentId": 101, "amount": 5000, "paymentMethod": "upi", "paymentStatus": "completed", "transactionId": "TXN123", "paymentDate": "2025-02-09" }
+  ],
+  "page": 1, "total": 10, "totalPages": 1
+}
+
+#### GET /admin/payments/{id}
+Response 200: payment object
+
+### Teacher Salaries (Employees)
+
+#### GET /admin/salaries
+Query: teacherId, year, month, status (pending|paid), page, limit
+
+Response 200:
+{
+  "salaries": [
+    { "id": 11, "teacherId": 42, "baseSalary": 30000, "bonuses": 2000, "deductions": 0, "totalSalary": 32000, "month": 1, "year": 2025, "status": "paid", "paymentDate": "2025-01-31" }
+  ],
+  "page": 1, "total": 12, "totalPages": 1
+}
+
+#### POST /admin/salaries/run
+Create/mark a monthly salary for a teacher.
+
+Body:
+{
+  "teacherId": 42,
+  "month": 2,
+  "year": 2025,
+  "baseSalary": 30000,
+  "bonuses": 0,
+  "deductions": 0,
+  "markPaid": true,
+  "paymentDate": "2025-02-28"
+}
+Response 201: salary record
+
+#### PATCH /admin/salaries/{salaryId}
+Body:
+{
+  "status": "paid",
+  "paymentDate": "2025-02-28",
+  "bonuses": 1000,
+  "deductions": 0
+}
+Response 200: updated salary
+
+### Notifications
+
+#### POST /admin/notifications/broadcast
+Send a broadcast notification (email/WhatsApp/system).
+
+Body:
+{
+  "targets": { "audience": "all" | "students" | "teachers" | "ids", "ids": [1,2,3] },
+  "channel": "email" | "whatsapp" | "system",
+  "title": "string",
+  "message": "string"
+}
+Response 202: { "message": "scheduled", "jobId": "uuid" }
+
+#### GET /admin/notifications
+Query: channel, type, isRead, page, limit
+
+Response 200:
+{
+  "notifications": [
+    { "id": 901, "title": "System maintenance", "message": "Scheduled at 10 PM", "type": "system", "channel": "system", "isRead": false, "createdAt": "2025-02-05T10:00:00Z" }
+  ],
+  "page": 1, "total": 5, "totalPages": 1
+}
+
+### System
+
+#### GET /admin/system/cache/status
+Response 200:
+{
+  "resources": [
+    { "name": "map", "lastUpdatedAt": "2025-02-06T09:00:00Z", "status": "fresh" }
+  ]
+}
+
+#### POST /admin/system/cache/refresh
+Body:
+{
+  "resource": "map"
+}
+Response 202: { "message": "refresh_started", "resource": "map" }
+
+--------------------------------------------------------------------
+
+## Teacher Dashboard APIs
+
+All endpoints require role=teacher.
+
+### Profile
+
+#### GET /teacher/me
+Response 200:
+{
+  "id": 42,
+  "email": "teacher@example.com",
+  "firstName": "Asha",
+  "lastName": "Verma",
+  "qualification": "M.Sc. Mathematics",
+  "experienceYears": 5,
+  "subjectsTaught": ["Mathematics","Physics"],
+  "teachingMode": "both",
+  "hourlyRate": 500,
+  "monthlySalary": 30000,
+  "approvalStatus": "approved",
+  "rating": 4.7,
+  "totalReviews": 32,
+  "maxStudents": 20,
+  "currentStudents": 12,
+  "city": "Mumbai",
+  "state": "MH"
+}
+
+#### PUT /teacher/me
+Body (subset):
+{
+  "qualification": "M.Sc. Mathematics",
+  "experienceYears": 6,
+  "subjectsTaught": ["Mathematics","Physics"],
+  "teachingMode": "both",
+  "hourlyRate": 600,
+  "maxStudents": 22,
+  "city": "Mumbai",
+  "state": "MH"
+}
+Response 200: teacher object
+
+### Students
+
+#### GET /teacher/students
+Query: page, limit, search, city, grade
+
+Response 200:
 {
   "students": [
-    {
-      "id": 1,
-      "email": "student@example.com",
-      "firstName": "John",
-      "lastName": "Doe",
-      "grade": "10th",
-      "schoolName": "ABC School",
-      "parentName": "Jane Doe",
-      "parentPhone": "+91-9876543210",
-      "subjectsInterested": ["Mathematics", "Science"],
-      "monthlyFee": 5000,
-      "paymentStatus": "paid",
-      "enrollmentDate": "2024-01-15"
-    }
+    { "id": 101, "firstName": "Rohan", "lastName": "Patel", "email": "rohan@example.com", "grade": "10th", "city": "Mumbai", "subjectsInterested": ["Mathematics"], "monthlyFee": 5000, "paymentStatus": "paid", "enrollmentDate": "2024-01-15" }
   ],
-  "total": 150,
-  "page": 1,
-  "totalPages": 15
+  "page": 1, "total": 25, "totalPages": 3
 }
-```
 
-### GET admin/teachers
-Get list of teachers.
+#### GET /teacher/students/{id}
+Response 200: student detail
 
-**Query Parameters:**
-- `page` (integer) - Page number
-- `limit` (integer) - Items per page
-- `subject` (string) - Filter by subject taught
-- `city` (string) - Filter by city
-- `approvalStatus` (string) - Filter by approval status
+### Assignments
 
-**Response (200):**
-```json
+#### GET /teacher/assignments
+Query: status (assigned|submitted|graded|overdue), studentId, subject, page, limit
+
+Response 200:
 {
-  "teachers": [
-    {
-      "id": 1,
-      "email": "teacher@example.com",
-      "firstName": "Alice",
-      "lastName": "Johnson",
-      "qualification": "M.Sc Mathematics",
-      "experienceYears": 5,
-      "subjectsTaught": ["Mathematics", "Physics"],
-      "teachingMode": "both",
-      "hourlyRate": 500,
-      "approvalStatus": "approved",
-      "rating": 4.8,
-      "totalReviews": 25,
-      "currentStudents": 15,
-      "maxStudents": 20
-    }
+  "assignments": [
+    { "id": 456, "teacherId": 42, "studentId": 101, "title": "Algebra Practice", "description": "Exercises 1-20", "subject": "Mathematics", "dueDate": "2025-02-15", "assignmentType": "homework", "maxMarks": 100, "status": "assigned", "createdAt": "2025-02-01T10:00:00Z" }
   ],
-  "total": 45,
-  "page": 1,
-  "totalPages": 5
+  "page": 1, "total": 12, "totalPages": 2
 }
-```
 
-## Assignment Management
-
-### POST /assignments
-Create a new assignment (Teacher only).
-
-**Request Body:**
-```json
+#### POST /teacher/assignments
+Body:
 {
-  "studentId": 123,
-  "title": "Algebra Practice Problems",
-  "description": "Complete exercises 1-20 from chapter 5",
+  "studentId": 101,
+  "title": "Algebra Practice",
+  "description": "Exercises 1-20",
   "subject": "Mathematics",
-  "dueDate": "2024-02-15",
+  "dueDate": "2025-02-15",
   "assignmentType": "homework",
   "maxMarks": 100,
-  "instructions": "Show all working steps clearly"
+  "instructions": "Show working"
 }
-```
+Response 201: assignment
 
+#### GET /teacher/assignments/{id}
+Response 200: assignment
 
-**Response (201):**
-```json
+#### GET /teacher/assignments/{id}/submissions
+Response 200:
 {
-  "id": 456,
-  "teacherId": 789,
-  "studentId": 123,
-  "title": "Algebra Practice Problems",
-  "description": "Complete exercises 1-20 from chapter 5",
-  "subject": "Mathematics",
-  "dueDate": "2024-02-15",
-  "assignmentType": "homework",
-  "maxMarks": 100,
-  "status": "assigned",
-  "createdAt": "2024-02-01T10:00:00Z"
+  "submissions": [
+    { "id": 789, "assignmentId": 456, "studentId": 101, "submittedAt": "2025-02-14T15:30:00Z", "submissionText": "Solution...", "attachments": [{ "filename": "work.pdf", "url": "https://storage/abc.pdf", "size": 123456 }], "status": "submitted", "marks": null, "feedback": null }
+  ]
 }
-```
 
-
-### POST /assignments/{id}/submit
-Submit an assignment (Student only).
-
-**Request (multipart/form-data):**
-```
-submissionText: "Here is my solution to the problems..."
-file: [uploaded file]
-```
-
-**Response (200):**
-```json
+#### POST /teacher/assignments/{id}/grade
+Body:
 {
-  "message": "Assignment submitted successfully",
   "submissionId": 789,
-  "submittedAt": "2024-02-14T15:30:00Z"
+  "marks": 92,
+  "feedback": "Great work. Minor mistakes in Q4.",
+  "status": "graded"
 }
-```
+Response 200:
+{ "message": "graded", "assignmentId": 456, "submissionId": 789, "marks": 92, "status": "graded" }
 
-## Attendance Management
+### Attendance
 
-### POST /attendance
-Mark attendance.
+#### GET /teacher/attendance
+Query: startDate, endDate, studentId, subject, page, limit
 
-**Request Body:**
-```json
+Response 200:
 {
-  "studentId": 123,
-  "date": "2024-02-01",
+  "records": [
+    { "id": 321, "studentId": 101, "teacherId": 42, "date": "2025-02-01", "status": "present", "notes": "Active", "sessionDuration": 60, "subject": "Mathematics" }
+  ],
+  "page": 1, "total": 30, "totalPages": 3
+}
+
+#### POST /teacher/attendance
+Body:
+{
+  "studentId": 101,
+  "date": "2025-02-20",
   "status": "present",
-  "notes": "Participated actively in class",
+  "notes": "Participated",
   "sessionDuration": 60,
   "subject": "Mathematics"
 }
-```
+Response 201: attendance
 
-**Response (201):**
-```json
+#### PATCH /teacher/attendance/{id}
+Body:
 {
-  "id": 456,
-  "studentId": 123,
-  "teacherId": 789,
-  "date": "2024-02-01",
-  "status": "present",
-  "notes": "Participated actively in class",
-  "sessionDuration": 60,
-  "subject": "Mathematics",
-  "markedAt": "2024-02-01T10:00:00Z"
+  "status": "excused",
+  "notes": "Medical leave"
 }
-```
+Response 200: attendance
 
-### GET /attendance
-Get attendance records.
+### Salary
 
-**Query Parameters:**
-- `studentId` (integer) - Filter by student
-- `teacherId` (integer) - Filter by teacher
-- `startDate` (date) - Start date range
-- `endDate` (date) - End date range
-- `subject` (string) - Filter by subject
+#### GET /teacher/salary
+Query: year, month
 
-## Payment Management
-
-### POST fin/payments
-Process a payment.
-
-**Request Body:**
-```json
+Response 200:
 {
-  "studentId": 123,
-  "amount": 5000,
-  "paymentType": "monthly_fee",
-  "paymentMethod": "upi",
-  "notes": "February 2024 fee payment"
-}
-```
-
-**Response (201):**
-```json
-{
-  "id": 789,
-  "studentId": 123,
-  "amount": 5000,
-  "paymentType": "monthly_fee",
-  "paymentMethod": "upi",
-  "paymentStatus": "completed",
-  "transactionId": "TXN123456789",
-  "paymentDate": "2024-02-01",
-  "dueDate": "2024-02-01"
-}
-```
-
-## Admin Analytics
-
-### GET /admin/analytics
-Get comprehensive platform analytics (Admin only).
-
-**Response (200):**
-```json
-{
-  "totalUsers": 500,
-  "totalStudents": 350,
-  "totalTeachers": 45,
-  "approvedTeachers": 40,
-  "pendingTeachers": 5,
-  "totalRevenue": 1750000,
-  "monthlyGrowth": 15.5,
-  "yearlyGrowth": 180.2,
-  "monthlyData": [
-    {
-      "month": "Jan",
-      "students": 320,
-      "teachers": 38,
-      "revenue": 1600000,
-      "expenses": 400000
-    }
-  ],
-  "subjectDistribution": [
-    {
-      "subject": "Mathematics",
-      "students": 180,
-      "teachers": 15
-    }
-  ],
-  "locationStats": [
-    {
-      "city": "Mumbai",
-      "students": 120,
-      "teachers": 18
-    }
+  "salaries": [
+    { "id": 11, "teacherId": 42, "baseSalary": 30000, "bonuses": 2000, "deductions": 0, "totalSalary": 32000, "month": 1, "year": 2025, "status": "paid", "paymentDate": "2025-01-31" }
   ]
 }
-```
 
-## Notification System
+#### GET /teacher/salary/{id}
+Response 200: salary record
 
-### POST /notifications
-Send a notification.
+### Notifications
 
-**Request Body:**
-```json
+#### GET /teacher/notifications
+Query: isRead, type (assignment|payment|attendance|system), page, limit
+
+Response 200:
 {
-  "userId": 123,
-  "title": "Assignment Due Reminder",
-  "message": "Your Mathematics assignment is due tomorrow",
-  "type": "assignment",
-  "priority": "medium",
-  "deliveryMethod": "email",
-  "scheduledAt": "2024-02-14T09:00:00Z"
+  "notifications": [
+    { "id": 901, "title": "Payment processed", "message": "Your January salary has been paid", "type": "payment", "priority": "medium", "isRead": false, "createdAt": "2025-02-01T10:00:00Z" }
+  ],
+  "page": 1, "total": 5, "totalPages": 1
 }
-```
 
-### GET /notifications
-Get user notifications.
+#### PATCH /teacher/notifications/{id}/read
+Response 200: { "id": 901, "isRead": true }
 
-**Query Parameters:**
-- `isRead` (boolean) - Filter by read status
-- `type` (string) - Filter by notification type
-- `priority` (string) - Filter by priority level
+### Teacher Analytics
 
-## File Upload
-
-### POST /assignment/[id]/upload
-Upload files (assignments, documents, profile images).
-
-**Request (multipart/form-data):**
-```
-
-file: [uploaded file]
-type: "assignment" | "profile" | "document"
-```
-
-**Response (200):**
-```json
+#### GET /teacher/analytics/overview
+Response 200:
 {
-  "url": "https://storage.kaushaly.com/files/abc123.pdf",
-  "filename": "assignment.pdf",
-  "size": 1024000,
-  "type": "application/pdf"
+  "activeStudents": 12,
+  "sessionsThisMonth": 28,
+  "avgAttendanceRate": 92.5,
+  "assignmentsPending": 3,
+  "assignmentsOverdue": 1,
+  "upcomingDueDates": [
+    { "assignmentId": 456, "studentId": 101, "dueDate": "2025-02-25" }
+  ]
 }
-```
 
-## Webhook Events
+#### GET /teacher/analytics/monthly
+Query: year
 
-The platform sends webhook events for important actions:
-
-### Payment Completed
-```json
+Response 200:
 {
-  "event": "payment.completed",
-  "data": {
-    "paymentId": 789,
-    "studentId": 123,
-    "amount": 5000,
-    "paymentDate": "2024-02-01T10:00:00Z"
-  },
-  "timestamp": "2024-02-01T10:00:00Z"
+  "months": [
+    { "month": "Jan", "sessions": 22, "assigned": 10, "submitted": 9, "graded": 8, "attendanceRate": 91 }
+  ]
 }
-```
 
-### Teacher Approved
-```json
+--------------------------------------------------------------------
+
+## Student Dashboard APIs
+
+All endpoints require role=student unless noted.
+
+### Profile
+
+#### GET /student/me
+Response 200:
 {
-  "event": "teacher.approved",
-  "data": {
-    "teacherId": 456,
-    "approvedBy": 1,
-    "approvedAt": "2024-02-01T10:00:00Z"
-  },
-  "timestamp": "2024-02-01T10:00:00Z"
+  "id": 101,
+  "email": "student@example.com",
+  "firstName": "Rohan",
+  "lastName": "Patel",
+  "grade": "10th",
+  "schoolName": "ABC School",
+  "parentName": "Meera Patel",
+  "parentPhone": "+91-98xxxxxxx",
+  "parentEmail": "parent@example.com",
+  "subjectsInterested": ["Mathematics","Science"],
+  "monthlyFee": 5000,
+  "paymentStatus": "grace_period",
+  "enrollmentDate": "2024-01-15",
+  "city": "Mumbai",
+  "state": "MH"
 }
-```
+
+#### PUT /student/me
+Body (subset):
+{
+  "grade": "10th",
+  "schoolName": "ABC School",
+  "parentName": "Meera Patel",
+  "parentPhone": "+91-98xxxxxxx",
+  "parentEmail": "parent@example.com",
+  "subjectsInterested": ["Mathematics","Science"],
+  "city": "Mumbai",
+  "state": "MH"
+}
+Response 200: student object
+
+### Teachers (Discovery & Assigned)
+
+#### GET /student/teachers
+Query: page, limit, search, subject, city, assignedOnly=false
+
+Response 200:
+{
+  "teachers": [
+    { "id": 42, "firstName": "Asha", "lastName": "Verma", "qualification": "M.Sc. Mathematics", "experienceYears": 5, "subjectsTaught": ["Mathematics"], "teachingMode": "both", "rating": 4.7, "city": "Mumbai", "approvalStatus": "approved" }
+  ],
+  "page": 1, "total": 25, "totalPages": 3
+}
+
+#### GET /teachers/{id}
+Public teacher profile by ID.
+Response 200: teacher object
+
+### Assignments & Submissions
+
+#### GET /student/assignments
+Query: status (assigned|submitted|graded|overdue), subject, page, limit
+
+Response 200:
+{
+  "assignments": [
+    { "id": 456, "teacherId": 42, "studentId": 101, "title": "Algebra Practice", "description": "Exercises 1-20", "subject": "Mathematics", "dueDate": "2025-02-15", "assignmentType": "homework", "maxMarks": 100, "status": "assigned", "createdAt": "2025-02-01T10:00:00Z" }
+  ],
+  "page": 1, "total": 12, "totalPages": 2
+}
+
+#### GET /student/assignments/{id}
+Response 200:
+{
+  "assignment": { "...": "assignment fields" },
+  "submission": {
+    "id": 789,
+    "assignmentId": 456,
+    "studentId": 101,
+    "submittedAt": "2025-02-14T15:30:00Z",
+    "submissionText": "Solution...",
+    "attachments": [{ "filename": "work.pdf", "url": "https://storage/abc.pdf", "size": 123456 }],
+    "status": "submitted",
+    "marks": null,
+    "feedback": null
+  }
+}
+
+#### POST /assignments/{id}/submit
+Content-Type: multipart/form-data
+
+Form fields:
+- submissionText (string)
+- file (binary, optional)
+
+Response 200:
+{ "message": "Assignment submitted successfully", "submissionId": 789 }
+
+### Attendance
+
+#### GET /student/attendance
+Query: startDate, endDate, subject, page, limit
+
+Response 200:
+{
+  "records": [
+    { "id": 321, "studentId": 101, "teacherId": 42, "date": "2025-02-01", "status": "present", "notes": "Active", "sessionDuration": 60, "subject": "Mathematics" }
+  ],
+  "page": 1, "total": 30, "totalPages": 3
+}
+
+### Fees & Payments
+
+#### GET /student/fees
+Query: year, month, status (due|paid|overdue|grace_period)
+
+Response 200:
+{
+  "invoices": [
+    { "id": 501, "studentId": 101, "amount": 5000, "periodMonth": 2, "periodYear": 2025, "dueDate": "2025-02-10", "status": "grace_period", "graceUntil": "2025-02-20" }
+  ]
+}
+
+#### GET /student/payments
+Query: startDate, endDate, status (pending|completed|failed|refunded)
+
+Response 200:
+{
+  "payments": [
+    { "id": 9001, "studentId": 101, "amount": 5000, "paymentType": "monthly_fee", "paymentMethod": "upi", "paymentStatus": "completed", "transactionId": "TXN123", "paymentDate": "2025-02-09", "dueDate": "2025-02-10" }
+  ]
+}
+
+#### POST /payments
+Body:
+{
+  "studentId": 101,
+  "amount": 5000,
+  "paymentType": "monthly_fee",
+  "paymentMethod": "upi",
+  "notes": "Feb fee"
+}
+Response 201: payment object
+
+### Notifications
+
+#### GET /student/notifications
+Query: isRead, type (assignment|payment|attendance|system), page, limit
+
+Response 200:
+{
+  "notifications": [
+    { "id": 901, "title": "Assignment graded", "message": "Your Algebra Practice was graded", "type": "assignment", "priority": "low", "isRead": false, "createdAt": "2025-02-16T08:00:00Z" }
+  ],
+  "page": 1, "total": 5, "totalPages": 1
+}
+
+#### PATCH /student/notifications/{id}/read
+Response 200: { "id": 901, "isRead": true }
+
+### Student History & Analytics
+
+#### GET /student/history
+Response 200:
+{
+  "assignmentsTotal": 24,
+  "submitted": 22,
+  "graded": 20,
+  "averageMarks": 86.4,
+  "attendanceRate": 93.2,
+  "bySubject": [
+    { "subject": "Mathematics", "avgMarks": 88.5, "attendanceRate": 95.0 },
+    { "subject": "Science", "avgMarks": 84.0, "attendanceRate": 91.0 }
+  ]
+}
+
+#### GET /student/analytics/overview
+Response 200:
+{
+  "assigned": 5,
+  "submitted": 4,
+  "graded": 3,
+  "upcomingDueDates": [
+    { "assignmentId": 456, "title": "Algebra Practice", "dueDate": "2025-02-25" }
+  ],
+  "attendanceRate": 92.5
+}
+
+#### GET /student/analytics/monthly
+Query: year
+
+Response 200:
+{
+  "months": [
+    { "month": "Jan", "assigned": 8, "submitted": 7, "graded": 6, "attendanceRate": 91 },
+    { "month": "Feb", "assigned": 9, "submitted": 8, "graded": 7, "attendanceRate": 93 }
+  ]
+}
 
 
 
 
--------------------------------till here-------------------------------
 
-## SDK Examples
-
-### JavaScript/Node.js
-```javascript
-const KaushalyAPI = require('@kaushaly/api-client');
-
-const client = new KaushalyAPI({
-  baseURL: 'https://api.kaushaly.com/v1',
-  apiKey: 'your_api_key'
-});
-
-// Get students
-const students = await client.students.list({
-  page: 1,
-  limit: 10,
-  search: 'john'
-});
-
-// Create assignment
-const assignment = await client.assignments.create({
-  studentId: 123,
-  title: 'Math Homework',
-  subject: 'Mathematics',
-  dueDate: '2024-02-15'
-});
-```
-
-### Python
-```python
-from kaushaly_api import KaushalyClient
-
-client = KaushalyClient(
-    base_url='https://api.kaushaly.com/v1',
-    api_key='your_api_key'
-)
-
-# Get teachers
-teachers = client.teachers.list(
-    subject='Mathematics',
-    city='Mumbai'
-)
-
-# Mark attendance
-attendance = client.attendance.create(
-    student_id=123,
-    date='2024-02-01',
-    status='present'
-)
-```
-
-## Testing
-
-### Test Environment
-- **Base URL**: `https://api-test.kaushaly.com/v1`
-- **Test API Key**: Contact support for test credentials
-
-### Sample Test Data
-The test environment includes sample data:
-- 50 test students
-- 10 test teachers
-- Sample assignments and attendance records
-- Mock payment transactions
-
-For more information or support, contact: support@kaushaly.com
+===========================================
