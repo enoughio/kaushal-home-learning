@@ -180,9 +180,13 @@ Verify user email with verification token.
 }
 ```
 
+
+
+
+
 ## User Management
 
-### GET /students
+### GET admin/students
 Get list of students (Admin only).
 
 **Query Parameters:**
@@ -217,7 +221,7 @@ Get list of students (Admin only).
 }
 ```
 
-### GET /teachers
+### GET admin/teachers
 Get list of teachers.
 
 **Query Parameters:**
@@ -354,7 +358,7 @@ Get attendance records.
 
 ## Payment Management
 
-### POST /payments
+### POST fin/payments
 Process a payment.
 
 **Request Body:**
@@ -453,11 +457,12 @@ Get user notifications.
 
 ## File Upload
 
-### POST /upload
+### POST /assignment/[id]/upload
 Upload files (assignments, documents, profile images).
 
 **Request (multipart/form-data):**
 ```
+
 file: [uploaded file]
 type: "assignment" | "profile" | "document"
 ```
@@ -502,6 +507,11 @@ The platform sends webhook events for important actions:
   "timestamp": "2024-02-01T10:00:00Z"
 }
 ```
+
+
+
+
+-------------------------------till here-------------------------------
 
 ## SDK Examples
 

@@ -50,7 +50,6 @@ function findRbacRule(pathname: string) {
 	return null;
 }
 
-
 export function middleware(req: NextRequest) {
 	try {
 		const { pathname } = req.nextUrl;

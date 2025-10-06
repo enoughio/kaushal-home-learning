@@ -76,7 +76,15 @@ export async function POST(req: NextRequest) {
       
     } catch (emailError) {
       // fail the registration if email fails, but log it
-      console.error("Failed to send verification email:", emailError);  
+      console.error("Failed to send verification email:", emailError); 
+      return NextResponse.json(
+        {
+          error: "EMAIL_ERROR",
+          message: "Failed to send verification email Please try again later",
+          code: 500,
+        },
+        { status: 500 }
+      ); 
     }
 
     return NextResponse.json(

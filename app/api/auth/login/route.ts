@@ -91,7 +91,7 @@ export async function POST (req : NextRequest ) {
         const token = jwt.sign(
             tokenPayload,
             process.env.JWT_SECRET!,
-            { expiresIn: '15d' } // 15 days as per your documentation
+            { expiresIn: '15d' } // 15 days 
         );
 
         // Create response
