@@ -5,6 +5,7 @@ export async function GET(req: NextRequest) {
     try {
         // Create users table
         await query(`
+            DROP TABLE IF EXISTS users CASCADE;
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 email VARCHAR(255) UNIQUE NOT NULL,
@@ -38,6 +39,7 @@ export async function GET(req: NextRequest) {
 
         // Create temp_users table for signup process
         await query(`
+            DROP TABLE IF EXISTS temp_userS CASCADE;
             CREATE TABLE IF NOT EXISTS temp_users (
                 id SERIAL PRIMARY KEY,
                 email VARCHAR(255) UNIQUE NOT NULL,
@@ -53,6 +55,7 @@ export async function GET(req: NextRequest) {
 
         // Create students table (expanded to match schema.sql)
         await query(`
+            DROP TABLE IF EXISTS students CASCADE;
             CREATE TABLE IF NOT EXISTS students (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -79,6 +82,7 @@ export async function GET(req: NextRequest) {
 
         // Create teachers table (expanded to match schema.sql)
         await query(`
+            DROP TABLE IF EXISTS teachers CASCADE;
             CREATE TABLE IF NOT EXISTS teachers (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -114,6 +118,7 @@ export async function GET(req: NextRequest) {
 
         // Assignments: reference teachers.id and students.id (match schema.sql)
         await query(`
+            DROP TABLE IF EXISTS assignments CASCADE;
             CREATE TABLE IF NOT EXISTS assignments (
                 id SERIAL PRIMARY KEY,
                 teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
@@ -135,6 +140,7 @@ export async function GET(req: NextRequest) {
 
         // Attendance: reference students.id and teachers.id
         await query(`
+            DROP TABLE IF EXISTS attendance CASCADE;
             CREATE TABLE IF NOT EXISTS attendance (
                 id SERIAL PRIMARY KEY,
                 student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
@@ -154,6 +160,7 @@ export async function GET(req: NextRequest) {
 
         // Payments: reference students.id
         await query(`
+            DROP TABLE IF EXISTS payments CASCADE;
             CREATE TABLE IF NOT EXISTS payments (
                 id SERIAL PRIMARY KEY,
                 student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
@@ -175,6 +182,7 @@ export async function GET(req: NextRequest) {
 
         // Notifications, system_settings, and indexes (keep as before)
         await query(`
+            DROP TABLE IF EXISTS notifications CASCADE;
             CREATE TABLE IF NOT EXISTS notifications (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -193,6 +201,7 @@ export async function GET(req: NextRequest) {
         `);
 
         await query(`
+            DROP TABLE IF EXISTS system_settings CASCADE;
             CREATE TABLE IF NOT EXISTS system_settings (
                 id SERIAL PRIMARY KEY,
                 setting_key VARCHAR(100) UNIQUE NOT NULL,
@@ -207,6 +216,7 @@ export async function GET(req: NextRequest) {
         `);
 
         await query(`
+            DROP TABLE IF EXISTS audit_logs CASCADE;
             CREATE TABLE IF NOT EXISTS audit_logs (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id),

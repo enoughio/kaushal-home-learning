@@ -194,12 +194,15 @@ Response 200: user object with role-specific profile if expanded=true
 #### PATCH /admin/users/{id}
 Body (any subset):
 {
+  <!-- we need more data here -->
   "status": "inactive",
   "firstName": "Asha",
   "lastName": "Verma",
   "city": "Mumbai"
 }
 Response 200: updated user
+
+
 
 #### DELETE /admin/users/{id}
 Soft delete a user.
@@ -209,7 +212,10 @@ Response 204
 Restore soft-deleted user.
 Response 200: restored user
 
-### Teacher Approvals
+
+
+
+### Teacher Approvals  
 
 #### GET /admin/approvals
 Query: status (pending|approved|rejected), page, limit
