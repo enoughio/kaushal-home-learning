@@ -49,8 +49,7 @@ All endpoints below require authentication via JWT-based cookies; no token needs
     }
     ```
 
-
-#### GET /admin/recent-usrts 
+#### GET /admin/recent-users 
 
 - Description: Get recent users for the admin overview page.
 - Response:
@@ -95,8 +94,8 @@ All endpoints below require authentication via JWT-based cookies; no token needs
     }
     ```
 
-#### GET /admin/teacher-managment/
 
+#### GET /admin/teacher-managment/
 - Description: Get all pending approvals for teachers for the overview page.
 
 - Response:
@@ -110,8 +109,8 @@ All endpoints below require authentication via JWT-based cookies; no token needs
           "name": "John Doe",
           "email": "asdfj@example.com",
           "aadharNumber": "1234-5678-9012",
-           "phone" : "9876543210",
-           "location": "New Delhi, India",
+          "phone" : "9876543210",
+          "location": "New Delhi, India",
            "pincode": "110001",
            "Subjects": ["Math", "Science"],
            "highestQualification": "M.Sc in Physics",
@@ -212,7 +211,6 @@ Role: admin only
 
 
 #### GET /admin/users-managment/:userId
-
 - Description: Get detailed information about a specific user by their ID.
 
 - Request:
@@ -975,14 +973,14 @@ Role: admin only
 
 ## Teacher - Dashboard API
 
-#### GET /teacher/:teacherId/stats
+#### GET /teacher//stats
 
 - Description: Get overall statistics for the specific teacher dashboard.
 - 
 
 - Request:
-  - Parameters:
-    - teacherId (string, required) - The ID of the teacher to retrieve stats for.
+  - cookies:
+    - id (string, required) - The ID of the teacher to retrieve stats for.
 
 - Response:
   - Status: 200 OK
@@ -996,12 +994,12 @@ Role: admin only
         }
         ```
 
-#### GET /teacher/:teacherId/students
+#### GET /teacher/students
 - Description: Get a list of all students assigned to the specific teacher.
 
 - Request:
-  - Parameters:
-    - teacherId (string, required) - The ID of the teacher to retrieve students for.
+  - cookies:
+    - id (string, required) - The ID of the teacher to retrieve students for.
 
 - Response:
   - Status: 200 OK
@@ -1027,12 +1025,12 @@ Role: admin only
         ```
 
 
-#### GET /teacher/:teacherId/assignments
+#### GET /teacher/assignments
 - Description: Get a list of all assignments created by the specific teacher.
 
 - Request:
-  - Parameters:
-    - teacherId (string, required) - The ID of the teacher to retrieve assignments for.
+  - cookies:
+    - id (string, required) - The ID of the teacher to retrieve assignments for.
 
 - Response:
   - Status: 200 OK
@@ -1074,15 +1072,15 @@ Role: admin only
         ```
 
 
-#### POST /teacher/:teacherId/assignments/:assignmentId/grade  
+#### POST /teacher/assignments/:assignmentId/grade  
 (add feedback and grade for the assignment)
 
 - Description: Grade or add feedback for a specific student's submission.
 - Process: Update the submission record with the provided grade and feedback and notify the student via email about the grade and feedback.
 
 - Request:
-  - Parameters:
-    - teacherId (string, required) - The ID of the teacher.
+  - cookies:
+    - id (string, required) - The ID of the teacher.
     - assignmentId (string, required) - The ID of the assignment to grade or provide feedback for.
   - Body:
     ```json
@@ -1106,12 +1104,13 @@ Role: admin only
 
       
 
-#### POST /teacher/:teacherId/assignments
+#### POST /teacher/assignments
 - Description: Create a new assignment for a single student.
 - Note: Each assignment is assigned to one student only.
+
 - Request:
-  - Parameters:
-    - teacherId (string, required) - The ID of the teacher creating the assignment.
+  - cookies:
+    - id (string, required) - The ID of the teacher creating the assignment.
   - Body:
     ```json
     {
@@ -1132,13 +1131,15 @@ Role: admin only
     ```
 
 
-#### PATCH /teacher/:teacherId/assignments/:assignmentId
+#### PATCH /teacher/assignments/:assignmentId
 - Description: Update an existing assignment (metadata or attachments).
 
 - Request:
+  - cookies:
+    - id (string, required) - The ID of the teacher.
   - Parameters:
-    - teacherId (string, required) - The ID of the teacher.
     - assignmentId (string, required) - The ID of the assignment to update.
+
   - Body:
     ```json
     {
@@ -1166,12 +1167,13 @@ Role: admin only
         }
         ```
 
-#### GET /teacher/:teacherId/assignments/:assignmentId/submissions/:studentId/download
+#### GET /teacher/assignments/:assignmentId/submissions/:studentId/download
 - Description: Download a student's submission file for an assignment. Teachers use this to retrieve submitted files for review.
 
 - Request:
+  - cookies:
+    - id (string, required) - The ID of the teacher.
   - Parameters:
-    - teacherId (string, required) - The ID of the teacher.
     - assignmentId (string, required) - The ID of the assignment.
     - studentId (string, required) - The ID of the student whose submission to download.
 
@@ -1179,12 +1181,13 @@ Role: admin only
   - Status: 200 OK
     - Body: File stream (attachment)
 
-#### GET /teacher/:teacherId/assignments/:assignmentId/attachments/:fileName
+#### GET /teacher/assignments/:assignmentId/attachments/:fileName
 - Description: Download an original attachment file that the teacher attached to the assignment (e.g., worksheet).
 
 - Request:
+  - cookies:
+    - id (string, required)
   - Parameters:
-    - teacherId (string, required)
     - assignmentId (string, required)
     - fileName (string, required) - The filename to download.
 
@@ -1195,11 +1198,11 @@ Role: admin only
 
 
 <!-- this is a student assignment api -->
-#### GET /student/:studentId/assignments
+#### GET /student/assignments
 - Description: Get a list of all assignments assigned to the specific student.
 - Request:
-  - Parameters:
-    - studentId (string, required) - The ID of the student to retrieve assignments for.
+  - cookies:
+    - id (string, required) - The ID of the student to retrieve assignments for.
 
 - Response:
   - Status: 200 OK
@@ -1238,12 +1241,13 @@ Role: admin only
         ```
 
 <!-- this is a studnet assignment api -->
-#### POST /student/:studentId/assignments/:assignmentId/submit
+#### POST /student/assignments/:assignmentId/submit
 - Description: Submit an assignment by uploading a file. Students use this endpoint to upload their submission for a specific assignment.
 
 - Request:
+  - cookies:
+    - id (string, required) - The ID of the student submitting the assignment.
   - Parameters:
-    - studentId (string, required) - The ID of the student submitting the assignment.
     - assignmentId (string, required) - The ID of the assignment being submitted.
   - Body: multipart/form-data
     - file: (required) the file to upload
@@ -1264,12 +1268,13 @@ Role: admin only
         ```
 
 
-#### GET /teacher/:teacherId/attendence/:studentId/monthly
+#### GET /teacher/attendence/:studentId/monthly
 - Description: Get attendance records of teacher for an specifice student for current month.
 
 -  Request:
+  - cookies:
+    - id (string, required) - The ID of the teacher.
   - Parameters:
-    - teacherId (string, required) - The ID of the teacher.
     - studentId (string, required) - The ID of the student whose attendance to retrieve.
 
 - Response:
@@ -1292,12 +1297,13 @@ Role: admin only
         
 
 
-#### GET /teacher/:teacherId/attendence/:studentId
+#### GET /teacher/attendence/:studentId
 - Description: Get attendance records of teacher for an specifice student with pagination and filtering options.
 
 - Request:
+  - cookies:
+    - id (string, required) - The ID of the teacher.
   - Parameters:
-    - teacherId (string, required) - The ID of the teacher.
     - studentId (string, required) - The ID of the student whose attendance to retrieve.
   - Query Parameters:
     - page (integer, optional, default: 1) - Page number for pagination.
@@ -1325,13 +1331,14 @@ Role: admin only
         }
         ```
 
-#### POST /teacher/:teacherId/attendence/:studentId/mark
+#### POST /teacher/attendence/:studentId/mark
 - Description: Mark attendance for a specific student on a specific date with the location.
 - Process: Check if the tacher is present at student home or not, by matching the teacher current location by geolocation api
 
 - Request:
+  - cookies:
+    - id (string, required) - The ID of the teacher marking attendance.
   - Parameters:
-    - teacherId (string, required) - The ID of the teacher marking attendance.
     - studentId (string, required) - The ID of the student whose attendance is being marked.
   - Body:
     ```json
@@ -1363,15 +1370,15 @@ Role: admin only
         ```
 
 
+
 ### Teacher - Salary API
 
-
-#### GET /teacher/:teacherId/salary/stats
+#### GET /teacher/salary/stats
 - Description: Get overall salary statistics for the specific teacher salary dashboard.
 
 - Request:
-  - Parameters:
-    - teacherId (string, required) - The ID of the teacher to retrieve salary stats for.
+  - cookies:
+    - id (string, required) - The ID of the teacher to retrieve salary stats for.
 
 - Response:
   - Status: 200 OK
@@ -1391,13 +1398,13 @@ Role: admin only
         }
         ```
 
-#### GET /teacher/:teacherId/salary
+#### GET /teacher/salary
 - Description: Get detailed salary information for the specific teacher salary history with pagination.
 - process: show all the payments made to this teacherId by the admin
 
 - Request:
-  - Parameters:
-    - teacherId (string, required) - The ID of the teacher to retrieve salary details for.
+  - cookies:
+    - id (string, required) - The ID of the teacher to retrieve salary details for.
   - Query Parameters:
     - page (integer, optional, default: 1) - Page number for pagination.
 
@@ -1435,3 +1442,193 @@ Role: admin only
 
 # Student - Dashboard API
 
+
+
+#### GET /student/stats
+- Description: Get overall statistics for the specific student dashboard.
+
+- Request:
+  - cookies:
+    - id (string, required) - The ID of the student to retrieve stats for.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "pendingAssignments": 20,
+        "pendingAssignments": 5,
+        "activeTeachers": 3,
+        "attendanceRate": 90 // percentage of days present in the current month
+        }
+        ```
+
+#### GET /student/teachers
+- Description: Get a list of all teachers assigned to the specific student.
+
+- Request:
+  - cookies:
+    - studentId (string, required) - The ID of the student to retrieve teachers for.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "teachers": [
+            {
+            "id": "teacher123",
+            "name": "John Doe",
+            "email": "",
+            "profileImg": "https://example.com/photo.jpg",
+            "phone": "9876543210",
+            "location": "New Delhi, India",
+            "subjects": ["Math", "Science"],
+            "status": "active" | "inactive",
+            "assignedAt": "2024-01-20T14:30:00Z"
+            }
+        ],
+        }
+        ```
+
+#### GET /student/assignments/stats
+- Description: Get overall assignment statistics for the specific student dashboard.
+
+- Request:
+  - cookies:
+    - studentId (string, required) - The ID of the student to retrieve assignment stats for.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "pending": 50,
+        "submitted": 20,
+        "graded": 30
+        }
+        ```
+
+#### GET /student/assignments
+- Description: Get a list of all assignments assigned to the specific student.
+
+- Request:
+  - cookies:
+    - studentId (string, required) - The ID of the student to retrieve assignments for.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "assignments": [
+            {
+            "id": "assignment123",
+            "submited" : true | false,
+            "teacherId": "teacher123",
+            "title": "Math Homework 1",
+            "description": "Complete the exercises on page 42",
+            "dueDate": "2024-02-01T14:30:00Z",
+            "createdAt": "2024-01-20T14:30:00Z",
+            "status": "pending" | "completed",
+            "attachments": [
+                {
+                  "fileName": "worksheet.pdf",
+                  "fileUrl": "https://cdn.example.com/worksheet.pdf",
+                  "mimeType": "application/pdf",
+                  "size": 123456
+                }
+            ],
+            "submission": {
+                "submittedAt": "2024-01-30T10:00:00Z",
+                "fileName": "submission1.pdf",
+                "fileUrl": "https://cdn.example.com/submission1.pdf",
+                "mimeType": "application/pdf",
+                "size": 234567,
+                "grade": "A" | "B" | "C" | "D" | "0-100" | null,
+                "feedback": "Good work!" | null
+              }
+            }
+        ]
+        }
+        ```
+
+
+#### GET /student/attendence/
+- Description: Get attendance records of student with pagination based on month.
+
+- Request:
+  - cookies:
+    - studentId (string, required) - The ID of the student whose attendance to retrieve.
+  - Query Parameters:
+    - page (integer, optional, default: 1) - Page number for pagination.
+    - month (integer, optional) - Filter by month (1-12).
+    - year (integer, optional) - Filter by year (e.g., 2024).
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "studentId": "student123",
+        "month": 1,
+        "year": 2024,
+        "attendanceRecords": [
+            {"date": "2024-01-01", "status": "present"},
+            {"date": "2024-01-02", "status": "absent"},
+            {"date": "2024-01-03", "status": "present"},
+            // ... more records
+        ],
+        "page": 1,
+        "totalPages": 5,
+        "totalRecords": 150
+        }
+        ```
+
+#### GET /student/payments/stats
+- Description: Get overall payment statistics for the specific student payments dashboard.
+- Request:
+  - cookies:
+    - studentId (string, required) - The ID of the student to retrieve payment stats for.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "totalFees": 500,
+        "dueFees": 100,
+        }
+        ```
+
+#### GET /student/payments
+- Description: Get a list of all payments made by the specific student with pagination.
+
+- Request:
+  - cookies:
+    - studentId (string, required) - The ID of the student to retrieve payments for.
+  - Query Parameters:
+    - page (integer, optional, default: 1) - Page number for pagination.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "payments": [
+            {
+            "id": "payment123",
+            "type": "student_fee",
+            "amount": 100,
+            "status": "paid" | "due",
+            "date": "2024-01-20T14:30:00Z", 
+            "dueDate": "2024-02-20T14:30:00Z",
+            "method": "cash" | "bank_transfer" | "upi",
+            "transactionId": "txn_456789"
+            }
+        ],
+        "page": 1,
+        "totalPages": 10,
+        "totalPayments": 50
+        }
+        ```
