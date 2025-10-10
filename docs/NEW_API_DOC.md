@@ -1,19 +1,21 @@
 # Kaushaly Home Learning — API Documentation (new)
 
-This documentiation defines complete API for Kaushaly Home Learning platform.
+# Kaushaly Home Learning — API Documentation (new)
 
-the platform supports following user roles:
+This documentation defines the complete API for the Kaushaly Home Learning platform.
+
+The platform supports the following user roles:
 
 - Admin
 - Teacher
 - Student
 
-# naming convention
+## Naming convention
 
-- all endpoints are in plural form till the resource is singular in nature.
-- all endpoints are in lowercase
-- json variables are in camelCase
-- all date time values are in ISO 8601 format
+- All endpoints use plural form unless the resource is naturally singular.
+- All endpoints are lowercase.
+- JSON variable names use camelCase.
+- All date/time values use ISO 8601 format.
 
 ## Base URL
 
@@ -23,13 +25,13 @@ https://api.kaushaly.in/api
 
 ## Authentication
 
-this need to be added later
+This needs to be added later.
 
-In all the below endpints requires authentication via JWT based cookies, no need to pass token in headers.
+All endpoints below require authentication via JWT-based cookies; no token needs to be passed in headers.
 
-## admin dashboards APi
+## Admin dashboards API
 
-### main page
+### Main page
 
 #### GET /admin/stats
 
@@ -50,7 +52,7 @@ In all the below endpints requires authentication via JWT based cookies, no need
 
 #### GET /admin/recent-usrts 
 
-- Description: Get recent users for admin overview page.
+- Description: Get recent users for the admin overview page.
 - Response:
   - Status: 200 OK
   - Body:
@@ -71,9 +73,10 @@ In all the below endpints requires authentication via JWT based cookies, no need
     ```
 
 
+
 #### GET /admin/approval-preview
 
-- Description: Get a preview of pending approvals for admin overvirw page.
+- Description: Get a preview of pending approvals for the admin overview page.
 
 - Response:
   - Status: 200 OK
@@ -94,7 +97,7 @@ In all the below endpints requires authentication via JWT based cookies, no need
 
 #### GET /admin/teacher-managment/
 
-- Description: Get all of pending approvals for teachers for overview page.
+- Description: Get all pending approvals for teachers for the overview page.
 
 - Response:
   - Status: 200 OK
@@ -124,14 +127,15 @@ In all the below endpints requires authentication via JWT based cookies, no need
     ```
 
 
+
 #### POST /admin/teacher-managment/:teacherId/approve
 - Description: Approve a teacher's application. 
 
--process: move the teacher form temp_user table to user table and update related info in teachers table, 
-- set isVarified : true  
+- Process: Move the teacher from the temp_user table to the user table and update related info in the teachers table.
+- Set isVarified: true
 
-role- admin teacher-managment/only
--Request  :  
+Role: admin only
+- Request:
     - Parameters:
         - nome
     - Body: teacherId (string, required)
@@ -149,12 +153,13 @@ role- admin teacher-managment/only
         ```
 
 
+
 #### POST /admin/teacher-managment/:teacherId/reject
 - Description: Reject a teacher's application.
-- Process: delete the teacher form temp_user table and related info in teachers table
-- role- admin only
+- Process: Delete the teacher from the temp_user table and related info in the teachers table.
+- Role: admin only
 
--Request  :  
+- Request:
     - Parameters:
         - nome
     - Body: teacherId (string, required)
@@ -171,7 +176,7 @@ role- admin teacher-managment/only
 
 
 
-## Admin- Users Page
+## Admin - Users Page
 
 ####  GET /admin/users-managment
 
@@ -181,7 +186,7 @@ role- admin teacher-managment/only
     - page (integer, optional, default: 1) - Page number for pagination.
     - limit (integer, optional, default: 20) - Number of users per page.
     - role (string, optional) - Filter by user role (e.g., "student", "teacher").
-    - status (string, optional) - Filter by user status (e.g., "active", "inactive" ).
+    - status (string, optional) - Filter by user status (e.g., "active", "inactive").
 
 - Response:
   - Status: 200 OK
@@ -203,6 +208,7 @@ role- admin teacher-managment/only
         "totalUsers": 200
         }
         ```
+
 
 
 #### GET /admin/users-managment/:userId
@@ -249,6 +255,7 @@ role- admin teacher-managment/only
         ```
 
 
+
 #### PUT /admin/users-managment/:userId
 - Description: Update user information (e.g., name, email, status).
 - Request:
@@ -287,6 +294,7 @@ role- admin teacher-managment/only
         ```
 
 
+
 #### DELETE /admin/users-managment/:userId
 - Description: Delete a user by their ID.
 
@@ -307,8 +315,7 @@ role- admin teacher-managment/only
 
 
 
-
-## Admin - analytics Page
+## Admin - Analytics Page
 
 #### GET /admin/analytics/stats 
 - Description: Get overall analytics statistics for the admin analytics dashboard.
@@ -327,10 +334,9 @@ role- admin teacher-managment/only
         ```
 
 
+
 #### GET /admin/analytics/grouth/anual-revenue
 - Description: Get annual revenue data for the past year for chart.
-
-
 - Response:
   - Status: 200 OK
     - Body:
@@ -345,6 +351,7 @@ role- admin teacher-managment/only
         ]
         }
         ```
+
 
 
 #### GET /admin/analytics/grouth/user-growth
@@ -375,6 +382,7 @@ role- admin teacher-managment/only
 
 
 
+
 #### GET /admin/analytics/grouth/student-grouth
 - Description: Get student growth data for the past year for chart.
 
@@ -401,13 +409,14 @@ role- admin teacher-managment/only
         ```
 
 
+
 #### GET /admin/analytics/grouth/teacher-growth
 - Description: Get teacher growth data for the past year for chart.
 
--Response : 
- -status : 200 OK
- -Body : 
-  ```json 
+- Response:
+  - Status: 200 OK
+    - Body:
+      ```json
       {
         "teacherGrouth": [
             {"month":"jan", "teachers": 11},
@@ -424,6 +433,7 @@ role- admin teacher-managment/only
             {"month":"dec", "teachers": 22}
         ]
       }
+      ```
 
 
 #### GET /admin/analytics/grouth/subject-distribution
@@ -447,9 +457,9 @@ role- admin teacher-managment/only
 
 #### Get /admin/analytics/grouth/attendence-trend
 
-- Description: gives monthly attendence rate in percentage for the past year for chart.(percentage is calculated on the basis of total classes held in the month vs attended)
+- Description: Gives monthly attendance rate (percentage) for the past year for chart. (Percentage is calculated as attended classes / total classes held in the month.)
 
--Response : 
+- Response:
    - Status: 200 OK
     - Body:
         ```json
@@ -475,9 +485,9 @@ role- admin teacher-managment/only
 
 #### GET /admin/analytics/revenue/distribution
 
-- Description: Get distribution of payments done in the company for student fee and teacher salary for pi chart in percentage.
+- Description: Get distribution of payments done in the company for student fees and teacher salaries for a pie chart (percentage).
 
--Response 
+- Response:
   - Status: 200 OK
     - Body:
         ```json
@@ -487,7 +497,7 @@ role- admin teacher-managment/only
             {"type": "Teacher Salaries", "amount": 40}
         ]
         }
-```
+        ```
 
 
 
@@ -496,7 +506,7 @@ role- admin teacher-managment/only
 
 - Description: Get revenue vs expenditure data for the past year for chart.
 
--Response : 
+- Response:
    - Status: 200 OK
     - Body:
         ```json
@@ -520,9 +530,9 @@ role- admin teacher-managment/only
 
 #### GET /admin/analytics/revenue/totla-payments
 
-- Description: Gives total payments done in the platform till now in fees and salary.
+- Description: Gives total payments done on the platform so far for fees and salaries.
 
--Response : 
+- Response:
    - Status: 200 OK
     - Body:
         ```json
@@ -545,7 +555,7 @@ role- admin teacher-managment/only
   - Query Parameters:
     - page (integer, optional, default: 1) - Page number for pagination.
     - type (string, optional) - Filter by payment type (e.g., "student_fee", "teacher_salary").
-    - status (string, optional) - Filter by payment status (e.g., "completed", "pending" ).
+    - status (string, optional) - Filter by payment status (e.g., "completed", "pending").
 
 
 - Response:
@@ -571,6 +581,7 @@ role- admin teacher-managment/only
         "totalPayments": 200
         }
         ```
+
 
 
 #### Get /admin/payments/stats
@@ -622,7 +633,7 @@ role- admin teacher-managment/only
         ```
 
 
-### admin - teacher Salary managment page
+### Admin - Teacher salary management page
 
 #### GET /admin/teacher-salary/stats
 - Description: Get overall teacher salary statistics for the admin teacher salary dashboard.
@@ -641,11 +652,10 @@ role- admin teacher-managment/only
 #### GET /admin/teacher-salary
 - Description: Get a list of all teacher salaries with pagination and filtering options.
 
--Request: 
+- Request: 
   - Query Parameters:
     - page (integer, optional, default: 1) - Page number for pagination.
-    - status (string, optional) - Filter by salary status (e.g., "paid
-   .
+    - status (string, optional) - Filter by salary status (e.g., "paid").
 
 - Response: 
    - Status : 200 OK
@@ -667,8 +677,9 @@ role- admin teacher-managment/only
     ````
 
 
+
 #### GET /admin/teacher-salary/:teacherId
-- Description: Get detailed salary information about a specific teacher by their ID.(along with history)
+- Description: Get detailed salary information about a specific teacher by their ID (along with history).
 
 - Request:
   - Parameters:
@@ -716,7 +727,7 @@ role- admin teacher-managment/only
 
 #### POST /admin/teacher-salary/:teacherId/pay
 - Description: Mark a teacher's salary as paid for the current month.
-- Process: create a new payment entry in payments table and update the salary history of the teacher. and update the last paid month and paid date in teachers table.
+- Process: create a new payment entry in the payments table, update the salary history for the teacher, and update the last paid month and paid date in the teachers table.
 
 
 - Request:
@@ -751,7 +762,7 @@ role- admin teacher-managment/only
         ```
 
 #### POST /admin/teacher-salary/add
-- Description:  Add new salary record for a teacher.(in case of new teacher)
+- Description:  Add a new salary record for a teacher (in case of a new teacher).
 
 
 
@@ -783,7 +794,7 @@ role- admin teacher-managment/only
     ```
 
 
-## Admin - Student-fee-managment Page 
+## Admin - Student-fee-management Page 
 
 #### GET /admin/student-fee/stats
 - Description: Get overall student fee statistics for the admin student fee dashboard.
@@ -803,7 +814,7 @@ role- admin teacher-managment/only
 #### GET /admin/student-fee
 - Description: Get a list of all student fees with pagination.
 
--Request: 
+- Request: 
   - Query Parameters:
     - page (integer, optional, default: 1) - Page number for pagination.
    
@@ -829,6 +840,7 @@ role- admin teacher-managment/only
       "totalFees": 200
     }
     ```
+
 
 
 #### GET /admin/student-fee/:feeId 
@@ -872,8 +884,8 @@ role- admin teacher-managment/only
 
 #### POST /admin/student-fee/:feeId/paid
 
-- Description: mark the fees as paid.
-- Process: create a new payment entry in payments table and update the fee status in student_fees table.
+- Description: Mark the fee as paid.
+- Process: Create a new payment entry in the payments table and update the fee status in the student_fees table.
 
 - Request:
   - Parameters:
@@ -903,9 +915,10 @@ role- admin teacher-managment/only
         ```
   
 
+
 #### POST /admin/student-fee/add
 
-- Description:  Add new fee record for a student.(in case of new student)
+- Description:  Add a new fee record for a student (in case of a new student).
 
 - Request:
   - Body:
@@ -933,13 +946,12 @@ role- admin teacher-managment/only
         ```
 
 #### CRON JOB for student fee reminder
-- A cron job will run daily at 8 AM to check for any student fees that are
+- A cron job will run daily at 8 AM to check for any student fees that are due in the next 3 days and send a reminder email if not already sent 3 reminders.
 
 #### POST /admin/student-fee/:feeId/send-reminder
-- Description: Send a payment reminder to the student via email.(this will increase the ReminderSent count by 1 in student_fees table)
+- Description: Send a payment reminder to the student via email (this will increase the ReminderSent count by 1 in the student_fees table).
 
-- process: automatiocly send email to the student with fee details and due date.
- this can also be manually triggered by admin if needed. 
+- Process: Automatically send an email to the student with fee details and the due date. This can also be manually triggered by an admin if needed. 
 
 - Request:
   - Parameters:
@@ -958,5 +970,254 @@ role- admin teacher-managment/only
         "ReminderSent": 4
         }
         ```
+
+
+
+## Teacher - Dashboard API
+
+#### GET /teacher/:teacherId/stats
+
+- Description: Get overall statistics for the specific teacher dashboard.
+- 
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher to retrieve stats for.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "totalStudents": 100,
+        "totalEarnings": 50,
+        "pendingAssignments": 5,
+        //"pendingSalaries": 3000
+        }
+        ```
+
+#### GET /teacher/:teacherId/students
+- Description: Get a list of all students assigned to the specific teacher.
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher to retrieve students for.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "students": [
+            {
+            "id": "student123",
+            "name": "Jane Smith",
+            "email": "",
+            "profileImg": "https://example.com/photo.jpg",
+            "phone": "9876543210",
+            "parentName": "Jhon Doe",
+            "mapLocation": "https://maps.google.com/?q=28.6139,77.2090",
+            "location": "New Delhi, India",
+            "pincode": "110001",
+            "status": "active" | "inactive",
+            "enrolledAt": "2024-01-20T14:30:00Z"
+            }
+        ],
+        }
+        ```
+
+
+#### GET /teacher/:teacherId/assignments
+- Description: Get a list of all assignments created by the specific teacher.
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher to retrieve assignments for.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "assignments": [
+            {
+            "id": "assignment123",
+            "studentId": "student123",
+            "title": "Math Homework 1",
+            "description": "Complete the exercises on page 42",
+            "dueDate": "2024-02-01T14:30:00Z",
+            "createdAt": "2024-01-20T14:30:00Z",
+            "status": "pending" | "completed",
+            "attachments": [
+                {
+                  "fileName": "worksheet.pdf",
+                  "fileUrl": "https://cdn.example.com/worksheet.pdf",
+                  "mimeType": "application/pdf",
+                  "size": 123456
+                }
+            ],
+            "submissions": [
+              {
+                "studentId": "student123",
+                "submittedAt": "2024-01-30T10:00:00Z",
+                "fileName": "submission1.pdf",
+                "fileUrl": "https://cdn.example.com/submission1.pdf",
+                "mimeType": "application/pdf",
+                "size": 234567,
+                "grade": "A" | "B" | "C" | "D" | "0-100" | null,
+                "feedback": "Good work!" | null
+              }
+            ]
+            }
+        ]
+        }
+        ```
+
+
+#### POST /teacher/:teacherId/assignments/:assignmentId/grade  
+(add feedback and grade for the assignment)
+
+- Description: Grade or add feedback for a specific student's submission.
+- Process: Update the submission record with the provided grade and feedback and notify the student via email about the grade and feedback.
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher.
+    - assignmentId (string, required) - The ID of the assignment to grade or provide feedback for.
+  - Body:
+    ```json
+    {
+      "studentId": "student123",
+      "grade": "A" | "B" | "C" | "D" | "0-100",
+      "feedback": "Great job on the assignment!"
+    }
+    ```
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "message": "Assignment updated successfully",
+        "assignmentId": "assignment123",
+        "studentId": "student123"
+        }
+        ```
+
+      
+
+#### POST /teacher/:teacherId/assignments
+- Description: Create a new assignment for a single student.
+- Note: Each assignment is assigned to one student only.
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher creating the assignment.
+  - Body:
+    ```json
+    {
+      "studentId": "student123", // student ID the assignment is assigned to
+      "title": "Math Homework 1",
+      "subject": "Math",
+      "description": "Complete the exercises on page 42",
+      "dueDate": "2024-02-01T14:30:00Z",
+      "attachments": [
+        {
+          "fileName": "worksheet.pdf",
+          "fileUrl": "https://cdn.example.com/worksheet.pdf",
+          "mimeType": "application/pdf",
+          "size": 123456
+        }
+      ]
+    }
+    ```
+
+
+#### PATCH /teacher/:teacherId/assignments/:assignmentId
+- Description: Update an existing assignment (metadata or attachments).
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher.
+    - assignmentId (string, required) - The ID of the assignment to update.
+  - Body:
+    ```json
+    {
+      "title": "Updated Math Homework 1",
+      "description": "Complete the exercises on page 45",
+      "dueDate": "2024-02-05T14:30:00Z",
+      "attachments": [
+        {
+          "fileName": "worksheet_v2.pdf",
+          "fileUrl": "https://cdn.example.com/worksheet_v2.pdf",
+          "mimeType": "application/pdf",
+          "size": 234567
+        }
+      ]
+    }
+    ```
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "message": "Assignment updated successfully",
+        "assignmentId": "assignment123"
+        }
+        ```
+
+#### POST /student/:studentId/assignments/:assignmentId/submit
+- Description: Submit an assignment by uploading a file. Students use this endpoint to upload their submission for a specific assignment.
+
+- Request:
+  - Parameters:
+    - studentId (string, required) - The ID of the student submitting the assignment.
+    - assignmentId (string, required) - The ID of the assignment being submitted.
+  - Body: multipart/form-data
+    - file: (required) the file to upload
+    - optional JSON fields (in form-data): note, submittedAt (ISO 8601)
+
+- Response:
+  - Status: 201 Created
+    - Body:
+        ```json
+        {
+        "message": "Submission uploaded successfully",
+        "assignmentId": "assignment123",
+        "studentId": "student123",
+        "fileName": "submission1.pdf",
+        "fileUrl": "https://cdn.example.com/submission1.pdf",
+        "submittedAt": "2024-01-30T10:00:00Z"
+        }
+        ```
+
+#### GET /teacher/:teacherId/assignments/:assignmentId/submissions/:studentId/download
+- Description: Download a student's submission file for an assignment. Teachers use this to retrieve submitted files for review.
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher.
+    - assignmentId (string, required) - The ID of the assignment.
+    - studentId (string, required) - The ID of the student whose submission to download.
+
+- Response:
+  - Status: 200 OK
+    - Body: File stream (attachment)
+
+#### GET /teacher/:teacherId/assignments/:assignmentId/attachments/:fileName
+- Description: Download an original attachment file that the teacher attached to the assignment (e.g., worksheet).
+
+- Request:
+  - Parameters:
+    - teacherId (string, required)
+    - assignmentId (string, required)
+    - fileName (string, required) - The filename to download.
+
+- Response:
+  - Status: 200 OK
+    - Body: File stream (attachment)
+
+
+
 
 
