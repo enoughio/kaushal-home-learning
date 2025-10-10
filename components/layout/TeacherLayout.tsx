@@ -21,8 +21,11 @@ export function TeacherLayout({ children, activeTab }: TeacherLayoutProps) {
 
   useEffect(() => {
     const currentUser = AuthService.getCurrentUser()
+    // For development we won't redirect away if no current user is found.
+    // Previously this would push to "/" and prevent accessing teacher pages
+    // while testing. Instead, just set the user when available.
     if (!currentUser || currentUser.role !== "teacher") {
-      router.push("/")
+      setUser(null)
       return
     }
     setUser(currentUser)
