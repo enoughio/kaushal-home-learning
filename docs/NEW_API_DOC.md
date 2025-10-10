@@ -1166,31 +1166,6 @@ Role: admin only
         }
         ```
 
-#### POST /student/:studentId/assignments/:assignmentId/submit
-- Description: Submit an assignment by uploading a file. Students use this endpoint to upload their submission for a specific assignment.
-
-- Request:
-  - Parameters:
-    - studentId (string, required) - The ID of the student submitting the assignment.
-    - assignmentId (string, required) - The ID of the assignment being submitted.
-  - Body: multipart/form-data
-    - file: (required) the file to upload
-    - optional JSON fields (in form-data): note, submittedAt (ISO 8601)
-
-- Response:
-  - Status: 201 Created
-    - Body:
-        ```json
-        {
-        "message": "Submission uploaded successfully",
-        "assignmentId": "assignment123",
-        "studentId": "student123",
-        "fileName": "submission1.pdf",
-        "fileUrl": "https://cdn.example.com/submission1.pdf",
-        "submittedAt": "2024-01-30T10:00:00Z"
-        }
-        ```
-
 #### GET /teacher/:teacherId/assignments/:assignmentId/submissions/:studentId/download
 - Description: Download a student's submission file for an assignment. Teachers use this to retrieve submitted files for review.
 
@@ -1219,5 +1194,244 @@ Role: admin only
 
 
 
+<!-- this is a student assignment api -->
+#### GET /student/:studentId/assignments
+- Description: Get a list of all assignments assigned to the specific student.
+- Request:
+  - Parameters:
+    - studentId (string, required) - The ID of the student to retrieve assignments for.
 
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "assignments": [
+            {
+            "id": "assignment123",
+            "teacherId": "teacher123",
+            "title": "Math Homework 1",
+            "description": "Complete the exercises on page 42",
+            "dueDate": "2024-02-01T14:30:00Z",
+            "createdAt": "2024-01-20T14:30:00Z",
+            "status": "pending" | "completed",
+            "attachments": [
+                {
+                  "fileName": "worksheet.pdf",
+                  "fileUrl": "https://cdn.example.com/worksheet.pdf",
+                  "mimeType": "application/pdf",
+                  "size": 123456
+                }
+            ],
+            "submission": {
+                "submittedAt": "2024-01-30T10:00:00Z",
+                "fileName": "submission1.pdf",
+                "fileUrl": "https://cdn.example.com/submission1.pdf",
+                "mimeType": "application/pdf",
+                "size": 234567,
+                "grade": "A" | "B" | "C" | "D" | "0-100" | null,
+                "feedback": "Good work!" | null
+              }
+            }
+        ]
+        }
+        ```
+
+<!-- this is a studnet assignment api -->
+#### POST /student/:studentId/assignments/:assignmentId/submit
+- Description: Submit an assignment by uploading a file. Students use this endpoint to upload their submission for a specific assignment.
+
+- Request:
+  - Parameters:
+    - studentId (string, required) - The ID of the student submitting the assignment.
+    - assignmentId (string, required) - The ID of the assignment being submitted.
+  - Body: multipart/form-data
+    - file: (required) the file to upload
+    - optional JSON fields (in form-data): note, submittedAt (ISO 8601)
+
+- Response:
+  - Status: 201 Created
+    - Body:
+        ```json
+        {
+        "message": "Submission uploaded successfully",
+        "assignmentId": "assignment123",
+        "studentId": "student123",
+        "fileName": "submission1.pdf",
+        "fileUrl": "https://cdn.example.com/submission1.pdf",
+        "submittedAt": "2024-01-30T10:00:00Z"
+        }
+        ```
+
+
+#### GET /teacher/:teacherId/attendence/:studentId/monthly
+- Description: Get attendance records of teacher for an specifice student for current month.
+
+-  Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher.
+    - studentId (string, required) - The ID of the student whose attendance to retrieve.
+
+- Response:
+  - Status : 200 OK
+    - Body:
+        ```json
+        {
+        "studentId": "student123",
+        "teacherId": "teacher123",
+        "month": "January",
+        "year": 2024,
+        "attendanceRecords": [
+            {"date": "2024-01-01", "status": "present"},
+            {"date": "2024-01-02", "status": "absent"},
+            {"date": "2024-01-03", "status": "present"},
+            // ... more records for the month
+        ]
+        }
+        ```
+        
+
+
+#### GET /teacher/:teacherId/attendence/:studentId
+- Description: Get attendance records of teacher for an specifice student with pagination and filtering options.
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher.
+    - studentId (string, required) - The ID of the student whose attendance to retrieve.
+  - Query Parameters:
+    - page (integer, optional, default: 1) - Page number for pagination.
+    - month (integer, optional) - Filter by month (1-12).
+    - year (integer, optional) - Filter by year (e.g., 2024).
+
+
+- Response:  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "studentId": "student123",
+        "teacherId": "teacher123",
+        "month": 1,
+        "year": 2024,
+        "attendanceRecords": [
+            {"date": "2024-01-01", "status": "present"},
+            {"date": "2024-01-02", "status": "absent"},
+            {"date": "2024-01-03", "status": "present"},
+            // ... more records
+        ],
+        "page": 1,
+        "totalPages": 5,
+        "totalRecords": 150
+        }
+        ```
+
+#### POST /teacher/:teacherId/attendence/:studentId/mark
+- Description: Mark attendance for a specific student on a specific date with the location.
+- Process: Check if the tacher is present at student home or not, by matching the teacher current location by geolocation api
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher marking attendance.
+    - studentId (string, required) - The ID of the student whose attendance is being marked.
+  - Body:
+    ```json
+    {
+      "date": "2024-01-25", // date for which attendance is being marked generally current date
+      "status": "present" | "absent",
+      "location": {
+          "latitude": 28.6139,
+          "longitude": 77.2090
+      }
+    }
+    ```
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "message": "Attendance marked successfully",
+        "studentId": "student123",
+        "teacherId": "teacher123",
+        "date": "2024-01-25",
+        "status": "present",
+        "location": {
+            "latitude": 28.6139,
+            "longitude": 77.2090
+        }
+        }
+        ```
+
+
+### Teacher - Salary API
+
+
+#### GET /teacher/:teacherId/salary/stats
+- Description: Get overall salary statistics for the specific teacher salary dashboard.
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher to retrieve salary stats for.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "totalEarnings": 3000,
+        "pendingSalaries": 6000,
+
+        "salaryDetails": {
+            "baseSalary": 3000,
+            "bonus": 300,
+            "totalSalary": 3300,
+            "lastPaidMonth": "Jan",
+            "lastPaidDate": "2024-01-20T14:30:00Z"
+        },
+        }
+        ```
+
+#### GET /teacher/:teacherId/salary
+- Description: Get detailed salary information for the specific teacher salary history with pagination.
+- process: show all the payments made to this teacherId by the admin
+
+- Request:
+  - Parameters:
+    - teacherId (string, required) - The ID of the teacher to retrieve salary details for.
+  - Query Parameters:
+    - page (integer, optional, default: 1) - Page number for pagination.
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "teacherId": "teacher123",
+        "name": "John Doe",
+        "salaryHistory": [
+            {
+            "month": "Dec",
+            "baseSalary": 3000,
+            "bonus": 300,
+            "totalSalary": 3300,
+            "paidDate": "2023-12-20T14:30:00Z",
+            "status": "paid"
+            },
+            {
+            "month": "Nov",
+            "baseSalary": 3000,
+            "bonus": 300,
+            "totalSalary": 3300,
+            "paidDate": "2023-11-20T14:30:00Z",
+            "status": "paid"
+            }
+        ],
+        "page": 1,
+        "totalPages": 5,
+        "totalRecords": 60
+        }
+        ```
+
+
+# Student - Dashboard API
 
