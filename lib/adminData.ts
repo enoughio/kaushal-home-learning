@@ -465,7 +465,7 @@ export class AdminDataService {
   }
 
   static async getPaymentDues(): Promise<PaymentDue[]> {
-    await new Promise((resolve) => setTimeout(resolve, 5000))
+    await new Promise((resolve) => setTimeout(resolve, 500))
     return mockPaymentDues.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
   }
 
