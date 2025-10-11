@@ -21,8 +21,9 @@ export function StudentLayout({ children, activeTab }: StudentLayoutProps) {
 
   useEffect(() => {
     const currentUser = AuthService.getCurrentUser()
+    // Don't redirect to home if there is no current user during development.
     if (!currentUser || currentUser.role !== "student") {
-      router.push("/")
+      setUser(null)
       return
     }
     setUser(currentUser)

@@ -10,7 +10,10 @@ export function AdminLogout() {
 
   const handleLogout = async () => {
     AuthService.logout()
-    router.push("/")
+    // Disabled automatic redirect to home for now so logout doesn't
+    // immediately navigate away during development. If you want the
+    // redirect behavior back, re-enable the line below.
+    // router.push("/")
   }
 
   return (
