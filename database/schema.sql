@@ -106,16 +106,16 @@ CREATE TABLE teachers (
 );
 
 
--- Teacher-Student assignments
+-- Teacher-Student assignments (pairs)
 CREATE TABLE teacher_student_assignments (
     id SERIAL PRIMARY KEY,
     teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
     student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
     subject VARCHAR(100) NOT NULL,
     assigned_date DATE DEFAULT CURRENT_DATE,
-    start_date DATE,
-    end_date DATE,
-    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled', 'paused')),
+    start_date DATE,  --needs to be removed
+    end_date DATE,     -- needs to be removed
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled', 'paused')), --remove 
     assigned_by INTEGER REFERENCES users(id), -- Admin who assigned
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -124,7 +124,7 @@ CREATE TABLE teacher_student_assignments (
 );
 
 
--- Assignments table
+-- Assignments/homework to a student table
 CREATE TABLE assignments (
     id SERIAL PRIMARY KEY,
     teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
