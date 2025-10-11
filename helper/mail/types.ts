@@ -8,6 +8,13 @@ export interface TransportConfig {
   }
 }
 
+export type AttendanceStatus = "present" | "absent" | "none"
+export type DayAttendance = {
+  date: string // YYYY-MM-DD
+  status: AttendanceStatus
+}
+
+
 export interface EmailOptions {
   to: string
   subject: string
