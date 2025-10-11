@@ -1,18 +1,114 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { StudentLayout } from "@/components/layout/StudentLayout"
+import { useState, useEffect, useMemo } from "react"
+import { StudentLayout } from "@/components/layout/student-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MockDataService, type AttendanceRecord } from "@/lib/mockData"
+import { MockDataService, type AttendanceRecord } from "@/lib/mock-data"
 import { AuthService } from "@/lib/auth"
-import { Calendar, Clock, User, CheckCircle, XCircle, Plus } from "lucide-react"
+import { Calendar, Clock, User, CheckCircle, XCircle, ChevronLeft, ChevronRight } from "lucide-react"
 
 export default function AttendancePage() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const [marking, setMarking] = useState(false)
+  const presentCount = attendance.filter((record) => record.status === "present").length
+  const absentCount = attendance.filter((record) => record.status === "absent").length
+  const attendanceRate = attendance.length > 0 ? Math.round((presentCount / attendance.length) * 100) : 0
+  const totalHours = attendance
+    .filter((record) => record.status === "present")
+    .reduce((sum, record) => sum + record.duration, 0)
+
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const d = new Date()
+    return new Date(d.getFullYear(), d.getMonth(), 1)
+  })
+
+  function fmtISO(d: Date) {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, "0")
+    const day = String(d.getDate()).padStart(2, "0")
+    return `${y}-${m}-${day}`
+  }
+
+  // Normalize record.date into YYYY-MM-DD keys (handles various formats)
+  const attendanceByDate = useMemo(() => {
+    const map = new Map<string, AttendanceRecord[]>()
+    for (const r of attendance) {
+      const d = new Date(r.date)
+      const key = fmtISO(d)
+      const arr = map.get(key) ?? []
+      arr.push(r)
+      map.set(key, arr)
+    }
+    return map
+  }, [attendance])
+
+  // Build a grid for the current month with optional previous/next month leading/trailing days
+  const monthGrid = useMemo(() => {
+    const year = currentMonth.getFullYear()
+    const month = currentMonth.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const startWeekday = firstDay.getDay() // 0=Sun..6=Sat
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+    const cells: Array<{
+      date: Date
+      inMonth: boolean
+      status: "present" | "absent" | "none"
+      duration?: number
+      teacherName?: string
+      subjects?: string[]
+    }> = []
+
+    // Leading blanks from previous month
+    for (let i = 0; i < startWeekday; i++) {
+      const d = new Date(year, month, 0 - (startWeekday - 1 - i))
+      cells.push({ date: d, inMonth: false, status: "none" })
+    }
+
+    // Current month days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(year, month, day)
+      const key = fmtISO(d)
+      const recs = attendanceByDate.get(key) ?? []
+      let status: "present" | "absent" | "none" = "none"
+      let duration = 0
+      let teacherName: string | undefined
+      const subjects = new Set<string>()
+      if (recs.length > 0) {
+        // If any present => present, else if any absent => absent
+        const anyPresent = recs.some((r) => r.status === "present")
+        const anyAbsent = recs.some((r) => r.status === "absent")
+        if (anyPresent) status = "present"
+        else if (anyAbsent) status = "absent"
+        duration = recs.filter((r) => r.status === "present").reduce((s, r) => s + (r.duration || 0), 0)
+        teacherName = recs[0]?.teacherName
+        recs.forEach((r) => subjects.add(r.subject))
+      }
+      cells.push({
+        date: d,
+        inMonth: true,
+        status,
+        duration,
+        teacherName,
+        subjects: Array.from(subjects),
+      })
+    }
+
+    // Trailing blanks to complete full weeks (42 cells max)
+    while (cells.length % 7 !== 0) {
+      const last = cells[cells.length - 1].date
+      const next = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1)
+      cells.push({ date: next, inMonth: false, status: "none" })
+    }
+
+    // Group into weeks
+    const weeks: (typeof cells)[] = []
+    for (let i = 0; i < cells.length; i += 7) {
+      weeks.push(cells.slice(i, i + 7))
+    }
+    return weeks
+  }, [attendanceByDate, currentMonth])
 
   useEffect(() => {
     const loadAttendance = async () => {
@@ -31,29 +127,6 @@ export default function AttendancePage() {
 
     loadAttendance()
   }, [])
-
-  const handleMarkAttendance = async () => {
-    setMarking(true)
-    try {
-      const user = AuthService.getCurrentUser()
-      if (user) {
-        await MockDataService.markAttendance(user.id, "3", "Mathematics") // Mock teacher and subject
-        const data = await MockDataService.getAttendanceRecords(user.id)
-        setAttendance(data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
-      }
-    } catch (error) {
-      console.error("Failed to mark attendance:", error)
-    } finally {
-      setMarking(false)
-    }
-  }
-
-  const presentCount = attendance.filter((record) => record.status === "present").length
-  const absentCount = attendance.filter((record) => record.status === "absent").length
-  const attendanceRate = attendance.length > 0 ? Math.round((presentCount / attendance.length) * 100) : 0
-  const totalHours = attendance
-    .filter((record) => record.status === "present")
-    .reduce((sum, record) => sum + record.duration, 0)
 
   if (loading) {
     return (
@@ -75,12 +148,8 @@ export default function AttendancePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Attendance</h1>
-            <p className="text-muted-foreground">Track your class attendance and learning hours</p>
+            <p className="text-muted-foreground">View teacher-marked attendance on the monthly calendar</p>
           </div>
-          <Button onClick={handleMarkAttendance} disabled={marking}>
-            <Plus className="mr-2 h-4 w-4" />
-            {marking ? "Marking..." : "Mark Today's Attendance"}
-          </Button>
         </div>
 
         {/* Stats */}
@@ -134,6 +203,100 @@ export default function AttendancePage() {
           </Card>
         </div>
 
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Monthly Attendance Calendar</CardTitle>
+            <div className="flex items-center gap-2">
+              <button
+                aria-label="Previous month"
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md bg-muted"
+                onClick={() => setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="text-sm font-medium">
+                {currentMonth.toLocaleString(undefined, { month: "long", year: "numeric" })}
+              </div>
+              <button
+                aria-label="Next month"
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md bg-muted"
+                onClick={() => setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-7 gap-2 text-xs md:text-sm">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                <div key={d} className="text-center text-muted-foreground font-medium">
+                  {d}
+                </div>
+              ))}
+              {monthGrid.map((week, wi) =>
+                week.map((cell, di) => {
+                  const isPresent = cell.status === "present" && cell.inMonth
+                  const isAbsent = cell.status === "absent" && cell.inMonth
+                  const isOtherMonth = !cell.inMonth
+                  return (
+                    <div
+                      key={`${wi}-${di}`}
+                      className={[
+                        "rounded-md border p-2 min-h-20 md:min-h-24",
+                        isOtherMonth ? "opacity-40" : "",
+                        isPresent ? "border-chart-2 bg-[color:var(--chart-2)]/10" : "",
+                        isAbsent ? "border-destructive bg-destructive/10" : "",
+                        !isPresent && !isAbsent && !isOtherMonth ? "bg-muted" : "",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs">{cell.date.getDate()}</span>
+                        {isPresent && <CheckCircle className="h-4 w-4 text-chart-2" />}
+                        {isAbsent && <XCircle className="h-4 w-4 text-destructive" />}
+                      </div>
+                      {cell.inMonth && (isPresent || isAbsent) && (
+                        <div className="mt-2 space-y-1">
+                          {cell.teacherName && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <User className="h-3 w-3" />
+                              <span className="truncate">{cell.teacherName}</span>
+                            </div>
+                          )}
+                          {isPresent && cell.duration ? (
+                            <div className="flex items-center gap-1 text-xs">
+                              <Clock className="h-3 w-3" />
+                              <span>{Math.round((cell.duration || 0) / 60)} hr</span>
+                            </div>
+                          ) : null}
+                          {cell.subjects && cell.subjects.length > 0 ? (
+                            <div className="text-xs truncate">{cell.subjects.join(", ")}</div>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }),
+              )}
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded bg-[color:var(--chart-2)]/30 border border-[color:var(--chart-2)]" />
+                Present
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded bg-destructive/30 border border-destructive" />
+                Absent
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded bg-muted border border-border" />
+                No record
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Attendance Records */}
         <Card>
           <CardHeader>
@@ -144,7 +307,9 @@ export default function AttendancePage() {
               <div className="text-center py-8">
                 <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">No attendance records found</p>
-                <p className="text-sm text-muted-foreground mt-2">Start marking your attendance to see records here</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Teachers mark attendance. Records will appear here once marked.
+                </p>
               </div>
             ) : (
               <div className="space-y-3">

@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { TeacherLayout } from "@/components/layout/TeacherLayout"
+import { TeacherLayout } from "@/components/layout/teacher-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { TeacherDataService, type PaymentRecord } from "@/lib/teacherData"
+import { TeacherDataService, type PaymentRecord } from "@/lib/teacher-data"
 import { AuthService } from "@/lib/auth"
 import { DollarSign, Calendar, User, Clock, Search, TrendingUp } from "lucide-react"
 

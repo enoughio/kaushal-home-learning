@@ -46,6 +46,8 @@ export interface AttendanceRecord {
   date: string
   status: "present" | "absent"
   duration: number
+  atHome?: boolean
+  notes?: string
 }
 
 // Mock data for teacher
@@ -255,4 +257,93 @@ export class TeacherDataService {
     // In real app, this would update the database
     console.log("Marked attendance:", { studentId, teacherId, subject, status, duration })
   }
+
+  static async listTeacherStudents(teacherId: string): Promise<StudentInfo[]> {
+    await new Promise((r) => setTimeout(r, 200))
+    return mockStudents.filter((s) => s.status === "active")
+  }
+
+  static async getStudentMonthAttendance(
+    teacherId: string,
+    studentId: string,
+    year: number,
+    month: number, // 1-12
+  ): Promise<Array<{ date: string; status: "present" | "absent" }>> {
+    await new Promise((r) => setTimeout(r, 200))
+    const y = year
+    const m = month
+    const records = mockAttendance.filter((r) => {
+      const d = new Date(r.date)
+      return r.teacherId === teacherId && r.studentId === studentId && d.getFullYear() === y && d.getMonth() + 1 === m
+    })
+    return records.map((r) => ({ date: r.date, status: r.status }))
+  }
+
+  static async getStudentAttendanceHistory(
+    teacherId: string,
+    studentId: string,
+  ): Promise<Array<{ month: string; present: number; sessions: number }>> {
+    await new Promise((r) => setTimeout(r, 200))
+    const byMonth = new Map<string, { present: number; sessions: number }>()
+    for (const r of mockAttendance) {
+      if (r.teacherId !== teacherId || r.studentId !== studentId) continue
+      const key = r.date.slice(0, 7) // YYYY-MM
+      const agg = byMonth.get(key) ?? { present: 0, sessions: 0 }
+      agg.sessions += 1
+      if (r.status === "present") agg.present += 1
+      byMonth.set(key, agg)
+    }
+    return Array.from(byMonth.entries())
+      .sort(([a], [b]) => (a > b ? -1 : 1))
+      .map(([month, v]) => ({ month, present: v.present, sessions: v.sessions }))
+  }
+
+  static async markTeacherAttendance(input: {
+    teacherId: string
+    studentId: string
+    date: string // YYYY-MM-DD
+    atHome: boolean
+    notes?: string
+  }): Promise<void> {
+    await new Promise((r) => setTimeout(r, 200))
+    if (!input.atHome) {
+      console.warn("[v0] markTeacherAttendance called without atHome confirmation")
+      return
+    }
+    mockAttendance.push({
+      id: Date.now().toString(),
+      studentId: input.studentId,
+      teacherId: input.teacherId,
+      subject: "Session",
+      date: input.date,
+      status: "present",
+      duration: 60,
+      atHome: true,
+      notes: input.notes,
+    })
+  }
+}
+
+export type TeacherStudent = StudentInfo
+
+export async function listTeacherStudents(teacherId: string) {
+  return TeacherDataService.listTeacherStudents(teacherId)
+}
+
+export async function getStudentMonthAttendance(teacherId: string, studentId: string, year: number, month: number) {
+  return TeacherDataService.getStudentMonthAttendance(teacherId, studentId, year, month)
+}
+
+export async function getStudentAttendanceHistory(teacherId: string, studentId: string) {
+  return TeacherDataService.getStudentAttendanceHistory(teacherId, studentId)
+}
+
+export async function markTeacherAttendance(input: {
+  teacherId: string
+  studentId: string
+  date: string // YYYY-MM-DD
+  atHome: boolean
+  notes?: string
+}) {
+  return TeacherDataService.markTeacherAttendance(input)
 }

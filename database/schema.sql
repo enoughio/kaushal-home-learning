@@ -5,27 +5,16 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) DEFAULT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL CHECK (role IN ('student', 'teacher', 'admin')),
-    first_name VARCHAR(100) ,
-    last_name VARCHAR(100) ,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
     address TEXT,
     city VARCHAR(100),
     state VARCHAR(100),
     pincode VARCHAR(10),
     date_of_birth DATE,
-    localion TEXT,
-
-------verification & security------
-    is_varifaied BOOLEAN DEFAULT false,
-    verification_token VARCHAR(255),
-    verification_token_expires TIMESTAMP,
-    reset_token VARCHAR(255),
-    reset_token_expires TIMESTAMP,
-    access_token VARCHAR(255),
--------------------------------------
-
     profile_image_url VARCHAR(500),
     is_active BOOLEAN DEFAULT true,
     is_deleted BOOLEAN DEFAULT false,
@@ -33,7 +22,6 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
 );
-
 
 -- Students table (extends users)
 CREATE TABLE students (
@@ -52,13 +40,11 @@ CREATE TABLE students (
     fee_due_date DATE,
     payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('paid', 'pending', 'overdue', 'grace_period')),
     grace_period_end DATE,
-    loca
     enrollment_date DATE DEFAULT CURRENT_DATE,
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 -- Teachers table (extends users)
 CREATE TABLE teachers (
@@ -93,7 +79,6 @@ CREATE TABLE teachers (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
 -- Teacher-Student assignments
 CREATE TABLE teacher_student_assignments (
     id SERIAL PRIMARY KEY,
@@ -111,7 +96,6 @@ CREATE TABLE teacher_student_assignments (
     UNIQUE(teacher_id, student_id, subject)
 );
 
-
 -- Assignments table
 CREATE TABLE assignments (
     id SERIAL PRIMARY KEY,
@@ -125,12 +109,10 @@ CREATE TABLE assignments (
     max_marks INTEGER DEFAULT 100,
     file_url VARCHAR(500),
     instructions TEXT,
-    grade VARCHAR(5) CHECK (grade IN ('A+', 'A', 'B+', 'B', 'C+', 'C', 'D')),
     status VARCHAR(20) DEFAULT 'assigned' CHECK (status IN ('assigned', 'submitted', 'graded', 'overdue')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 -- Assignment submissions
 CREATE TABLE assignment_submissions (
@@ -155,7 +137,6 @@ CREATE TABLE attendance (
     student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
     teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
     date DATE NOT NULL,
-    location TEXT,
     status VARCHAR(20) DEFAULT 'present' CHECK (status IN ('present', 'absent', 'late', 'excused')),
     notes TEXT,
     marked_by INTEGER REFERENCES users(id),
@@ -207,7 +188,6 @@ CREATE TABLE salary_payments (
 );
 
 -- Notifications table
--- do not use this table 
 CREATE TABLE notifications (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -264,6 +244,64 @@ CREATE INDEX idx_payments_student_id ON payments(student_id);
 CREATE INDEX idx_salary_payments_teacher_month_year ON salary_payments(teacher_id, month, year);
 CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
+
+-- Additional indexes to speed up analytics by date
+CREATE INDEX IF NOT EXISTS idx_payments_payment_date ON payments(payment_date);
+CREATE INDEX IF NOT EXISTS idx_salary_payments_payment_date ON salary_payments(payment_date);
+
+-- Helper views for analytics dashboards
+
+-- Monthly revenue (student fees completed) vs salary expenses (paid), plus profit
+CREATE OR REPLACE VIEW view_monthly_revenue_expenses AS
+SELECT
+  to_char(date_trunc('month', COALESCE(p.payment_date, sp.payment_date)), 'Mon') AS month,
+  EXTRACT(YEAR FROM COALESCE(p.payment_date, sp.payment_date))::int AS year,
+  COALESCE(SUM(CASE WHEN p.payment_status = 'completed' THEN p.amount - COALESCE(p.discount,0) + COALESCE(p.late_fee,0) ELSE 0 END), 0) AS student_fees,
+  COALESCE(SUM(CASE WHEN sp.payment_status = 'paid' THEN sp.total_amount ELSE 0 END), 0) AS teacher_salaries,
+  COALESCE(SUM(CASE WHEN p.payment_status = 'completed' THEN p.amount - COALESCE(p.discount,0) + COALESCE(p.late_fee,0) ELSE 0 END), 0)
+    - COALESCE(SUM(CASE WHEN sp.payment_status = 'paid' THEN sp.total_amount ELSE 0 END), 0) AS profit
+FROM
+  (SELECT payment_date, amount, discount, late_fee, payment_status FROM payments) p
+FULL OUTER JOIN
+  (SELECT payment_date, total_amount, payment_status FROM salary_payments) sp
+ON date_trunc('month', p.payment_date) = date_trunc('month', sp.payment_date)
+GROUP BY 1,2
+ORDER BY 2, date_trunc('month', COALESCE(p.payment_date, sp.payment_date));
+
+-- Monthly user growth (counts at month end)
+CREATE OR REPLACE VIEW view_user_growth_monthly AS
+SELECT
+  to_char(date_trunc('month', u.created_at), 'Mon') AS month,
+  EXTRACT(YEAR FROM u.created_at)::int AS year,
+  SUM(CASE WHEN u.role = 'student' THEN 1 ELSE 0 END) OVER (PARTITION BY EXTRACT(YEAR FROM u.created_at) ORDER BY date_trunc('month', u.created_at)) AS cumulative_students,
+  SUM(CASE WHEN u.role = 'teacher' THEN 1 ELSE 0 END) OVER (PARTITION BY EXTRACT(YEAR FROM u.created_at) ORDER BY date_trunc('month', u.created_at)) AS cumulative_teachers
+FROM users u
+WHERE u.is_deleted = false;
+
+-- Annual payment breakdown (fees vs salaries)
+CREATE OR REPLACE VIEW view_payment_breakdown_annual AS
+SELECT
+  yr,
+  SUM(student_fees) AS total_fees,
+  SUM(teacher_salaries) AS total_salaries,
+  SUM(profit) AS total_profit
+FROM (
+  SELECT
+    EXTRACT(YEAR FROM payment_date)::int AS yr,
+    CASE WHEN payment_status = 'completed' THEN amount - COALESCE(discount,0) + COALESCE(late_fee,0) ELSE 0 END AS student_fees,
+    0::numeric AS teacher_salaries,
+    0::numeric AS profit
+  FROM payments
+  UNION ALL
+  SELECT
+    EXTRACT(YEAR FROM payment_date)::int AS yr,
+    0::numeric AS student_fees,
+    CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END AS teacher_salaries,
+    0::numeric AS profit
+  FROM salary_payments
+) x
+GROUP BY yr
+ORDER BY yr;
 
 -- Insert default admin user
 INSERT INTO users (email, password_hash, role, first_name, last_name, phone, city, state) 

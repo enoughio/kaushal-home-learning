@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
+import { AdminLayout } from "@/components/layout/admin-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { AdminDataService, type UserManagement } from "@/lib/adminData"
+import { AdminDataService, type UserManagement } from "@/lib/admin-data"
 import { Search, Users, UserX, Trash2, Eye, Calendar, Mail } from "lucide-react"
 
 export default function UserManagementPage() {
@@ -67,7 +67,6 @@ export default function UserManagementPage() {
 
     setFilteredUsers(filtered)
   }, [searchTerm, roleFilter, statusFilter, users])
-  
 
   const handleStatusUpdate = async (userId: string, newStatus: "active" | "inactive") => {
     setUpdating(userId)

@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { StudentLayout } from "@/components/layout/StudentLayout"
+import { StudentLayout } from "@/components/layout/student-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MockDataService, type Assignment, type AttendanceRecord } from "@/lib/mockData"
+import { MockDataService, type Assignment, type AttendanceRecord } from "@/lib/mock-data"
 import { AuthService } from "@/lib/auth"
 import { BookOpen, Calendar, FileText, TrendingUp, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -140,7 +140,7 @@ export default function StudentDashboard() {
                 onClick={() => router.push("/student/attendance")}
               >
                 <Calendar className="h-6 w-6" />
-                <span>Mark Attendance</span>
+                <span>View Attendance Calendar</span>
               </Button>
               <Button
                 variant="outline"

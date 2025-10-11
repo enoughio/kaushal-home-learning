@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
+import { AdminLayout } from "@/components/layout/admin-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AdminDataService, type NotificationStats } from "@/lib/adminData"
+import { AdminDataService, type NotificationStats } from "@/lib/admin-data"
 import { Mail, MessageSquare, Bell, AlertCircle, CheckCircle, Clock } from "lucide-react"
 
 export default function NotificationsPage() {

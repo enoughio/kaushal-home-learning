@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
+import { AdminLayout } from "@/components/layout/admin-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AdminDataService, type MonthlyData, type PlatformStats } from "@/lib/adminData"
+import { AdminDataService, type MonthlyData, type PlatformStats } from "@/lib/admin-data"
 import {
   BarChart,
   Bar,
@@ -32,6 +32,10 @@ export default function AnalyticsPage() {
   const [subjectDistribution, setSubjectDistribution] = useState<any[]>([])
   const [locationStats, setLocationStats] = useState<any[]>([])
   const [attendanceStats, setAttendanceStats] = useState<any[]>([])
+  const [platformRevenue, setPlatformRevenue] = useState<
+    { month: string; studentFees: number; teacherSalaries: number; profit: number }[]
+  >([])
+  const [paymentsTotals, setPaymentsTotals] = useState<{ totalFees: number; totalSalaries: number } | null>(null)
 
   useEffect(() => {
     const loadData = async () => {
@@ -81,6 +85,19 @@ export default function AnalyticsPage() {
           { month: "May", attendance: 91 },
           { month: "Jun", attendance: 88 },
         ])
+
+        const platform = await AdminDataService.getPlatformAnalytics()
+        setPlatformRevenue(platform.revenueAnalytics)
+
+        const totals = platform.revenueAnalytics.reduce(
+          (acc, r) => {
+            acc.totalFees += r.studentFees
+            acc.totalSalaries += r.teacherSalaries
+            return acc
+          },
+          { totalFees: 0, totalSalaries: 0 },
+        )
+        setPaymentsTotals(totals)
       } catch (error) {
         console.error("Failed to load analytics data:", error)
       } finally {
@@ -250,6 +267,73 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Added separate Teacher Growth and Student Growth charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Annual Teacher Growth
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={annualData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="year" className="text-muted-foreground" />
+                    <YAxis className="text-muted-foreground" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="teachers"
+                      stroke="hsl(var(--chart-2))"
+                      strokeWidth={3}
+                      name="Teachers"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Annual Student Growth
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={annualData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="year" className="text-muted-foreground" />
+                    <YAxis className="text-muted-foreground" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="students"
+                      stroke="hsl(var(--chart-1))"
+                      strokeWidth={3}
+                      name="Students"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -319,6 +403,74 @@ export default function AnalyticsPage() {
                     <Bar dataKey="expenses" fill="hsl(var(--chart-2))" name="Expenses" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Added Monthly Fees vs Salaries stacked chart and KPI cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Monthly Fees vs Salaries</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={platformRevenue}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="month" className="text-muted-foreground" />
+                    <YAxis className="text-muted-foreground" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                      formatter={(value) => [`₹${Number(value).toLocaleString()}`, "Amount"]}
+                    />
+                    <Bar
+                      dataKey="studentFees"
+                      stackId="a"
+                      fill="hsl(var(--chart-1))"
+                      name="Student Fees"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="teacherSalaries"
+                      stackId="a"
+                      fill="hsl(var(--chart-2))"
+                      name="Teacher Salaries"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Annual Payment Totals</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Total Student Fees</span>
+                    <span className="text-lg font-bold text-chart-1">
+                      ₹{(paymentsTotals?.totalFees || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Total Teacher Salaries</span>
+                    <span className="text-lg font-bold text-chart-2">
+                      ₹{(paymentsTotals?.totalSalaries || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between border-t pt-3">
+                    <span className="text-sm text-muted-foreground">Net (Fees - Salaries)</span>
+                    <span className="text-lg font-bold">
+                      ₹{((paymentsTotals?.totalFees || 0) - (paymentsTotals?.totalSalaries || 0)).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

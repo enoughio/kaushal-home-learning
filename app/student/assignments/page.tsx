@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { StudentLayout } from "@/components/layout/StudentLayout"
+import { StudentLayout } from "@/components/layout/student-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
-import { MockDataService, type Assignment } from "@/lib/mockData"
+import { MockDataService, type Assignment } from "@/lib/mock-data"
 import { AuthService } from "@/lib/auth"
 import { FileText, Calendar, User, Upload, CheckCircle } from "lucide-react"
 

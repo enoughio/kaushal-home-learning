@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
+import { AdminLayout } from "@/components/layout/admin-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AdminDataService, type PlatformStats, type UserManagement, type TeacherApproval } from "@/lib/adminData"
+import { AdminDataService, type PlatformStats, type UserManagement, type TeacherApproval } from "@/lib/admin-data"
 import { Users, UserCheck, DollarSign, TrendingUp, AlertCircle, CheckCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 

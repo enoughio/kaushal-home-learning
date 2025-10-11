@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AdminLayout } from "@/components/layout/AdminLayout"
+import { AdminLayout } from "@/components/layout/admin-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AdminDataService, type PaymentDue } from "@/lib/adminData"
+import { AdminDataService, type PaymentDue } from "@/lib/admin-data"
 import { DollarSign, Calendar, User, AlertTriangle, Search, Clock } from "lucide-react"
 
 export default function AdminPaymentsPage() {
