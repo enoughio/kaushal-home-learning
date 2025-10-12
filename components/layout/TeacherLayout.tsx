@@ -1,0 +1,153 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { AuthService } from "@/lib/auth"
+import { Button } from "@/components/ui/button"
+import { Users, FileText, Calendar, DollarSign, LogOut, Home, Menu, X, User } from "lucide-react"
+import type { User as UserType } from "@/lib/auth"
+
+interface TeacherLayoutProps {
+  children: React.ReactNode
+  activeTab: string
+}
+
+export function TeacherLayout({ children, activeTab }: TeacherLayoutProps) {
+  const [user, setUser] = useState<UserType | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    const currentUser = AuthService.getCurrentUser()
+    // For development we won't redirect away if no current user is found.
+    // Previously this would push to "/" and prevent accessing teacher pages
+    // while testing. Instead, just set the user when available.
+    if (!currentUser || currentUser.role !== "teacher") {
+      setUser(null)
+      return
+    }
+    setUser(currentUser)
+  }, [router])
+
+  const handleLogout = () => {
+    AuthService.logout()
+    router.push("/")
+  }
+
+  const navigation = [
+    { name: "Dashboard", href: "/teacher", icon: Home, id: "dashboard" },
+    { name: "My Students", href: "/teacher/students", icon: Users, id: "students" },
+    { name: "Assignments", href: "/teacher/assignments", icon: FileText, id: "assignments" },
+    { name: "Attendance", href: "/teacher/attendance", icon: Calendar, id: "attendance" },
+    { name: "Payments", href: "/teacher/payments", icon: DollarSign, id: "payments" },
+    { name: "Profile", href: "/teacher/profile", icon: User, id: "profile" },
+  ]
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <div>
+              <h1 className="text-xl font-bold text-primary">Kaushaly</h1>
+              <p className="text-sm text-muted-foreground">Teacher Portal</p>
+            </div>
+            <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setSidebarOpen(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* User info */}
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                <User className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <p className="font-medium">{user.name}</p>
+                <p className="text-sm text-muted-foreground capitalize">{user.role}</p>
+                {!user.approved && <p className="text-xs text-yellow-600 dark:text-yellow-400">Pending Approval</p>}
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-2">
+            {navigation.map((item) => {
+              const Icon = item.icon
+              const isActive = activeTab === item.id
+              return (
+                <Button
+                  key={item.name}
+                  variant={isActive ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => {
+                    router.push(item.href)
+                    setSidebarOpen(false)
+                  }}
+                >
+                  <Icon className="mr-3 h-4 w-4" />
+                  {item.name}
+                </Button>
+              )
+            })}
+          </nav>
+
+          {/* Logout */}
+          <div className="p-4 border-t border-border">
+            <Button variant="outline" className="w-full justify-start bg-transparent" onClick={handleLogout}>
+              <LogOut className="mr-3 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="lg:pl-64">
+        {/* Mobile header */}
+        <div className="sticky top-0 z-30 bg-background border-b border-border lg:hidden">
+          <div className="flex items-center justify-between p-4">
+            <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(true)}>
+              <Menu className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-lg font-semibold">Kaushaly</h1>
+            </div>
+            <div className="w-8" />
+          </div>
+        </div>
+
+        {/* Page content */}
+        <main className="p-4 lg:p-6">{children}</main>
+      </div>
+    </div>
+  )
+}

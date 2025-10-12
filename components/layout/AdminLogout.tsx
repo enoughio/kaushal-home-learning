@@ -1,0 +1,31 @@
+"use client"
+
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { LogOut } from "lucide-react"
+import { AuthService } from "@/lib/auth"
+
+export function AdminLogout() {
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    AuthService.logout()
+    // Disabled automatic redirect to home for now so logout doesn't
+    // immediately navigate away during development. If you want the
+    // redirect behavior back, re-enable the line below.
+    // router.push("/")
+  }
+
+  return (
+    <div className="p-4 border-t border-border">
+      <Button 
+        variant="outline" 
+        className="w-full justify-start bg-transparent" 
+        onClick={handleLogout}
+      >
+        <LogOut className="mr-3 h-4 w-4" />
+        Logout
+      </Button>
+    </div>
+  )
+}

@@ -4,15 +4,15 @@ import Image from "next/image";
 import {
   startingText,
   textAfterValues,
-  valueCards,
+  // valueCards,
 } from "@/data/About-page-data";
 
-interface ValueCard {
-  number: string;
-  alignment: 'left' | 'right';
-  heading: string;
-  text: string;
-}
+// interface ValueCard {
+//   number: string;
+//   alignment: 'left' | 'right';
+//   heading: string;
+//   text: string;
+// }
 import Underline from "@/components/ui/about/underlineComponent";
 import Stats from "@/components/ui/home/Stats";
 import TutorStudentJoin from "@/components/ui/about/tutorStudentJoin";
