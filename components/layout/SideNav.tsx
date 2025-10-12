@@ -14,6 +14,7 @@ export default async function SideNav() {
   const cookieStore = await cookies();
   const role = cookieStore.get("role")?.value ?? "guest";
 
+
   return (
     <div className="flex h-full flex-col px-3 py-4 md:px-2 md:overflow-y-auto">
       <Link

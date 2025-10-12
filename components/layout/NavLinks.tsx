@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
+
 import clsx from "clsx";
 import {
   Users,
@@ -38,12 +39,12 @@ const adminNavigation: NavItem[] = [
 
 // teacher navigation links
 const teacherNavigation = [
-  { name: "Dashboard", href: "/teacher", icon: Home, id: "dashboard" },
-  { name: "My Students", href: "/teacher/students", icon: Users, id: "students" },
-  { name: "Assignments", href: "/teacher/assignments", icon: FileText, id: "assignments" },
-  { name: "Attendance", href: "/teacher/attendance", icon: Calendar, id: "attendance" },
-  { name: "Payments", href: "/teacher/payments", icon: DollarSign, id: "payments" },
-  { name: "Profile", href: "/teacher/profile", icon: User, id: "profile" },
+  { name: "Dashboard", href: "/teachers", icon: Home, id: "dashboard" },
+  { name: "My Students", href: "/teachers/students", icon: Users, id: "students" },
+  { name: "Assignments", href: "/teachers/assignments", icon: FileText, id: "assignments" },
+  { name: "Attendance", href: "/teachers/attendance", icon: Calendar, id: "attendance" },
+  { name: "Payments", href: "/teachers/payments", icon: DollarSign, id: "payments" },
+  { name: "Profile", href: "/teachers/profile", icon: User, id: "profile" },
 ];
 
 // student navigation links
@@ -58,7 +59,19 @@ const studentNavigation = [
 
 export default function NavLinks({ role }: { role?: string }) {
 
+  // TODO : remove this in production
   const pathname = usePathname();
+  if (pathname.includes("/admin")) {
+    role = "admin";
+  }
+  else if (pathname.includes("/teachers")) {
+    role = "teacher";
+  }
+  else if (pathname.includes("/student")) {
+    role = "student";
+  }
+
+
   const r = (role ?? "guest").toLowerCase();
 
   let nav: NavItem[] = [];

@@ -1,4 +1,4 @@
-import NotificationsPageClient from "@/components/adminPage/notificationsPage/NotificationsPageClient"
+import NotificationsPageClient from "@/components/adminPages/notificationsPage/NotificationsPageClient"
 
 export default function NotificationsPage() {
  

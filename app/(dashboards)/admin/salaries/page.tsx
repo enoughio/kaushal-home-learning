@@ -1,5 +1,5 @@
 // admin route now uses route layout
-import TeacherSalariesPageClient from "@/components/adminPage/TeacherSalariesPage/TeacherSalariesPageClient";
+import TeacherSalariesPageClient from "@/components/adminPages/TeacherSalariesPage/TeacherSalariesPageClient";
 
 export default function TeacherSalariesPage() {
   return (

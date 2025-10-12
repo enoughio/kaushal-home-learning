@@ -1,4 +1,4 @@
-import PaymentsPage from "@/components/adminPage/paymentsPage/PaymentsPage";
+import PaymentsPage from "@/components/adminPages/paymentsPage/PaymentsPage";
 // admin route now uses route layout
 
 export default function AdminPaymentsPage() {

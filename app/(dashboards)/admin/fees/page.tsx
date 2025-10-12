@@ -1,4 +1,4 @@
-import StudentFeesWrapper from "@/components/adminPage/StudentFeesPage/StudentFees";
+import StudentFeesWrapper from "@/components/adminPages/StudentFeesPage/StudentFees";
 
 export default function StudentFeesPage() {
   return (

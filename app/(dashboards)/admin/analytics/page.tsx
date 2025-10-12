@@ -3,25 +3,25 @@ import React, { Suspense, lazy } from "react";
 
 // Lazy-loaded chart components
 const KeyMetrics = lazy(
-  () => import("@/components/adminPage/analyticsPage/KeyMetrics")
+  () => import("@/components/adminPages/analyticsPage/KeyMetrics")
 );
 const AnnualGrowth = lazy(
-  () => import("@/components/adminPage/analyticsPage/AnnualGrowth")
+  () => import("@/components/adminPages/analyticsPage/AnnualGrowth")
 );
 const PaymentAnalytics = lazy(
-  () => import("@/components/adminPage/analyticsPage/PaymentAnalytics")
+  () => import("@/components/adminPages/analyticsPage/PaymentAnalytics")
 );
 const MonthlyUserGrowth = lazy(
-  () => import("@/components/adminPage/analyticsPage/MonthlyUserGrowth")
+  () => import("@/components/adminPages/analyticsPage/MonthlyUserGrowth")
 );
 const UserDistribution = lazy(
-  () => import("@/components/adminPage/analyticsPage/UserDistribution")
+  () => import("@/components/adminPages/analyticsPage/UserDistribution")
 );
 const SubjectDistribution = lazy(
-  () => import("@/components/adminPage/analyticsPage/SubjectDistribution")
+  () => import("@/components/adminPages/analyticsPage/SubjectDistribution")
 );
 const AttendenceAnalytics = lazy(
-  () => import("@/components/adminPage/analyticsPage/AttendenceAnalytics")
+  () => import("@/components/adminPages/analyticsPage/AttendenceAnalytics")
 );
 
 // Simple loader for each chart, Can be customized later
