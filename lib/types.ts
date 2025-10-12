@@ -13,22 +13,38 @@ export interface PaymentStatsProps {
 }
 
 
-//  {
-//     id: "1",
-//     name: "John Doe",
-//     age: 16,
-//     location: "Mumbai, Bandra",
-//     phone: "+91 9876543210",
-//     parentName: "Robert Doe",
-//     parentPhone: "+91 9876543211",
-//     skillsLearning: ["Mathematics", "Physics"],
-//     joinedDate: "2024-01-01",
-//     status: "active",
-//   },
+export interface Assignment {
+  id: string
+  title: string
+  description: string
+  subject: string
+  teacherId: string
+  teacherName: string
+  dueDate: string
+  status: "pending" | "submitted" | "graded"
+  grade?: number
+  submittedAt?: string
+  // optional file attachment metadata (for assignment attachments and student submissions)
+  attachmentUrl?: string
+  attachmentName?: string
+  submissionFileUrl?: string
+  submissionFileName?: string
+}
+
+
+export interface AttendanceRecord {
+  id: string
+  studentId: string
+  teacherId: string
+  teacherName: string
+  subject: string
+  date: string
+  status: "present" | "absent"
+  duration: number // in minutes
+}
 
 
 export interface StudentInfo{
-
   id: string
   name: string
   age: number
@@ -39,4 +55,30 @@ export interface StudentInfo{
   skillsLearning: string[]
   joinedDate: string // YYYY-MM-DD
   status: "active" | "inactive"
+}
+
+
+
+export interface TeacherSearchResult {
+  id: string
+  name: string
+  location: string
+  skillsToTeach: string[]
+  experience: number
+  rating: number
+  hourlyRate: number
+  distance: string
+  profileImage?: string
+}
+
+
+
+export interface StudentPayment {
+  id: string
+  studentId: string
+  amount: number
+  paymentMethod: "upi" | "card" | "cash"
+  paymentStatus: "completed" | "pending" | "failed" | "refunded"
+  transactionId?: string
+  paymentDate: string // YYYY-MM-DD
 }
