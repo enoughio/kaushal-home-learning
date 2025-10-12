@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Clock, AlertTriangle, User, Calendar } from "lucide-react";
 
+import type { PaymentDue } from "@/lib/adminData";
+
 interface PaymentsListProps {
-  payments: any[];
+  payments: PaymentDue[];
   loading: boolean;
 }
 

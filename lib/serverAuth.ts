@@ -16,7 +16,7 @@ export interface ServerUser {
 // Mock function - in real app, this would validate JWT tokens or session cookies
 export async function getCurrentUser(): Promise<ServerUser | null> {
   // In a real app, you'd check cookies/sessions here
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const userCookie = cookieStore.get('user-session')
   
   if (!userCookie) {
@@ -48,7 +48,7 @@ export async function requireAuth(requiredRole?: string): Promise<ServerUser> {
 
 // Server action for logout
 export async function signOut() {
-  const cookieStore = cookies()
-  cookieStore.delete('user-session')
+  const cookieStore = await cookies()
+  cookieStore.set('user-session', '', { maxAge: 0 })
   redirect('/')
 }

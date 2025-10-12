@@ -1,10 +1,10 @@
-import { AdminLayout } from "@/components/layout/AdminLayout";
+// admin route now uses route layout
 import TeacherSalariesPageClient from "@/components/adminPage/TeacherSalariesPage/TeacherSalariesPageClient";
 
 export default function TeacherSalariesPage() {
   return (
-    <AdminLayout activeTab="salaries">
-      <TeacherSalariesPageClient />
-    </AdminLayout>
+      <div className="space-y-6">
+        <TeacherSalariesPageClient />
+      </div>
   );
 }

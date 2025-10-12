@@ -1,7 +1,7 @@
 // Example of a server component admin page
 // This shows the pattern you'd use in production with server-side auth
 
-import { AdminLayoutServer } from "@/components/layout/AdminLayoutServer"
+// import { AdminLayoutServer } from "@/components/layout/AdminLayoutServer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users, UserCheck, DollarSign, TrendingUp } from "lucide-react"
@@ -24,7 +24,7 @@ export default async function AdminDashboardServer() {
   // const user = await requireAuth('admin')
 
   return (
-    <AdminLayoutServer>
+    // <AdminLayoutServer>
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -114,6 +114,5 @@ export default async function AdminDashboardServer() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayoutServer>
   )
 }

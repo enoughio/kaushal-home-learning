@@ -1,12 +1,11 @@
 import NotificationsPageClient from "@/components/adminPage/notificationsPage/NotificationsPageClient"
-import { AdminLayout } from "@/components/layout/AdminLayout"
 
 export default function NotificationsPage() {
  
   return (
-    <AdminLayout activeTab="notifications">
-     <NotificationsPageClient/>
-    </AdminLayout>
+     <div className="space-y-6">
+       <NotificationsPageClient />
+     </div>
   )
 }
 

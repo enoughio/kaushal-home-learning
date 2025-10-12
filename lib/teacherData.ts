@@ -201,23 +201,27 @@ export const mockAttendance: AttendanceRecord[] = [
 
 export class TeacherDataService {
   static async getMyStudents(teacherId: string): Promise<StudentInfo[]> {
+    console.log(teacherId);
     await new Promise((resolve) => setTimeout(resolve, 500))
     return mockStudents
   }
 
   static async getPaymentHistory(teacherId: string): Promise<PaymentRecord[]> {
+    console.log(teacherId);
     await new Promise((resolve) => setTimeout(resolve, 500))
     return mockPayments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }
 
   static async getMyAssignments(teacherId: string): Promise<TeacherAssignment[]> {
     await new Promise((resolve) => setTimeout(resolve, 500))
+    console.log("Fetching assignments for teacher:", teacherId)
     return mockTeacherAssignments.sort(
       (a, b) => new Date(b.assignedDate).getTime() - new Date(a.assignedDate).getTime(),
     )
   }
 
   static async createAssignment(assignment: Omit<TeacherAssignment, "id" | "status">): Promise<TeacherAssignment> {
+    
     await new Promise((resolve) => setTimeout(resolve, 1000))
     const newAssignment: TeacherAssignment = {
       ...assignment,

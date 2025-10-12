@@ -3,10 +3,19 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users } from "lucide-react";
+
 import { AreaChart, Area, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+// Yearly data shape used by the AnnualGrowth page
+interface YearlyData {
+  year: string;
+  revenue: number;
+  students: number;
+  teachers: number;
+}
+
 interface AnnualGrowthClientProps {
-  initialData: any[];
+  initialData: YearlyData[];
 }
 
 export default function AnnualGrowthClient({ initialData }: AnnualGrowthClientProps) {

@@ -1,10 +1,10 @@
 import PaymentsPage from "@/components/adminPage/paymentsPage/PaymentsPage";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+// admin route now uses route layout
 
 export default function AdminPaymentsPage() {
   return (
-    <AdminLayout activeTab="payments">
+    <div className="space-y-6">
       <PaymentsPage />
-    </AdminLayout>
+    </div>
   );
 }

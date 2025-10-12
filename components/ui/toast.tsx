@@ -21,7 +21,8 @@ export interface ToastProps {
 // No-op Toast component: shadcn previously provided UI. Projects can replace this
 // with the official component or a custom UI later. For now it renders nothing
 // (headless) and only provides types.
-export function Toast(_: ToastProps) {
+export function Toast() {
+  
   return null
 }
 

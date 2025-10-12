@@ -12,10 +12,10 @@ import { AuthService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 
 interface RegisterFormProps {
-  onSwitchToLogin: () => void
+  onSwitchToLoginAction: () => void
 }
 
-export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
+export function RegisterForm({ onSwitchToLoginAction }: RegisterFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
@@ -32,7 +32,8 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     try {
       await AuthService.register(email, password, name, role)
       router.push("/profile-setup")
-    } catch (err) {
+    } catch (_err) {
+      console.error(_err)
       setError("Registration failed. Please try again.")
     } finally {
       setLoading(false)
@@ -98,7 +99,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           </Button>
         </form>
         <div className="mt-4 text-center">
-          <Button variant="link" onClick={onSwitchToLogin} className="text-muted-foreground">
+          <Button variant="link" onClick={onSwitchToLoginAction} className="text-muted-foreground">
             Already have an account? Sign in
           </Button>
         </div>

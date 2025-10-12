@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { Urbanist, Syne,Gothic_A1 } from "next/font/google";
 import "./globals.css";
-import NavBar from '@/components/NavBar';
+// NavBar was previously imported but is unused in RootLayout. Keep import removed to satisfy lint.
 import Fotter from "@/components/Fotter";
 
 
@@ -43,7 +43,7 @@ export default function RootLayout({
       <body
         className={`${urbanist.variable} ${gothicA1.variable}  ${syne.variable} antialiased`}
       >
-        <NavBar />
+        {/* <NavBar /> */}
         {children}
         <Fotter />
       </body>

@@ -3,8 +3,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { DollarSign, Clock, AlertTriangle } from "lucide-react";
 
+import type { PaymentDue } from "@/lib/adminData";
+
 interface PaymentStatsProps {
-  payments: any[];
+  payments: PaymentDue[];
   loading: boolean;
 }
 

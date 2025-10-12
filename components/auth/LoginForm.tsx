@@ -11,10 +11,10 @@ import { AuthService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 
 interface LoginFormProps {
-  onSwitchToRegister: () => void
+  onSwitchToRegisterAction: () => void
 }
 
-export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
+export function LoginForm({ onSwitchToRegisterAction }: LoginFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -45,7 +45,8 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             break
         }
       }
-    } catch (err) {
+    } catch (_err) {
+      console.error(_err)
       setError("Invalid email or password")
     } finally {
       setLoading(false)
@@ -88,7 +89,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           </Button>
         </form>
         <div className="mt-4 text-center">
-          <Button variant="link" onClick={onSwitchToRegister} className="text-muted-foreground">
+          <Button variant="link" onClick={onSwitchToRegisterAction} className="text-muted-foreground">
             Don&apos;t have an account? Sign up
           </Button>
         </div>

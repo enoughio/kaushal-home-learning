@@ -153,6 +153,7 @@ export const mockTeacherSearch: TeacherSearchResult[] = [
 export class MockDataService {
   static async getAssignments(studentId: string): Promise<Assignment[]> {
     // Simulate API delay
+    console.log("Fetching assignments for student:", studentId)
     await new Promise((resolve) => setTimeout(resolve, 500))
     return mockAssignments
   }

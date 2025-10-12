@@ -1,10 +1,10 @@
-import { AdminLayout } from "@/components/layout/AdminLayout";
+// admin route now uses route layout
 import UserManagementPageClient from "@/components/adminPage/usersManagementPage/UsersManagementPageClient";
 
 export default function UserManagementPage() {
   return (
-    <AdminLayout activeTab="users">
+    <div className="space-y-6">
       <UserManagementPageClient />
-    </AdminLayout>
+    </div>
   );
 }

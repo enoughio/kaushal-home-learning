@@ -474,7 +474,7 @@ export class AdminDataService {
     return mockMonthlyData
   }
 
-  static async getTeacherStudents(teacherId: string): Promise<UserManagement[]> {
+  static async getTeacherStudents(): Promise<UserManagement[]> {
     await new Promise((resolve) => setTimeout(resolve, 500))
     // Mock: return students assigned to this teacher
     return mockUsers.filter((u) => u.role === "student" && u.status === "active").slice(0, 3)

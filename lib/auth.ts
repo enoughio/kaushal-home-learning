@@ -93,6 +93,7 @@ export class AuthService {
 
   static async login(email: string, password: string): Promise<User> {
     // Mock login - in real app, this would call your backend
+    console.log("Attempting login for:", password)
     const user = mockUsers.find((u) => u.email === email)
     if (!user) {
       throw new Error("Invalid credentials")

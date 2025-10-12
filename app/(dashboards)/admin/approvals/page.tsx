@@ -1,11 +1,11 @@
-import { AdminLayout } from "@/components/layout/AdminLayout";
+// admin route now uses route layout
 import TeacherApprovalsWrapper from "@/components/adminPage/teacherApprovalsPage/TeacherApprovalsWrapper";
 
 export default async function TeacherApprovalsPage() {
 
   return (
-    <AdminLayout activeTab="approvals">
+    <div className="space-y-6">
       <TeacherApprovalsWrapper />
-    </AdminLayout>
+    </div>
   );
 }
