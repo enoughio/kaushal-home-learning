@@ -1,11 +1,9 @@
 import { Suspense } from "react";
 import HistoryTable from "@/components/studentPages/PaymentHistory/HistoryTable";
 
-type Props = {
-  searchParams?: { [key: string]: string | string[] | undefined };
-};
 
-export default function HistoryPage({ searchParams }: Props) {
+
+export default function HistoryPage() {
   return (
     <div className="space-y-6">
       <div>
@@ -14,7 +12,7 @@ export default function HistoryPage({ searchParams }: Props) {
       </div>
 
       <Suspense fallback={<div>Loading payment history...</div>}>
-        <HistoryTable searchParams={searchParams} />
+        <HistoryTable  />
       </Suspense>
     </div>
   );

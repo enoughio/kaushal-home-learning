@@ -9,7 +9,7 @@ import { Search } from "lucide-react";
 export default function PaymentSearch({ placeholder }: { placeholder: string }) {
   const searchParams = useSearchParams();
   const { replace } = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname(); // this will return like -  
 
   const handleSearch = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");

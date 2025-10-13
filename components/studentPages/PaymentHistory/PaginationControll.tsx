@@ -1,16 +1,37 @@
 
 
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type Props = {
   page: number;
-  pageSize: number;
+  start: number;
+  end: number;
   total: number;
 };
 
-export default function PaginationControll({ page, pageSize, total }: Props) {
-  const start = (page - 1) * pageSize + 1;
-  const end = Math.min(page * pageSize, total);
+// this should only update the query param `page`
+export default function PaginationControll({ page, start, end, total }: Props) {
+
+  const serchParams = useSearchParams()
+  const { replace } = useRouter()
+  const pathname  = usePathname()
+
+
+
+  const onNextPage =  () => {
+    const params = new URLSearchParams(serchParams?.toString() || "")
+    params.set('page', (page + 1).toString());
+  }
+
+  const onPrevPage = () => {
+    const params = new URLSearchParams(serchParams?.toString() || "")
+    params.set('page', Math.max(1, page - 1).toString());
+
+    replace(`${pathname}?${params.toString()}`)
+  }
+
 
   return (
     <div className="flex items-center justify-between">
@@ -18,19 +39,19 @@ export default function PaginationControll({ page, pageSize, total }: Props) {
         Showing {start}-{end} of {total}
       </p>
       <div className="flex items-center gap-2">
-        <Link
-          href={`?page=${Math.max(1, page - 1)}`}
+        <Button
+          onClick={()=>{onPrevPage()}}
           className={`px-3 py-1 rounded bg-muted hover:bg-muted/80 ${page === 1 ? "opacity-50 pointer-events-none" : ""}`}
         >
           Previous
-        </Link>
+        </Button>
         <span className="text-sm">{page}</span>
-        <Link
-          href={`?page=${page * pageSize < total ? page + 1 : page}`}
-          className={`px-3 py-1 rounded bg-muted hover:bg-muted/80 ${page * pageSize >= total ? "opacity-50 pointer-events-none" : ""}`}
+        <Button
+          onClick={()=>{onNextPage()}}
+          className={`px-3 py-1 rounded bg-muted hover:bg-muted/80 ${page  >= total ? "opacity-50 pointer-events-none" : ""}`}
         >
           Next
-        </Link>
+        </Button>
       </div>
     </div>
   );

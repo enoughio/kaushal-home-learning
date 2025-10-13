@@ -9,10 +9,19 @@ type Props = {
   pageSize?: number;
 };
 
-export default async function HistoryTable({ searchParams, page: pageProp, pageSize: pageSizeProp }: Props) {
-  const pageFromQuery = Number(Array.isArray(searchParams?.page) ? searchParams?.page[0] : searchParams?.page) || 1;
-  const page = pageProp ?? pageFromQuery ?? 1;
-  const pageSize = pageSizeProp ?? 5;
+export default async function HistoryTable({ searchParams, }: { searchParams?: Promise<{ Page : string}>}) {
+
+    const params = await searchParams;
+    const page = params?.Page ? parseInt(params.Page as string, 10) : 1;
+
+    // fetch data for the page
+    console.log("Fetching data for page:", page);
+
+    // get this from api later
+    const totalPages = 10;
+    const start =  totalPages - page;
+    const end = Math.min(start + totalPages - 1, totalPages);
+
 
   // Placeholder payments (server-side). Will be replaced with API response later.
   const payments: StudentPayment[] = [
@@ -30,9 +39,7 @@ export default async function HistoryTable({ searchParams, page: pageProp, pageS
     { id: "p12", studentId: "2", amount: 1400, paymentMethod: "card", paymentStatus: "completed", transactionId: "tx1012", paymentDate: "2024-11-03" },
   ];
 
-  const start = (page - 1) * pageSize;
-  const end = page * pageSize;
-  const pageItems = payments.slice(start, end);
+
 
   return (
     <Card>
@@ -58,7 +65,7 @@ export default async function HistoryTable({ searchParams, page: pageProp, pageS
                   </tr>
                 </thead>
                 <tbody>
-                  {pageItems.map((p) => (
+                  {payments.map((p) => (
                     <tr key={p.id} className="border-t border-border">
                       <td className="p-3">{p.paymentDate}</td>
                       <td className="p-3">₹{p.amount.toLocaleString()}</td>
@@ -77,7 +84,7 @@ export default async function HistoryTable({ searchParams, page: pageProp, pageS
               </table>
             </div>
 
-            <PaginationControll page={page} pageSize={pageSize} total={payments.length} />
+            <PaginationControll page={page} start={start} end={end} total={payments.length} />
           </div>
         )}
       </CardContent>
