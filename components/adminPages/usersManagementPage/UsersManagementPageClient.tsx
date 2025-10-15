@@ -95,7 +95,7 @@ export default function UserManagementPageClient() {
         </p>
       </div>
 
-      <Stats users={users} loading={loading} />
+      <Stats loading={true} />
 
       <Filters
         searchTerm={searchTerm}

@@ -23,6 +23,24 @@ The platform supports the following user roles:
 https://api.kaushaly.in/api
 ```
 
+
+
+###Error response format
+
+Error Response (all endpoints)
+- 400/401/403/404/409/422/500
+{
+  {
+    "Error": "string_identifier",
+    "message": "Human-readable error",
+    "code" : 400
+  }
+  {
+    status: 400,
+  }
+}
+
+
 ## Authentication
 
 This needs to be added later.
