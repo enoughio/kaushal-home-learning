@@ -1,11 +1,11 @@
-import NotificationsPageClient from "@/components/adminPages/notificationsPage/NotificationsPageClient"
+// import NotificationsPageClient from "@/components/adminPages/notificationsPage/NotificationsPageClient"
 
 export default function NotificationsPage() {
  
   return (
      <div className="space-y-6">
-       <NotificationsPageClient />
-     </div>
+        notifications page coming soon...
+       </div>
   )
 }
 
@@ -14,13 +14,45 @@ export default function NotificationsPage() {
 // "use client"
 
 // import { useState, useEffect } from "react"
-// import { AdminLayout } from "@/components/layout/AdminLayout"
+// import { AdminLayout } from "@/components/layout/admin-layout"
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-// import { AdminDataService, type NotificationStats } from "@/lib/adminData"
+// import { AdminDataService, type NotificationStats } from "@/lib/admin-data"
 // import { Mail, MessageSquare, Bell, AlertCircle, CheckCircle, Clock } from "lucide-react"
 
 // export default function NotificationsPage() {
- 
+//   const [stats, setStats] = useState<NotificationStats | null>(null)
+//   const [loading, setLoading] = useState(true)
+
+//   useEffect(() => {
+//     const loadStats = async () => {
+//       try {
+//         const data = await AdminDataService.getNotificationStats()
+//         setStats(data)
+//       } catch (error) {
+//         console.error("Failed to load notification stats:", error)
+//       } finally {
+//         setLoading(false)
+//       }
+//     }
+
+//     loadStats()
+//   }, [])
+
+//   if (loading) {
+//     return (
+//       <AdminLayout activeTab="notifications">
+//         <div className="flex items-center justify-center h-64">
+//           <div className="text-center">
+//             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+//             <p className="mt-2 text-muted-foreground">Loading notification stats...</p>
+//           </div>
+//         </div>
+//       </AdminLayout>
+//     )
+//   }
+
+//   if (!stats) return null
+
 //   return (
 //     <AdminLayout activeTab="notifications">
 //       <div className="space-y-6">
@@ -236,8 +268,3 @@ export default function NotificationsPage() {
 //     </AdminLayout>
 //   )
 // }
-
-
-
-
-
