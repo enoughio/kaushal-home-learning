@@ -1,71 +1,10 @@
-"use client";
-
-import { useState, useEffect, Suspense } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  AdminDataService,
-  type PlatformStats,
-  type UserManagement,
-  type TeacherApproval,
-} from "@/lib/adminData";
-import {
-  Users,
-  UserCheck,
-  DollarSign,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
 import OverviewStats from "@/components/adminPages/overview/OverviewStats";
-import QuickActionsAdmin from "@/components/adminPages/overview/QuickActionsAdmin";
 import PendingapprovalsOverView from "@/components/adminPages/overview/PendingapprovalsOverView";
+import QuickActionsAdmin from "@/components/adminPages/overview/QuickActionsAdmin";
 import RecentUsersOverview from "@/components/adminPages/overview/RecentUsersOverview";
+import { Suspense } from "react";
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState<PlatformStats | null>(null);
-  const [recentUsers, setRecentUsers] = useState<UserManagement[]>([]);
-  const [pendingTeachers, setPendingTeachers] = useState<TeacherApproval[]>([]);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [statsData, usersData, teachersData] = await Promise.all([
-          AdminDataService.getPlatformStats(),
-          AdminDataService.getAllUsers(),
-          AdminDataService.getPendingTeachers(),
-        ]);
-
-        setStats(statsData);
-        setRecentUsers(usersData.slice(0, 5));
-        setPendingTeachers(teachersData);
-      } catch (error) {
-        console.error("Failed to load admin dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!stats) return null;
-
+export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
