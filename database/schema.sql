@@ -135,7 +135,7 @@ CREATE TABLE teachers (
     resume_url VARCHAR(500),
     certificates_url TEXT[], -- Array of certificate URLs
     tenth_percentage DECIMAL(5,2),         -- Added
-    twelfth_percentage DECIMAL(5,2),       -- Added
+    twelth_percentage DECIMAL(5,2),       -- Added
     marksheet_url_tenth VARCHAR(500),      -- Added
     marksheet_url_twelfth VARCHAR(500),    -- Added
     approval_status VARCHAR(20) DEFAULT 'pending' CHECK (approval_status IN ('pending', 'approved', 'rejected')),
