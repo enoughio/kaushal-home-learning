@@ -1,33 +1,55 @@
-import React, { Suspense } from "react"
-import StudentFeesStats from "@/components/adminPages/Fees/FeesStats"
-import FeesTable from "@/components/adminPages/Fees/FeesTable"
-import FeesTableSkeletonLoader from "@/components/adminPages/StudentFeesPage/FeesTableSkeletonLoader"
+import React, { Suspense } from "react";
+import StudentFeesStats from "@/components/adminPages/Fees/FeesStats";
+import FeesTable from "@/components/adminPages/Fees/FeesTable";
+import FeesTableSkeletonLoader from "@/components/adminPages/StudentFeesPage/FeesTableSkeletonLoader";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default async function StudentFeesPage() {
+  const StudentFeesStatsSkeleton = () => {
+    return (
+      <div className="animate-pulse grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-6 h-[110px]">
+              {" "}
+              {/* Fix height same as real card */}
+              <div className="flex items-center justify-between h-full">
+                <div className="space-y-2">
+                  <div className="h-4 w-32 bg-muted rounded" /> {/* Title */}
+                  <div className="h-8 w-24 bg-muted rounded" /> {/* Value */}
+                </div>
+                <div className="h-8 w-8 bg-muted rounded-full" /> {/* Icon */}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
   // Server component: child components fetch their own data
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Student Fees</h1>
-        <p className="text-muted-foreground">Monitor monthly fee collection and payment status</p>
+        <p className="text-muted-foreground">
+          Monitor monthly fee collection and payment status
+        </p>
       </div>
 
       {/* Summary Cards */}
-      <Suspense fallback={<div>Loading Stats...</div>}>
+      <Suspense fallback={<StudentFeesStatsSkeleton />}>
         {/* FeesStats is an async server component that fetches its own data */}
         <StudentFeesStats />
       </Suspense>
 
       {/* Fees Table */}
       <Suspense fallback={<FeesTableSkeletonLoader rows={6} />}>
-        <FeesTable  />
+        <FeesTable />
       </Suspense>
     </div>
-  )
+  );
 }
-
-
-
 
 // -----old code below this line--------
 // "use client"

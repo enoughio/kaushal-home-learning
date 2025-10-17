@@ -1,4 +1,4 @@
-import { AdminDataService, type PlatformStats } from "@/lib/adminData";
+import { AdminDataService, type PlatformStats } from "@/lib/";
 import { KeyMetricsClient } from "./KeyMetricsClient";
 
 // Server component: fetches data and passes to client component

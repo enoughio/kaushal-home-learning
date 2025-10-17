@@ -1,31 +1,106 @@
-import SalaryStats from '@/components/adminPages/Salary/SalaryStats'
-import SalaryTable from '@/components/adminPages/Salary/SalaryTable'
-import React, { Suspense } from 'react'
+import SalaryStats from "@/components/adminPages/Salary/SalaryStats";
+import SalaryTable from "@/components/adminPages/Salary/SalaryTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { Suspense } from "react";
 
 export default async function TeacherSalariesPage() {
-  return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Teacher Salaries</h1>
-          <p className="text-muted-foreground">Manage monthly teacher compensation</p>
-        </div>
-
-        {/* Summary Cards */}
-        <Suspense fallback={<div>Loading Salary Stats...</div>}>
-        <SalaryStats />
-        </Suspense>
-
-        {/* Salaries Table */}
- 
-          <Suspense fallback={<div>Loading Add Record...</div>}>
-            <SalaryTable />
-          </Suspense>
-
+  const SalaryStatsFallback = () => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
+        {[...Array(3)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="h-4 w-24 bg-neutral-200 rounded" />
+                  <div className="h-6 w-16 bg-neutral-300 rounded" />
+                </div>
+                <div className="h-8 w-8 bg-neutral-200 rounded-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-  )
+    );
+  };
+
+  const SalaryTableSkeleton = ({rows}) => {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="h-5 w-48 bg-muted rounded animate-pulse" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Array(rows)
+              .fill(0)
+              .map((_, index) => (
+                <div key={index} className="p-4 border rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+                    {/* Teacher Name + Month */}
+                    <div className="space-y-2">
+                      <div className="h-4 w-28 bg-muted rounded animate-pulse"></div>
+                      <div className="h-3 w-20 bg-muted rounded animate-pulse"></div>
+                    </div>
+
+                    {/* Base Salary */}
+                    <div className="h-4 w-16 bg-muted rounded animate-pulse"></div>
+
+                    {/* Bonuses */}
+                    <div className="h-4 w-16 bg-muted rounded animate-pulse"></div>
+
+                    {/* Deductions */}
+                    <div className="h-4 w-16 bg-muted rounded animate-pulse"></div>
+
+                    {/* Total */}
+                    <div className="h-4 w-20 bg-muted rounded animate-pulse"></div>
+
+                    {/* Status Badge */}
+                    <div className="space-y-2">
+                      <div className="h-4 w-16 bg-muted rounded animate-pulse"></div>
+                      <div className="h-3 w-20 bg-muted rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between pt-2">
+              <div className="h-3 w-32 bg-muted rounded animate-pulse" />
+              <div className="flex gap-2">
+                <div className="h-8 w-16 bg-muted rounded animate-pulse" />
+                <div className="h-8 w-16 bg-muted rounded animate-pulse" />
+                <div className="h-8 w-16 bg-muted rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Teacher Salaries</h1>
+        <p className="text-muted-foreground">
+          Manage monthly teacher compensation
+        </p>
+      </div>
+
+      {/* Summary Cards */}
+      <Suspense fallback={<SalaryStatsFallback />}>
+        <SalaryStats />
+      </Suspense>
+
+      {/* Salaries Table */}
+
+      <Suspense fallback={<SalaryTableSkeleton rows = {4}/>}>
+        <SalaryTable />
+      </Suspense>
+    </div>
+  );
 }
-
-
 
 // ---- old code -----
 // "use client"
@@ -322,4 +397,3 @@ export default async function TeacherSalariesPage() {
 //     </AdminLayout>
 //   )
 // }
-
