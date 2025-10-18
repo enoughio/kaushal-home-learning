@@ -1,4 +1,4 @@
-import { query } from "@/database/db";
+import { sql } from "@/database/db";
 import { EmailFormate } from "@/helper/mail/formateVelidator";
 import { NextResponse, NextRequest } from "next/server";
 
@@ -81,10 +81,8 @@ export async function POSt(req: NextRequest) {
 
     // save data in database 
 
-    query( 
-        `INSERT INTO users `
+    await sql`INSERT INTO users `
 
-    )
 
 
 

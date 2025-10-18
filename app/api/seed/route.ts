@@ -1,10 +1,10 @@
-import { query } from "@/database/db"; 
+import { sql  } from "@/database/db"; 
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
         // Drop and create temp_users table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS temp_users CASCADE;
             CREATE TABLE temp_users (
                 id SERIAL PRIMARY KEY,
@@ -17,10 +17,10 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT NOW(),
                 verified BOOLEAN DEFAULT FALSE
             );
-        `);
+        `;
 
         // Drop and create temp_teachers table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS temp_teachers CASCADE;
             CREATE TABLE temp_teachers (
                 id SERIAL PRIMARY KEY,
@@ -48,10 +48,10 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `;
 
         // Drop and create users table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS users CASCADE;
             CREATE TABLE users (
                 id SERIAL PRIMARY KEY,
@@ -82,10 +82,10 @@ export async function GET(req: NextRequest) {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 deleted_at TIMESTAMP NULL
             );
-        `);
+        `;
 
         // Drop and create students table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS students CASCADE;
             CREATE TABLE students (
                 id SERIAL PRIMARY KEY,
@@ -106,10 +106,10 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `;
 
         // Drop and create student_fees table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS student_fees CASCADE;
             CREATE TABLE student_fees (
                 id SERIAL PRIMARY KEY,
@@ -124,10 +124,10 @@ export async function GET(req: NextRequest) {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(student_id, month, year)
             );
-        `);
+        `;
 
         // Drop and create teachers table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS teachers CASCADE;
             CREATE TABLE teachers (
                 id SERIAL PRIMARY KEY,
@@ -162,10 +162,10 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `;
 
         // Drop and create teacher_student_assignments table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS teacher_student_assignments CASCADE;
             CREATE TABLE teacher_student_assignments (
                 id SERIAL PRIMARY KEY,
@@ -178,10 +178,10 @@ export async function GET(req: NextRequest) {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(teacher_id, student_id, subject)
             );
-        `);
+        `;
 
         // Drop and create assignments table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS assignments CASCADE;
             CREATE TABLE assignments (
                 id SERIAL PRIMARY KEY,
@@ -199,10 +199,10 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `;
 
         // Drop and create assignment_attachments table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS assignment_attachments CASCADE;
             CREATE TABLE assignment_attachments (
                 id SERIAL PRIMARY KEY,
@@ -214,10 +214,10 @@ export async function GET(req: NextRequest) {
                 is_submission BOOLEAN DEFAULT false,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `;
 
         // Drop and create assignment_submissions table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS assignment_submissions CASCADE;
             CREATE TABLE assignment_submissions (
                 id SERIAL PRIMARY KEY,
@@ -234,10 +234,10 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `;
 
         // Drop and create attendance table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS attendance CASCADE;
             CREATE TABLE attendance (
                 id SERIAL PRIMARY KEY,
@@ -255,10 +255,10 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(student_id, teacher_id, date, subject)
             );
-        `);
+        `;
 
         // Drop and create payments table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS payments CASCADE;
             CREATE TABLE payments (
                 id SERIAL PRIMARY KEY,
@@ -277,10 +277,10 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `;
 
         // Drop and create salary_payments table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS salary_payments CASCADE;
             CREATE TABLE salary_payments (
                 id SERIAL PRIMARY KEY,
@@ -301,10 +301,10 @@ export async function GET(req: NextRequest) {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(teacher_id, month, year)
             );
-        `);
+        `;
 
         // Drop and create system_settings table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS system_settings CASCADE;
             CREATE TABLE system_settings (
                 id SERIAL PRIMARY KEY,
@@ -317,10 +317,10 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `;
 
         // Drop and create audit_logs table
-        await query(`
+        await sql`
             DROP TABLE IF EXISTS audit_logs CASCADE;
             CREATE TABLE audit_logs (
                 id SERIAL PRIMARY KEY,
@@ -334,10 +334,10 @@ export async function GET(req: NextRequest) {
                 user_agent TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `;
 
         // Create indexes for better performance
-        await query(`
+        await sql`
             CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
             CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
             CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active);
@@ -354,19 +354,19 @@ export async function GET(req: NextRequest) {
             CREATE INDEX IF NOT EXISTS idx_salary_payments_teacher_month_year ON salary_payments(teacher_id, month, year);
             CREATE INDEX IF NOT EXISTS idx_salary_payments_created_at ON salary_payments(created_at);
             CREATE INDEX IF NOT EXISTS idx_student_fees_student_month_year ON student_fees(student_id, month, year);
-        `);
+        `;
 
 
         // Insert default system settings
-        await query(`
-            INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES
-            ('platform_name', 'Kaushaly Home Learning', 'string', 'Platform display name', true),
-            ('grace_period_days', '10', 'number', 'Payment grace period in days', false),
-            ('max_students_per_teacher', '20', 'number', 'Maximum students per teacher', false),
-            ('notification_email_enabled', 'true', 'boolean', 'Enable email notifications', false),
-            ('notification_whatsapp_enabled', 'true', 'boolean', 'Enable WhatsApp notifications', false),
-            ('auto_assignment_enabled', 'false', 'boolean', 'Enable automatic teacher-student assignment', false);
-        `);
+        // await sql`
+        //     INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES
+        //     ('platform_name', 'Kaushaly Home Learning', 'string', 'Platform display name', true),
+        //     ('grace_period_days', '10', 'number', 'Payment grace period in days', false),
+        //     ('max_students_per_teacher', '20', 'number', 'Maximum students per teacher', false),
+        //     ('notification_email_enabled', 'true', 'boolean', 'Enable email notifications', false),
+        //     ('notification_whatsapp_enabled', 'true', 'boolean', 'Enable WhatsApp notifications', false),
+        //     ('auto_assignment_enabled', 'false', 'boolean', 'Enable automatic teacher-student assignment', false);
+        // `;
 
         return NextResponse.json({
             message: "Database tables created/validated successfully",
