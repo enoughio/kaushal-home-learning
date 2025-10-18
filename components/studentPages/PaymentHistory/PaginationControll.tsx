@@ -1,4 +1,4 @@
-
+"use client"
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -13,25 +13,21 @@ type Props = {
 
 // this should only update the query param `page`
 export default function PaginationControll({ page, start, end, total }: Props) {
+  const serchParams = useSearchParams();
+  const { replace } = useRouter();
+  const pathname = usePathname();
 
-  const serchParams = useSearchParams()
-  const { replace } = useRouter()
-  const pathname  = usePathname()
-
-
-
-  const onNextPage =  () => {
-    const params = new URLSearchParams(serchParams?.toString() || "")
-    params.set('page', (page + 1).toString());
-  }
+  const onNextPage = () => {
+    const params = new URLSearchParams(serchParams?.toString() || "");
+    params.set("page", (page + 1).toString());
+  };
 
   const onPrevPage = () => {
-    const params = new URLSearchParams(serchParams?.toString() || "")
-    params.set('page', Math.max(1, page - 1).toString());
+    const params = new URLSearchParams(serchParams?.toString() || "");
+    params.set("page", Math.max(1, page - 1).toString());
 
-    replace(`${pathname}?${params.toString()}`)
-  }
-
+    replace(`${pathname}?${params.toString()}`);
+  };
 
   return (
     <div className="flex items-center justify-between">
@@ -40,15 +36,23 @@ export default function PaginationControll({ page, start, end, total }: Props) {
       </p>
       <div className="flex items-center gap-2">
         <Button
-          onClick={()=>{onPrevPage()}}
-          className={`px-3 py-1 rounded bg-muted hover:bg-muted/80 ${page === 1 ? "opacity-50 pointer-events-none" : ""}`}
+          onClick={() => {
+            onPrevPage();
+          }}
+          className={`px-3 py-1 rounded bg-muted hover:bg-muted/80 ${
+            page === 1 ? "opacity-50 pointer-events-none" : ""
+          }`}
         >
           Previous
         </Button>
         <span className="text-sm">{page}</span>
         <Button
-          onClick={()=>{onNextPage()}}
-          className={`px-3 py-1 rounded bg-muted hover:bg-muted/80 ${page  >= total ? "opacity-50 pointer-events-none" : ""}`}
+          onClick={() => {
+            onNextPage();
+          }}
+          className={`px-3 py-1 rounded bg-muted hover:bg-muted/80 ${
+            page >= total ? "opacity-50 pointer-events-none" : ""
+          }`}
         >
           Next
         </Button>
