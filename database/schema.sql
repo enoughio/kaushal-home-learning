@@ -8,6 +8,10 @@ CREATE TABLE temp_users (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     role VARCHAR(50) NOT NULL,
+    date_of_birth DATE,
+    gender VARCHAR(20),
+    phone VARCHAR(20),
+    email VARCHAR(100),
     verification_token VARCHAR(255),
     expires_at TIMESTAMP DEFAULT (NOW() + INTERVAL '24 hours'),
     created_at TIMESTAMP DEFAULT NOW(),
@@ -29,7 +33,7 @@ CREATE TABLE temp_teachers (
     bank_name VARCHAR(200), --- not needed
     account_holder_name VARCHAR(200),   --- not needed
     pan_number VARCHAR(20),    --- not needed
-    aadhar_number VARCHAR(20),   
+    aadhar_url VARCHAR(200),   
     resume_url VARCHAR(500),
     certificates_url TEXT[], -- Array of certificate URLs
     tenth_percentage DECIMAL(5,2),
@@ -90,6 +94,7 @@ CREATE TABLE students (
     preferred_schedule VARCHAR(100),
     monthly_fee DECIMAL(10,2) DEFAULT 0,
     fee_due_date DATE,
+    addhar_url VARCHAR(200),
     -- payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('paid', 'pending', 'overdue', 'grace_period')),
     grace_period_end DATE,
     enrollment_date DATE DEFAULT CURRENT_DATE,
