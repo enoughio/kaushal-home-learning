@@ -24,12 +24,12 @@ CREATE TABLE temp_teachers (
     teaching_mode VARCHAR(50) CHECK (teaching_mode IN ('online', 'offline', 'both')),
     hourly_rate DECIMAL(8,2),
     monthly_salary DECIMAL(10,2) DEFAULT 0,
-    bank_account_number VARCHAR(50),
-    bank_ifsc_code VARCHAR(20),
-    bank_name VARCHAR(200),
-    account_holder_name VARCHAR(200),
-    pan_number VARCHAR(20),
-    aadhar_number VARCHAR(20),
+    bank_account_number VARCHAR(50),  -- not needed at this stage but kept for completeness
+    bank_ifsc_code VARCHAR(20), --- not needed
+    bank_name VARCHAR(200), --- not needed
+    account_holder_name VARCHAR(200),   --- not needed
+    pan_number VARCHAR(20),    --- not needed
+    aadhar_number VARCHAR(20),   
     resume_url VARCHAR(500),
     certificates_url TEXT[], -- Array of certificate URLs
     tenth_percentage DECIMAL(5,2),
@@ -51,9 +51,9 @@ CREATE TABLE users (
     first_name VARCHAR(100),
     last_name VARCHAR(100),
     phone VARCHAR(20),
-    address TEXT,
+    house_number VARCHAR(300),  -- Added for detailed address
+    street VARCHAR(300),       -- Added for detailed address
     city VARCHAR(100),
-    state VARCHAR(100),
     pincode VARCHAR(10),
     date_of_birth DATE,
     location TEXT,
@@ -87,11 +87,10 @@ CREATE TABLE students (
     parent_email VARCHAR(255),
     emergency_contact VARCHAR(20),
     subjects_interested TEXT[], -- Array of subjects
-    learning_goals TEXT,
     preferred_schedule VARCHAR(100),
     monthly_fee DECIMAL(10,2) DEFAULT 0,
     fee_due_date DATE,
-    payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('paid', 'pending', 'overdue', 'grace_period')),
+    -- payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('paid', 'pending', 'overdue', 'grace_period')),
     grace_period_end DATE,
     enrollment_date DATE DEFAULT CURRENT_DATE,
     is_active BOOLEAN DEFAULT true,
@@ -111,7 +110,7 @@ CREATE TABLE student_fees (
     reminder_sent INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(student_id, month, year)
+    UNIQUE(student_id, month, year
 );
 
 -- Teachers table (extends users)
@@ -122,15 +121,14 @@ CREATE TABLE teachers (
     experience_years INTEGER,
     subjects_taught TEXT[], -- Array of subjects
     teaching_mode VARCHAR(50) CHECK (teaching_mode IN ('online', 'offline', 'both')),
-    hourly_rate DECIMAL(8,2),
     monthly_salary DECIMAL(10,2) DEFAULT 0,
-    salary_status VARCHAR(20) DEFAULT 'pending' CHECK (salary_status IN ('paid', 'pending', 'processing')),
+    -- salary_status VARCHAR(20) DEFAULT 'pending' CHECK (salary_status IN ('paid', 'pending', 'processing')),
     salary_pay_day INTEGER CHECK (salary_pay_day BETWEEN 1 AND 31) DEFAULT 1, -- Added for pay day
     bank_account_number VARCHAR(50),
     bank_ifsc_code VARCHAR(20),
     bank_name VARCHAR(200),
     account_holder_name VARCHAR(200),
-    pan_number VARCHAR(20),
+    -- pan_number VARCHAR(20),
     aadhar_number VARCHAR(20),
     resume_url VARCHAR(500),
     certificates_url TEXT[], -- Array of certificate URLs
@@ -160,7 +158,7 @@ CREATE TABLE teacher_student_assignments (
     subject VARCHAR(100) NOT NULL,
     assigned_date DATE DEFAULT CURRENT_DATE,
     assigned_by INTEGER REFERENCES users(id), -- Admin who assigned
-    notes TEXT,
+    -- notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(teacher_id, student_id, subject)
@@ -631,3 +629,4 @@ INSERT INTO system_settings (setting_key, setting_value, setting_type, descripti
 -- ('notification_whatsapp_enabled', 'true', 'boolean', 'Enable WhatsApp notifications', false),
 -- ('auto_assignment_enabled', 'false', 'boolean', 'Enable automatic teacher-student assignment', false);
 -- ('auto_assignment_enabled', 'false', 'boolean', 'Enable automatic teacher-student assignment', false);
+
