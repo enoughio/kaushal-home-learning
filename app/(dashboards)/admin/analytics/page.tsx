@@ -1,28 +1,28 @@
-import React, { Suspense, lazy } from "react";
+// import React, { Suspense, lazy } from "react";
 // admin route now uses route layout
 
 // Lazy-loaded chart components
-const KeyMetrics = lazy(
-  () => import("@/components/adminPages/analyticsPage/KeyMetrics")
-);
-const AnnualGrowth = lazy(
-  () => import("@/components/adminPages/analyticsPage/AnnualGrowth")
-);
-const PaymentAnalytics = lazy(
-  () => import("@/components/adminPages/analyticsPage/PaymentAnalytics")
-);
-const MonthlyUserGrowth = lazy(
-  () => import("@/components/adminPages/analyticsPage/MonthlyUserGrowth")
-);
-const UserDistribution = lazy(
-  () => import("@/components/adminPages/analyticsPage/UserDistribution")
-);
-const SubjectDistribution = lazy(
-  () => import("@/components/adminPages/analyticsPage/SubjectDistribution")
-);
-const AttendenceAnalytics = lazy(
-  () => import("@/components/adminPages/analyticsPage/AttendenceAnalytics")
-);
+// const KeyMetrics = lazy(
+//   () => import("@/components/adminPages/analyticsPage/KeyMetrics")
+// );
+// const AnnualGrowth = lazy(
+//   () => import("@/components/adminPages/analyticsPage/AnnualGrowth")
+// );
+// const PaymentAnalytics = lazy(
+//   () => import("@/components/adminPages/analyticsPage/PaymentAnalytics")
+// );
+// const MonthlyUserGrowth = lazy(
+//   () => import("@/components/adminPages/analyticsPage/MonthlyUserGrowth")
+// );
+// const UserDistribution = lazy(
+//   () => import("@/components/adminPages/analyticsPage/UserDistribution")
+// );
+// const SubjectDistribution = lazy(
+//   () => import("@/components/adminPages/analyticsPage/SubjectDistribution")
+// );
+// const AttendenceAnalytics = lazy(
+//   () => import("@/components/adminPages/analyticsPage/AttendenceAnalytics")
+// );
 
 // Simple loader for each chart, Can be customized later
 function ChartLoader({ text }: { text: string }) {
@@ -47,7 +47,7 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      {/* Independent Suspense Boundaries */}
+      {/* Independent Suspense Boundaries
       <Suspense fallback={<ChartLoader text="Loading Key Metrics..." />}>
         <KeyMetrics />
       </Suspense>
@@ -74,7 +74,7 @@ export default function AnalyticsPage() {
 
       <Suspense fallback={<ChartLoader text="Loading User Distribution..." />}>
         <UserDistribution />
-      </Suspense>
+      </Suspense> */}
     </div>
   );
 }
