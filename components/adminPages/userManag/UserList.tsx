@@ -46,32 +46,13 @@ function getRoleColor(role: string) {
   }
 }
 
-function FiltersFallback() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
-      {/* Search Input */}
-      <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded bg-neutral-300/60 dark:bg-neutral-700/60" />
-        <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-      </div>
-      {/* Role Select */}
-      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-      {/* Status Select */}
-      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-      {/* Apply Button */}
-      <div className="md:col-span-3 flex justify-end">
-        <div className="h-9 w-20 rounded-md bg-neutral-300/60 dark:bg-neutral-700/60" />
-      </div>
-    </div>
-  );
-}
 
 export default async function UserList({
   searchParams,
 }: {
-  searchParams?: Record<string, string> | any;
+  searchParams?: Promise<{ page ?: string; pageSize ?: string; search ?: string; role ?: string; status ?: string  }>;
 }) {
-  const params = searchParams ?? {};
+  const params = await searchParams ?? {};
   const page = Number(params?.page ?? 1);
   const pageSize = Number(params?.pageSize ?? 10);
   const searchTerm = (params?.search ?? "").toString();
@@ -232,5 +213,28 @@ export default async function UserList({
         </CardContent>
       </Card>
     </>
+  );
+}
+
+
+
+
+function FiltersFallback() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
+      {/* Search Input */}
+      <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded bg-neutral-300/60 dark:bg-neutral-700/60" />
+        <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
+      </div>
+      {/* Role Select */}
+      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
+      {/* Status Select */}
+      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
+      {/* Apply Button */}
+      <div className="md:col-span-3 flex justify-end">
+        <div className="h-9 w-20 rounded-md bg-neutral-300/60 dark:bg-neutral-700/60" />
+      </div>
+    </div>
   );
 }

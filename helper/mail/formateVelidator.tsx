@@ -5,3 +5,5 @@ export function EmailFormate(email: string) {
           return false;
         return true;
 }
+
+
