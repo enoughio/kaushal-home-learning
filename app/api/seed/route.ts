@@ -7,84 +7,96 @@ export async function GET(req: NextRequest) {
         await sql`
             DROP TABLE IF EXISTS temp_users CASCADE;
             CREATE TABLE temp_users (
-                id SERIAL PRIMARY KEY,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                first_name VARCHAR(100) NOT NULL,
-                last_name VARCHAR(100) NOT NULL,
-                role VARCHAR(50) NOT NULL,
-                gender VARCHAR(20),
-                phone VARCHAR(20),
-                email VARCHAR(100),
-                date_of_birth DATE,
-                verification_token VARCHAR(255),
-                expires_at TIMESTAMP DEFAULT (NOW() + INTERVAL '24 hours'),
-                created_at TIMESTAMP DEFAULT NOW(),
-                verified BOOLEAN DEFAULT FALSE
-            );
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            first_name VARCHAR(100) NOT NULL,
+            last_name VARCHAR(100) NOT NULL,
+            role VARCHAR(50) NOT NULL,
+            date_of_birth DATE,
+            gender VARCHAR(20),
+            phone VARCHAR(20),
+            house_number VARCHAR(100),
+            street VARCHAR(500),
+            city VARCHAR(500),
+            pincode VARCHAR(10),
+            verification_token VARCHAR(255),
+            expires_at TIMESTAMP DEFAULT (NOW() + INTERVAL '24 hours'),
+            created_at TIMESTAMP DEFAULT NOW(),
+            verified BOOLEAN DEFAULT FALSE
+        );
         `;
 
         // Drop and create temp_teachers table
         await sql`
             DROP TABLE IF EXISTS temp_teachers CASCADE;
             CREATE TABLE temp_teachers (
-                id SERIAL PRIMARY KEY,
-                temp_user_id INTEGER REFERENCES temp_users(id) ON DELETE CASCADE,
-                qualification VARCHAR(500),
-                experience_years INTEGER,
-                subjects_taught TEXT[],
-                teaching_mode VARCHAR(50) CHECK (teaching_mode IN ('online', 'offline', 'both')),
-                hourly_rate DECIMAL(8,2),
-                monthly_salary DECIMAL(10,2) DEFAULT 0,
-                bank_account_number VARCHAR(50),
-                bank_ifsc_code VARCHAR(20),
-                bank_name VARCHAR(200),
-                account_holder_name VARCHAR(200),
-                pan_number VARCHAR(20),
-                aadhar_url VARCHAR(500),
-                resume_url VARCHAR(500),
-                certificates_url TEXT[],
-                tenth_percentage DECIMAL(5,2),
-                twelfth_percentage DECIMAL(5,2),
-                marksheet_url_tenth VARCHAR(500),
-                marksheet_url_twelfth VARCHAR(500),
-                availability_schedule JSONB,
-                max_students INTEGER DEFAULT 20,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
+    id SERIAL PRIMARY KEY,
+    temp_user_id INTEGER REFERENCES temp_users(id) ON DELETE CASCADE,
+    qualification VARCHAR(500),
+    experience_years INTEGER,
+    subjects_taught TEXT[], -- Array of subjects
+    teaching_mode VARCHAR(50) CHECK (teaching_mode IN ('online', 'offline', 'both')),
+    hourly_rate DECIMAL(8,2),
+    monthly_salary DECIMAL(10,2) DEFAULT 0,
+    bank_account_number VARCHAR(50),  -- not needed at this stage but kept for completeness
+    bank_ifsc_code VARCHAR(20), --- not needed
+    bank_name VARCHAR(200), --- not needed
+    account_holder_name VARCHAR(200),   --- not needed
+    pan_number VARCHAR(20),    --- not needed
+    aadhar_url VARCHAR(500),
+    aadhar_url_public_id VARCHAR(500),
+    resume_url VARCHAR(500),
+    resume_url_public_id VARCHAR(500),
+    certificates_url TEXT[], -- Array of certificate URLs
+    certificates_url_public_ids TEXT[], -- Array of certificate public IDs
+    tenth_percentage DECIMAL(5,2),
+    twelfth_percentage DECIMAL(5,2),
+    marksheet_url_tenth VARCHAR(500),
+    marksheet_url_tenth_public_id VARCHAR(500),
+    marksheet_url_twelfth VARCHAR(500),
+    marksheet_url_twelfth_public_id VARCHAR(500),
+    availability_schedule JSONB, -- JSON object for weekly schedule
+    max_students INTEGER DEFAULT 20,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
         `;
 
         // Drop and create users table
         await sql`
             DROP TABLE IF EXISTS users CASCADE;
             CREATE TABLE users (
-                id SERIAL PRIMARY KEY,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) DEFAULT NULL,
-                role VARCHAR(20) NOT NULL CHECK (role IN ('student', 'teacher', 'admin')),
-                first_name VARCHAR(100),
-                last_name VARCHAR(100),
-                phone VARCHAR(20),
-                house_number VARCHAR(300),
-                street VARCHAR(300),
-                city VARCHAR(100),
-                pincode VARCHAR(10),
-                date_of_birth DATE,
-                location TEXT,
-                home_latitude DECIMAL(10,7),
-                home_longitude DECIMAL(10,7),
-                is_verified BOOLEAN DEFAULT false,
-                verification_token VARCHAR(255),
-                verification_token_expires TIMESTAMP,
-                reset_token VARCHAR(255),
-                reset_token_expires TIMESTAMP,
-                access_token VARCHAR(255),
-                profile_image_url VARCHAR(500),
-                is_active BOOLEAN DEFAULT true,
-                is_deleted BOOLEAN DEFAULT false,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                deleted_at TIMESTAMP NULL
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) DEFAULT NULL,
+            role VARCHAR(20) NOT NULL CHECK (role IN ('student', 'teacher', 'admin')),
+            first_name VARCHAR(100),
+            last_name VARCHAR(100),
+            phone VARCHAR(20),
+            house_number VARCHAR(300),  -- Added for detailed address
+            street VARCHAR(300),       -- Added for detailed address
+            city VARCHAR(100),
+            pincode VARCHAR(10),
+            date_of_birth DATE,
+            location TEXT,
+            home_latitude DECIMAL(10,7),  -- Added for geolocation
+            home_longitude DECIMAL(10,7), -- Added for geolocation
+
+            -- Verification & security
+            is_verified BOOLEAN DEFAULT false,
+            verification_token VARCHAR(255),
+            verification_token_expires TIMESTAMP,
+            reset_token VARCHAR(255),
+            reset_token_expires TIMESTAMP,
+            access_token VARCHAR(255),
+
+            profile_image_url VARCHAR(500),
+            profile_image_url_public_id VARCHAR(500),
+            is_active BOOLEAN DEFAULT true,
+            is_deleted BOOLEAN DEFAULT false,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP NULL
             );
         `;
 
@@ -100,11 +112,13 @@ export async function GET(req: NextRequest) {
                 parent_phone VARCHAR(20),
                 parent_email VARCHAR(255),
                 emergency_contact VARCHAR(20),
-                subjects_interested TEXT[],
+                subjects_interested TEXT[], -- Array of subjects
                 preferred_schedule VARCHAR(100),
-                aadhar_url VARCHAR(500),
                 monthly_fee DECIMAL(10,2) DEFAULT 0,
                 fee_due_date DATE,
+                aadhar_url VARCHAR(500),
+                aadhar_url_public_id VARCHAR(500),
+                -- payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('paid', 'pending', 'overdue', 'grace_period')),
                 grace_period_end DATE,
                 enrollment_date DATE DEFAULT CURRENT_DATE,
                 is_active BOOLEAN DEFAULT true,
@@ -147,13 +161,18 @@ export async function GET(req: NextRequest) {
                 bank_ifsc_code VARCHAR(20),
                 bank_name VARCHAR(200),
                 account_holder_name VARCHAR(200),
-                aadhar_number VARCHAR(20),
+                aadhar_url VARCHAR(500),
+                aadhar_url_public_id VARCHAR(500),
                 resume_url VARCHAR(500),
+                resume_url_public_id VARCHAR(500),
                 certificates_url TEXT[],
+                certificates_url_public_id VARCHAR(500),
                 tenth_percentage DECIMAL(5,2),
                 twelfth_percentage DECIMAL(5,2),
                 marksheet_url_tenth VARCHAR(500),
+                marksheet_url_tenth_public_id VARCHAR(500),
                 marksheet_url_twelfth VARCHAR(500),
+                marksheet_url_twelfth_public_id VARCHAR(500),
                 approval_status VARCHAR(20) DEFAULT 'pending' CHECK (approval_status IN ('pending', 'approved', 'rejected')),
                 approved_by INTEGER REFERENCES users(id),
                 approved_at TIMESTAMP,
@@ -214,6 +233,7 @@ export async function GET(req: NextRequest) {
                 assignment_id INTEGER REFERENCES assignments(id) ON DELETE CASCADE,
                 file_name VARCHAR(255),
                 file_url VARCHAR(500),
+                file_url_publicId varchar(500),
                 mime_type VARCHAR(100),
                 size INTEGER,
                 is_submission BOOLEAN DEFAULT false,

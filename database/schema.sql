@@ -34,12 +34,16 @@ CREATE TABLE temp_teachers (
     account_holder_name VARCHAR(200),   --- not needed
     pan_number VARCHAR(20),    --- not needed
     aadhar_url VARCHAR(200),   
+    addhar_url_publicID VARCHAR(500),
     resume_url VARCHAR(500),
     certificates_url TEXT[], -- Array of certificate URLs
+    certificates_url_publicIDs TEXT[], -- Array of certificate public IDs
     tenth_percentage DECIMAL(5,2),
     twelfth_percentage DECIMAL(5,2),
     marksheet_url_tenth VARCHAR(500),
+    marksheet_url_tenth_publicID VARCHAR(500),
     marksheet_url_twelfth VARCHAR(500),
+    marksheet_url_twelfth_publicID VARCHAR(500),
     availability_schedule JSONB, -- JSON object for weekly schedule
     max_students INTEGER DEFAULT 20,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -95,6 +99,7 @@ CREATE TABLE students (
     monthly_fee DECIMAL(10,2) DEFAULT 0,
     fee_due_date DATE,
     addhar_url VARCHAR(200),
+    addhar_url_publicID VARCHAR(500),
     -- payment_status VARCHAR(20) DEFAULT 'pending' CHECK (payment_status IN ('paid', 'pending', 'overdue', 'grace_period')),
     grace_period_end DATE,
     enrollment_date DATE DEFAULT CURRENT_DATE,
@@ -134,13 +139,18 @@ CREATE TABLE teachers (
     bank_name VARCHAR(200),
     account_holder_name VARCHAR(200),
     -- pan_number VARCHAR(20),
-    aadhar_number VARCHAR(20),
+    aadhar_URL VARCHAR(500),
+    aadhar_url_publicID VARCHAR(500),
     resume_url VARCHAR(500),
+    resume_url_publicID VARCHAR(500),
     certificates_url TEXT[], -- Array of certificate URLs
+    certificates_url_publicIDs TEXT[], -- Array of certificate public IDs
     tenth_percentage DECIMAL(5,2),         -- Added
     twelth_percentage DECIMAL(5,2),       -- Added
     marksheet_url_tenth VARCHAR(500),      -- Added
+    marksheet_url_tenth_publicID VARCHAR(500), -- Added
     marksheet_url_twelfth VARCHAR(500),    -- Added
+    marksheet_url_twelfth_publicID VARCHAR(500), -- Added
     approval_status VARCHAR(20) DEFAULT 'pending' CHECK (approval_status IN ('pending', 'approved', 'rejected')),
     approved_by INTEGER REFERENCES users(id),
     approved_at TIMESTAMP,
@@ -193,6 +203,7 @@ CREATE TABLE assignment_attachments (
     assignment_id INTEGER REFERENCES assignments(id) ON DELETE CASCADE,
     file_name VARCHAR(255),
     file_url VARCHAR(500),
+    file_url_publicID VARCHAR(500),
     mime_type VARCHAR(100),
     size INTEGER,
     is_submission BOOLEAN DEFAULT false, -- true for student submissions
