@@ -2,7 +2,7 @@ import postgres from 'postgres';
 
 // create the postgres.js client
 export const sql = postgres(process.env.DATABASE_URL!, {
-	ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+	ssl: 'require',
 	// optionally tune connection pool
 	max: 5,
 });

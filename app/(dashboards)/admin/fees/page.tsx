@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import StudentFeesStats from "@/components/adminPages/Fees/FeesStats";
 import FeesTable from "@/components/adminPages/Fees/FeesTable";
-import FeesTableSkeletonLoader from "@/components/adminPages/StudentFeesPage/FeesTableSkeletonLoader";
+// import FeesTableSkeletonLoader from 
 import { Card, CardContent } from "@/components/ui/card";
 
 export default async function StudentFeesPage() {
@@ -44,7 +44,7 @@ export default async function StudentFeesPage() {
       </Suspense>
 
       {/* Fees Table */}
-      <Suspense fallback={<FeesTableSkeletonLoader rows={6} />}>
+      <Suspense fallback={<div> loading fees table...</div>}>
         <FeesTable />
       </Suspense>
     </div>

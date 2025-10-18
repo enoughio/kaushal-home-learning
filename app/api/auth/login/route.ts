@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { query } from "../../../../database/db";
-
+import sql from "../../../../database/db";
 
 export async function POST (req : NextRequest ) {
     try {
@@ -35,12 +34,10 @@ export async function POST (req : NextRequest ) {
         }
 
         // Query user from database (assuming you have a 'users' table for verified users)
-        const result = await query(
-            'SELECT id, email, password_hash, role, first_name, last_name, is_active FROM users WHERE email = $1',
-            [email]
-        );
+        // use parameterized WHERE email = ${email} and adapt to postgress/sql return shape (array-like)
+        const result = await sql`SELECT id, email, password_hash, role, first_name, last_name, is_active FROM users WHERE email = ${email}`;
 
-        if (result.rows.length === 0) {
+        if (result.length === 0) {
             return NextResponse.json(
                 {
                     error: "INVALID_CREDENTIALS",
@@ -51,7 +48,7 @@ export async function POST (req : NextRequest ) {
                 { status: 401 }
             );
         }
-        const user = result.rows[0];
+        const user = result[0];
 
         // Check if user account is active
         if (!user.is_active) {
@@ -111,7 +108,7 @@ export async function POST (req : NextRequest ) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days 
+            maxAge: 15 * 24 * 60 * 60, // 15 days (seconds)
         });
 
         //TODO : Send login email to inform user
