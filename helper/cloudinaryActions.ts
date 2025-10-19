@@ -6,7 +6,11 @@ interface UploadResult {
 }
 
 // Upload Image
-export const uploadImage = async (fileBuffer: Buffer, folder = 'uploads'): Promise<UploadResult> => {
+export const uploadFile = async (file: File, folder = 'uploads'): Promise<UploadResult> => {
+  
+   const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  
   try {
     const result: any = await new Promise((resolve, reject) => {
       cloudinary.uploader
@@ -14,7 +18,7 @@ export const uploadImage = async (fileBuffer: Buffer, folder = 'uploads'): Promi
           if (error) reject(error);
           else resolve(result);
         })
-        .end(fileBuffer);
+        .end(buffer);
     });
 
     return {
@@ -28,7 +32,7 @@ export const uploadImage = async (fileBuffer: Buffer, folder = 'uploads'): Promi
 };
 
 // Delete Image
-export const deleteImage = async (publicId: string): Promise<any> => {
+export const deleteFile = async (publicId: string): Promise<any> => {
   try {
     const result = await cloudinary.uploader.destroy(publicId);
     return result;
