@@ -1,34 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { testConnection } from "../../../database/db";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
     try {
         // Test database connection
         const connectionTest = await testConnection();
-        
+
         if (!connectionTest.success) {
             return NextResponse.json(
                 {
                     status: "unhealthy",
                     database: connectionTest,
-                    timestamp: new Date().toISOString()
+                    environment: process.env.NODE_ENV,
+                    timestamp: new Date().toISOString(),
                 },
                 { status: 503 }
             );
         }
-
-        // Test table existence
-        // const tableTest = await ensureTablesExist();
 
         return NextResponse.json({
             status: "healthy",
             database: {
                 connected: connectionTest.success,
                 timestamp: connectionTest.timestamp,
-                version: connectionTest.version
+                version: connectionTest.version,
             },
             environment: process.env.NODE_ENV,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
 
     } catch (error) {
@@ -37,7 +35,7 @@ export async function GET(req: NextRequest) {
             {
                 status: "unhealthy",
                 error: error instanceof Error ? error.message : "Unknown error",
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             },
             { status: 500 }
         );

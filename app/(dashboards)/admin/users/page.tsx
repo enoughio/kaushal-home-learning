@@ -1,8 +1,8 @@
 import React, { Suspense } from "react";
 import UserManagmentStats from "@/components/adminPages/userManag/UserManagmentStats";
-import UserFilters from "@/components/adminPages/userManag/UserFilters";
 import UserList from "@/components/adminPages/userManag/UserList";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import UserFilters from "@/components/adminPages/userManag/UserFilters";
 
 type User = {
   id: string;
@@ -14,37 +14,37 @@ type User = {
   status: string;
 };
 
-async function fetchUsersPlaceholder(): Promise<User[]> {
-  return [
-    {
-      id: "1",
-      name: "Aisha Kumar",
-      email: "aisha@example.com",
-      joinedDate: "2025-09-28",
-      lastActive: "2025-10-10",
-      role: "student",
-      status: "active",
-    },
-    {
-      id: "2",
-      name: "Rahul Singh",
-      email: "rahul@example.com",
-      joinedDate: "2025-10-01",
-      lastActive: "2025-10-11",
-      role: "teacher",
-      status: "pending",
-    },
-    {
-      id: "3",
-      name: "Meera Patel",
-      email: "meera@example.com",
-      joinedDate: "2025-10-05",
-      lastActive: "2025-10-12",
-      role: "student",
-      status: "inactive",
-    },
-  ];
-}
+// async function fetchUsersPlaceholder(): Promise<User[]> {
+//   return [
+//     {
+//       id: "1",
+//       name: "Aisha Kumar",
+//       email: "aisha@example.com",
+//       joinedDate: "2025-09-28",
+//       lastActive: "2025-10-10",
+//       role: "student",
+//       status: "active",
+//     },
+//     {
+//       id: "2",
+//       name: "Rahul Singh",
+//       email: "rahul@example.com",
+//       joinedDate: "2025-10-01",
+//       lastActive: "2025-10-11",
+//       role: "teacher",
+//       status: "pending",
+//     },
+//     {
+//       id: "3",
+//       name: "Meera Patel",
+//       email: "meera@example.com",
+//       joinedDate: "2025-10-05",
+//       lastActive: "2025-10-12",
+//       role: "student",
+//       status: "inactive",
+//     },
+//   ];
+// }
 
 function StatsFallback() {
   return (
@@ -118,12 +118,8 @@ function ListFallback() {
   );
 }
 
-export default async function UserManagementPage({
-  searchParams,
-}: {
-  searchParams?: Record<string, string> | URLSearchParams | any;
-}) {
-  const params = (searchParams as any) ?? {};
+export default async function UserManagementPage( ) {
+
 
   return (
     <div className="space-y-6">
@@ -139,10 +135,41 @@ export default async function UserManagementPage({
         <UserManagmentStats />
       </Suspense>
 
+
+      
+      <Suspense fallback={<FiltersFallback />}>
+        <UserFilters />
+      </Suspense>
+
+
       <Suspense fallback={<ListFallback />}>
         {/* server component: fetches based on searchParams */}
-        <UserList searchParams={params} />
+        <UserList />
       </Suspense>
+    </div>
+  );
+}
+
+
+
+
+
+function FiltersFallback() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
+      {/* Search Input */}
+      <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded bg-neutral-300/60 dark:bg-neutral-700/60" />
+        <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
+      </div>
+      {/* Role Select */}
+      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
+      {/* Status Select */}
+      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
+      {/* Apply Button */}
+      <div className="md:col-span-3 flex justify-end">
+        <div className="h-9 w-20 rounded-md bg-neutral-300/60 dark:bg-neutral-700/60" />
+      </div>
     </div>
   );
 }

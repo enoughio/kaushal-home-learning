@@ -59,6 +59,9 @@ export default async function UserList({
   const roleFilter = (params?.role ?? "all").toString();
   const statusFilter = (params?.status ?? "all").toString();
 
+  
+
+
   async function fetchUsers() {
     // placeholder dataset - replace with API fetch
     const all: User[] = [
@@ -89,7 +92,7 @@ export default async function UserList({
         role: "student",
         status: "inactive",
       },
-      // add more items if you want
+      
     ];
 
     let filtered = all;
@@ -124,15 +127,7 @@ export default async function UserList({
 
   return (
     <>
-      <Suspense fallback={<FiltersFallback />}>
-        <UserFilters
-          initial={{
-            search: searchTerm,
-            role: roleFilter,
-            status: statusFilter,
-          }}
-        />
-      </Suspense>
+
 
       <Card>
         <CardHeader>
