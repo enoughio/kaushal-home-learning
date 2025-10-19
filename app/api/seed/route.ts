@@ -1,18 +1,12 @@
-import { sql  } from "@/database/db"; 
+import { sql } from "@/database/db"; 
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
-        // helper to run raw SQL without preparing multiple statements
-        const runRaw = async (q: string) => {
-            const trimmed = q.trim();
-            if (!trimmed) return;
-            await sql.unsafe(trimmed);
-        };
-
         // Drop and create temp_users table
-        await runRaw(`DROP TABLE IF EXISTS temp_users CASCADE`);
-        await runRaw(`CREATE TABLE temp_users (
+        await sql`
+            DROP TABLE IF EXISTS temp_users CASCADE;
+            CREATE TABLE temp_users (
             id SERIAL PRIMARY KEY,
             email VARCHAR(255) UNIQUE NOT NULL,
             first_name VARCHAR(100) NOT NULL,
@@ -29,11 +23,13 @@ export async function GET(req: NextRequest) {
             expires_at TIMESTAMP DEFAULT (NOW() + INTERVAL '24 hours'),
             created_at TIMESTAMP DEFAULT NOW(),
             verified BOOLEAN DEFAULT FALSE
-        )`);
+        );
+        `;
 
         // Drop and create temp_teachers table
-        await runRaw(`DROP TABLE IF EXISTS temp_teachers CASCADE`);
-        await runRaw(`CREATE TABLE temp_teachers (
+        await sql`
+            DROP TABLE IF EXISTS temp_teachers CASCADE;
+            CREATE TABLE temp_teachers (
     id SERIAL PRIMARY KEY,
     temp_user_id INTEGER REFERENCES temp_users(id) ON DELETE CASCADE,
     qualification VARCHAR(500),
@@ -63,12 +59,13 @@ export async function GET(req: NextRequest) {
     max_students INTEGER DEFAULT 20,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-`);
+);
+        `;
 
         // Drop and create users table
-        await runRaw(`DROP TABLE IF EXISTS users CASCADE`);
-        await runRaw(`CREATE TABLE users (
+        await sql`
+            DROP TABLE IF EXISTS users CASCADE;
+            CREATE TABLE users (
             id SERIAL PRIMARY KEY,
             email VARCHAR(255) UNIQUE NOT NULL,
             password_hash VARCHAR(255) DEFAULT NULL,
@@ -100,11 +97,13 @@ export async function GET(req: NextRequest) {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             deleted_at TIMESTAMP NULL
-        )`);
+            );
+        `;
 
         // Drop and create students table
-        await runRaw(`DROP TABLE IF EXISTS students CASCADE`);
-        await runRaw(`CREATE TABLE students (
+        await sql`
+            DROP TABLE IF EXISTS students CASCADE;
+            CREATE TABLE students (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                 grade VARCHAR(20),
@@ -125,11 +124,13 @@ export async function GET(req: NextRequest) {
                 is_active BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )`);
+            );
+        `;
 
         // Drop and create student_fees table
-        await runRaw(`DROP TABLE IF EXISTS student_fees CASCADE`);
-        await runRaw(`CREATE TABLE student_fees (
+        await sql`
+            DROP TABLE IF EXISTS student_fees CASCADE;
+            CREATE TABLE student_fees (
                 id SERIAL PRIMARY KEY,
                 student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
                 month INTEGER NOT NULL CHECK (month BETWEEN 1 AND 12),
@@ -141,11 +142,13 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(student_id, month, year)
-            )`);
+            );
+        `;
 
         // Drop and create teachers table
-        await runRaw(`DROP TABLE IF EXISTS teachers CASCADE`);
-        await runRaw(`CREATE TABLE teachers (
+        await sql`
+            DROP TABLE IF EXISTS teachers CASCADE;
+            CREATE TABLE teachers (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                 qualification VARCHAR(500),
@@ -182,11 +185,13 @@ export async function GET(req: NextRequest) {
                 is_active BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )`);
+            );
+        `;
 
         // Drop and create teacher_student_assignments table
-        await runRaw(`DROP TABLE IF EXISTS teacher_student_assignments CASCADE`);
-        await runRaw(`CREATE TABLE teacher_student_assignments (
+        await sql`
+            DROP TABLE IF EXISTS teacher_student_assignments CASCADE;
+            CREATE TABLE teacher_student_assignments (
                 id SERIAL PRIMARY KEY,
                 teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
                 student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
@@ -196,11 +201,13 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(teacher_id, student_id, subject)
-            )`);
+            );
+        `;
 
         // Drop and create assignments table
-        await runRaw(`DROP TABLE IF EXISTS assignments CASCADE`);
-        await runRaw(`CREATE TABLE assignments (
+        await sql`
+            DROP TABLE IF EXISTS assignments CASCADE;
+            CREATE TABLE assignments (
                 id SERIAL PRIMARY KEY,
                 teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
                 student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
@@ -215,11 +222,13 @@ export async function GET(req: NextRequest) {
                 status VARCHAR(20) DEFAULT 'assigned' CHECK (status IN ('assigned', 'submitted', 'graded', 'overdue')),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )`);
+            );
+        `;
 
         // Drop and create assignment_attachments table
-        await runRaw(`DROP TABLE IF EXISTS assignment_attachments CASCADE`);
-        await runRaw(`CREATE TABLE assignment_attachments (
+        await sql`
+            DROP TABLE IF EXISTS assignment_attachments CASCADE;
+            CREATE TABLE assignment_attachments (
                 id SERIAL PRIMARY KEY,
                 assignment_id INTEGER REFERENCES assignments(id) ON DELETE CASCADE,
                 file_name VARCHAR(255),
@@ -229,11 +238,13 @@ export async function GET(req: NextRequest) {
                 size INTEGER,
                 is_submission BOOLEAN DEFAULT false,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )`);
+            );
+        `;
 
         // Drop and create assignment_submissions table
-        await runRaw(`DROP TABLE IF EXISTS assignment_submissions CASCADE`);
-        await runRaw(`CREATE TABLE assignment_submissions (
+        await sql`
+            DROP TABLE IF EXISTS assignment_submissions CASCADE;
+            CREATE TABLE assignment_submissions (
                 id SERIAL PRIMARY KEY,
                 assignment_id INTEGER REFERENCES assignments(id) ON DELETE CASCADE,
                 student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
@@ -247,11 +258,13 @@ export async function GET(req: NextRequest) {
                 is_late BOOLEAN DEFAULT false,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )`);
+            );
+        `;
 
         // Drop and create attendance table
-        await runRaw(`DROP TABLE IF EXISTS attendance CASCADE`);
-        await runRaw(`CREATE TABLE attendance (
+        await sql`
+            DROP TABLE IF EXISTS attendance CASCADE;
+            CREATE TABLE attendance (
                 id SERIAL PRIMARY KEY,
                 student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
                 teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
@@ -266,11 +279,13 @@ export async function GET(req: NextRequest) {
                 longitude DECIMAL(10,7),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(student_id, teacher_id, date, subject)
-            )`);
+            );
+        `;
 
         // Drop and create payments table
-        await runRaw(`DROP TABLE IF EXISTS payments CASCADE`);
-        await runRaw(`CREATE TABLE payments (
+        await sql`
+            DROP TABLE IF EXISTS payments CASCADE;
+            CREATE TABLE payments (
                 id SERIAL PRIMARY KEY,
                 student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
                 amount DECIMAL(10,2) NOT NULL,
@@ -286,11 +301,13 @@ export async function GET(req: NextRequest) {
                 processed_by INTEGER REFERENCES users(id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )`);
+            );
+        `;
 
         // Drop and create salary_payments table
-        await runRaw(`DROP TABLE IF EXISTS salary_payments CASCADE`);
-        await runRaw(`CREATE TABLE salary_payments (
+        await sql`
+            DROP TABLE IF EXISTS salary_payments CASCADE;
+            CREATE TABLE salary_payments (
                 id SERIAL PRIMARY KEY,
                 teacher_id INTEGER REFERENCES teachers(id) ON DELETE CASCADE,
                 month INTEGER NOT NULL CHECK (month BETWEEN 1 AND 12),
@@ -308,11 +325,13 @@ export async function GET(req: NextRequest) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(teacher_id, month, year)
-            )`);
+            );
+        `;
 
         // Drop and create system_settings table
-        await runRaw(`DROP TABLE IF EXISTS system_settings CASCADE`);
-        await runRaw(`CREATE TABLE system_settings (
+        await sql`
+            DROP TABLE IF EXISTS system_settings CASCADE;
+            CREATE TABLE system_settings (
                 id SERIAL PRIMARY KEY,
                 setting_key VARCHAR(100) UNIQUE NOT NULL,
                 setting_value TEXT,
@@ -322,11 +341,13 @@ export async function GET(req: NextRequest) {
                 updated_by INTEGER REFERENCES users(id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )`);
+            );
+        `;
 
         // Drop and create audit_logs table
-        await runRaw(`DROP TABLE IF EXISTS audit_logs CASCADE`);
-        await runRaw(`CREATE TABLE audit_logs (
+        await sql`
+            DROP TABLE IF EXISTS audit_logs CASCADE;
+            CREATE TABLE audit_logs (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id),
                 action VARCHAR(100) NOT NULL,
@@ -337,25 +358,28 @@ export async function GET(req: NextRequest) {
                 ip_address INET,
                 user_agent TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )`);
+            );
+        `;
 
-        // Create indexes for better performance (run each separately to avoid multi-statement preparation)
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_students_user_id ON students(user_id)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_teachers_user_id ON teachers(user_id)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_teachers_approval_status ON teachers(approval_status)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_assignments_teacher_student ON assignments(teacher_id, student_id)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_assignments_created_at ON assignments(created_at)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_attendance_student_date ON attendance(student_id, date)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_attendance_created_at ON attendance(created_at)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_payments_student_id ON payments(student_id)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_payments_created_at ON payments(created_at)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_salary_payments_teacher_month_year ON salary_payments(teacher_id, month, year)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_salary_payments_created_at ON salary_payments(created_at)`);
-        await runRaw(`CREATE INDEX IF NOT EXISTS idx_student_fees_student_month_year ON student_fees(student_id, month, year)`);
+        // Create indexes for better performance
+        await sql`
+            CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+            CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+            CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active);
+            CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
+            CREATE INDEX IF NOT EXISTS idx_students_user_id ON students(user_id);
+            CREATE INDEX IF NOT EXISTS idx_teachers_user_id ON teachers(user_id);
+            CREATE INDEX IF NOT EXISTS idx_teachers_approval_status ON teachers(approval_status);
+            CREATE INDEX IF NOT EXISTS idx_assignments_teacher_student ON assignments(teacher_id, student_id);
+            CREATE INDEX IF NOT EXISTS idx_assignments_created_at ON assignments(created_at);
+            CREATE INDEX IF NOT EXISTS idx_attendance_student_date ON attendance(student_id, date);
+            CREATE INDEX IF NOT EXISTS idx_attendance_created_at ON attendance(created_at);
+            CREATE INDEX IF NOT EXISTS idx_payments_student_id ON payments(student_id);
+            CREATE INDEX IF NOT EXISTS idx_payments_created_at ON payments(created_at);
+            CREATE INDEX IF NOT EXISTS idx_salary_payments_teacher_month_year ON salary_payments(teacher_id, month, year);
+            CREATE INDEX IF NOT EXISTS idx_salary_payments_created_at ON salary_payments(created_at);
+            CREATE INDEX IF NOT EXISTS idx_student_fees_student_month_year ON student_fees(student_id, month, year);
+        `;
 
 
         // Insert default system settings

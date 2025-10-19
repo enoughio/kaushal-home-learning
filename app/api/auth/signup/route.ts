@@ -1,13 +1,25 @@
-// import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 // import { sql } from "@/database/db";
 // import { sendVerificationEmail } from "@/helper/mail/emailHelpers";
 // import crypto from "crypto";
 
+export const GET = async () => {
+  NextResponse.json(
+    {
+      message: "this is an arcived route ",
+      error: "INVALID_ROUTE",
+      code: 403,
+    },
+    {
+      status: 403,
+    }
+  );
+};
 
 // export async function POST(req: NextRequest) {
 //   try {
 //     const { email, firstName, lastName, role } = await req.json();
-    
+
 //     // Validate required fields
 //     if (!email || !firstName || !lastName || !role) {
 //       return NextResponse.json(
@@ -59,7 +71,7 @@
 
 //     //TODO: improve  this code if email service fails currently the whole process fails, this needed to be improved
 //     //TODO:  add OPT(Verification code option)
-    
+
 //     // Send email verification
 //     try {
 //       const verificationUrl = `${
@@ -72,10 +84,10 @@
 //         verificationUrl,
 //       });
 //       console.log(`Verification email sent to ${email}`);
-      
+
 //     } catch (emailError) {
 //       // fail the registration if email fails, but log it
-//       console.error("Failed to send verification email:", emailError); 
+//       console.error("Failed to send verification email:", emailError);
 //       return NextResponse.json(
 //         {
 //           error: "EMAIL_ERROR",
@@ -83,7 +95,7 @@
 //           code: 500,
 //         },
 //         { status: 500 }
-//       ); 
+//       );
 //     }
 
 //     return NextResponse.json(

@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Mail, Calendar } from "lucide-react";
@@ -6,7 +6,7 @@ import ViewDets from "./ViewDets";
 import ToggelUserStatus from "./ToggelUserStatus";
 import DeleteUser from "./DeleteUser";
 import Pagination from "./Pagination";
-import UserFilters from "./UserFilters";
+
 
 type User = {
   id: string;
@@ -88,8 +88,7 @@ export default async function UserList({
         lastActive: "2025-10-12",
         role: "student",
         status: "inactive",
-      },
-      // add more items if you want
+      }
     ];
 
     let filtered = all;
@@ -124,15 +123,6 @@ export default async function UserList({
 
   return (
     <>
-      <Suspense fallback={<FiltersFallback />}>
-        <UserFilters
-          initial={{
-            search: searchTerm,
-            role: roleFilter,
-            status: statusFilter,
-          }}
-        />
-      </Suspense>
 
       <Card>
         <CardHeader>
@@ -216,25 +206,3 @@ export default async function UserList({
   );
 }
 
-
-
-
-function FiltersFallback() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
-      {/* Search Input */}
-      <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded bg-neutral-300/60 dark:bg-neutral-700/60" />
-        <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-      </div>
-      {/* Role Select */}
-      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-      {/* Status Select */}
-      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-      {/* Apply Button */}
-      <div className="md:col-span-3 flex justify-end">
-        <div className="h-9 w-20 rounded-md bg-neutral-300/60 dark:bg-neutral-700/60" />
-      </div>
-    </div>
-  );
-}
