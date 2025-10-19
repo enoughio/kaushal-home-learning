@@ -29,7 +29,7 @@ interface StudentRegistrationData {
     preferedTimeSlots: string[];
 }
 
-export async function POSt(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const {
     firstName,
     lasName,
