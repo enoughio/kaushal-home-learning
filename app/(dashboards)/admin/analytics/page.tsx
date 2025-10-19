@@ -25,16 +25,16 @@
 // );
 
 // Simple loader for each chart, Can be customized later
-function ChartLoader({ text }: { text: string }) {
-  return (
-    <div className="flex items-center justify-center h-40 text-muted-foreground bg-muted/30 rounded-md">
-      <div className="text-center">
-        <div className="animate-spin h-6 w-6 border-b-2 border-primary mx-auto mb-2 rounded-full"></div>
-        <p>{text}</p>
-      </div>
-    </div>
-  );
-}
+// function ChartLoader({ text }: { text: string }) {
+//   return (
+//     <div className="flex items-center justify-center h-40 text-muted-foreground bg-muted/30 rounded-md">
+//       <div className="text-center">
+//         <div className="animate-spin h-6 w-6 border-b-2 border-primary mx-auto mb-2 rounded-full"></div>
+//         <p>{text}</p>
+//       </div>
+//     </div>
+//   );
+// }
 
 export default function AnalyticsPage() {
   return (

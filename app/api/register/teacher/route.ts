@@ -1,7 +1,6 @@
 import { sql } from "@/database/db";
 import { EmailFormate } from "@/helper/mail/formateVelidator";
 import { NextResponse, NextRequest } from "next/server";
-import { Gender } from "../student/route";
 import {
   FieldLimits,
   isValidIndianPhone,
@@ -12,26 +11,7 @@ import {
   mapToDbColumns,
   sanitizeAndValidate,
 } from "@/helper/validation";
-
-interface TeacherRegistrationData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  gender: Gender;
-  role: string;
-  dateOfBirth: string;
-  houseNumber: string;
-  street: string;
-  city: string;
-  pincode: string;
-  qualification: string;
-  tenthPercentage: number;
-  twelfthPercentage: number;
-  marksheetUrlTenth: string;
-  marksheetUrlTwelfth: string;
-  aadharUrl: string;
-}
+import { TeacherRegistrationData } from "@/lib/api.types";
 
 // Define max lengths for TeacherRegistrationData fields
 export const registrationFieldLimits: FieldLimits = {
@@ -48,8 +28,6 @@ export const registrationFieldLimits: FieldLimits = {
   qualification: 500,
   tenthPercentage: 5,
   twelfthPercentage: 5,
-  marksheetUrlTenth: 500,
-  marksheetUrlTwelfth: 500,
   aadharUrl: 200,
 };
 
@@ -71,16 +49,54 @@ const usersFieldMap: Record<string, string> = {
 
 const teachersFieldMap: Record<string, string> = {
   qualification: "qualification",
-  aadharUrl: "aadhar_url",
   tenthPercentage: "tenth_percentage",
   twelfthPercentage: "twelfth_percentage",
   marksheetUrlTenth: "marksheet_url_tenth",
   marksheetUrlTwelfth: "marksheet_url_twelfth",
+  aadharUrl: "aadhar_url",
 };
 
 export async function POST(req: NextRequest) {
   try {
-    const teacherData = await req.json();
+    const formData = await req.formData();
+
+    // ✅ Extract each field from FormData
+    const teacherData = {
+      firstName: formData.get("firstName") as string,
+      lastName: formData.get("lastName") as string,
+      email: formData.get("email") as string,
+      phone: formData.get("phone") as string,
+      gender: formData.get("gender") as string,
+      dateOfBirth: formData.get("dateOfBirth") as string,
+      houseNumber: formData.get("houseNumber") as string,
+      street: formData.get("street") as string,
+      city: formData.get("city") as string,
+      pincode: formData.get("pincode") as string,
+      qualification: formData.get("qualification") as string,
+      tenthPercentage: Number(formData.get("tenthPercentage")) as number,
+      twelfthPercentage: Number(formData.get("twelfthPercentage")) as number,
+      marksheetTenth: formData.get("marksheetTenth") as File, // 📄 actual File object
+      marksheetTwelfth: formData.get("marksheetTwelfth") as File,
+      aadhar: formData.get("aadhar") as File,
+    } as TeacherRegistrationData;
+
+    // Validate max lengths dynamically
+    const { sanitized, error } = sanitizeAndValidate(
+      teacherData,
+      registrationFieldLimits
+    );
+
+    if (error) {
+      return NextResponse.json(
+        {
+          error: "VALIDATION_ERROR",
+          message: `Validation failed, ${error.message}`,
+          code: "400",
+          details: { error },
+        },
+        { status: 400 }
+      );
+    }
 
     const {
       firstName,
@@ -96,13 +112,12 @@ export async function POST(req: NextRequest) {
       qualification,
       tenthPercentage,
       twelfthPercentage,
-      marksheetUrlTenth,
-      marksheetUrlTwelfth,
-      aadharUrl,
-    } = teacherData as TeacherRegistrationData;
+      marksheetTenth,
+      marksheetTwelfth,
+      aadhar,
+    } = sanitized as TeacherRegistrationData;
 
-    //   verify required fields
-
+    // verify required fields
     if (
       !firstName ||
       !lastName ||
@@ -117,33 +132,15 @@ export async function POST(req: NextRequest) {
       !qualification ||
       !tenthPercentage ||
       !twelfthPercentage ||
-      !marksheetUrlTenth ||
-      !marksheetUrlTwelfth ||
-      !aadharUrl
+      !marksheetTenth ||
+      !marksheetTwelfth ||
+      !aadhar
     ) {
       return NextResponse.json(
         {
           error: "MISSING_REQUIRED_FEILD",
           message: "Missing required fields",
           code: "400",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validate max lengths dynamically
-    const { sanitized, error } = sanitizeAndValidate(
-      teacherData,
-      registrationFieldLimits
-    );
-
-    if (error) {
-      return NextResponse.json(
-        {
-          error: "VALIDATION_ERROR",
-          message: `Validation failed, ${error.message}`,
-          code: "400",
-          details: { error },
         },
         { status: 400 }
       );
@@ -187,7 +184,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!["male", "female", "other"].includes(sanitized.gender)) {
+    if (!["male", "female", "other"].includes(gender)) {
       return NextResponse.json(
         {
           error: "INVALID_GENDER",
@@ -198,7 +195,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!isValidISODate(sanitized.dateOfBirth)) {
+    if (!isValidISODate(dateOfBirth)) {
       return NextResponse.json(
         {
           error: "INVALID_DATE_FORMAT",
@@ -210,7 +207,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Assuming only Indian users
-    if (!isValidIndianPhone(sanitized.phone)) {
+    if (!isValidIndianPhone(phone)) {
       return NextResponse.json(
         {
           error: "INVALID_PHONE_FORMAT",
@@ -221,7 +218,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!isValidIndianPincode(sanitized.pincode)) {
+    if (!isValidIndianPincode(pincode)) {
       return NextResponse.json(
         {
           error: "INVALID_PINCODE_FORMAT",
@@ -233,8 +230,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (
-      !isValidPercentage(sanitized.tenthPercentage) ||
-      !isValidPercentage(sanitized.twelfthPercentage)
+      !isValidPercentage(tenthPercentage) ||
+      !isValidPercentage(twelfthPercentage)
     ) {
       return NextResponse.json(
         {
@@ -247,25 +244,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (
-      !isValidUrl(sanitized.marksheetUrlTenth) ||
-      !isValidUrl(sanitized.marksheetUrlTwelfth) ||
-      !isValidUrl(sanitized.aadharUrl)
-    ) {
-      return NextResponse.json(
-        {
-          error: "INVALID_URL_FORMAT",
-          message: "Validation failed, Please enter a valid url",
-          code: "400",
-        },
-        { status: 400 }
-      );
-    }
+    // Upload files to cloudinary
+
+    // if (
+    //   !isValidUrl(marksheetUrlTenth) ||
+    //   !isValidUrl(marksheetUrlTwelfth) ||
+    //   !isValidUrl(aadharUrl)
+    // ) {
+    //   return NextResponse.json(
+    //     {
+    //       error: "INVALID_URL_FORMAT",
+    //       message: "Validation failed, Please enter a valid url",
+    //       code: "400",
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
 
     const teacherDataWithRole = {
       ...sanitized,
       role: "teacher",
-    } as TeacherRegistrationData;
+    };
 
     // save some fields data in temp_users
     const userdbData = mapToDbColumns(teacherDataWithRole, usersFieldMap);
@@ -289,6 +288,8 @@ export async function POST(req: NextRequest) {
       ${sql(referencedTeacherData)}
     RETURNING *;
   `;
+
+  // Send successful account creation male
 
     return NextResponse.json(
       {

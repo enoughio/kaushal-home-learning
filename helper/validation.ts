@@ -19,6 +19,8 @@ export function sanitizeAndValidate<T extends Record<string, any>>(
     if (typeof value === "string") {
       const trimmed = value.trim();
 
+      if (trimmed.length == 0) continue;
+
       // Global max length check
       if (trimmed.length > globalMaxLength) {
         return {
