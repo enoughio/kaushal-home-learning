@@ -1,3 +1,61 @@
+export function validateFiles(
+  files: Record<string, any>,
+  MAX_FILE_SIZE_MB: number
+): { error?: string; message?: string } {
+  const MAX_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+  for (const key in files) {
+    const file = files[key];
+    // Format: remove "File" suffix & capitalize first letter
+    const readableName = key.charAt(0).toUpperCase() + key.slice(1);
+
+    // Check existence
+    if (!file || !(file instanceof File)) {
+      return {
+        error: "FILE_REQUIRED",
+        message: `${readableName} file is required`,
+      };
+    }
+
+    // Check file size (in MB)
+    if (file.size > MAX_SIZE_BYTES) {
+      return {
+        error: "FILE_TOO_LARGE",
+        message: `${readableName} file size must not exceed ${MAX_FILE_SIZE_MB}MB`,
+      };
+    }
+  }
+
+  // Everything passed
+  return {};
+}
+
+type ValidationResult = { errMessage?: string };
+
+export function validateRequiredFields(
+  data: Record<string, any>,
+  requiredFields: string[]
+): ValidationResult {
+  for (const field of requiredFields) {
+    const value = data[field];
+
+    // Check for undefined, null, or empty string after trim
+    if (
+      value === undefined ||
+      value === null ||
+      (typeof value === "string" && value.trim().length === 0)
+    ) {
+      const readableField =
+        field.charAt(0).toUpperCase() +
+        field.slice(1).replace(/([A-Z])/g, " $1");
+      return {
+        errMessage: `Missing required field: ${readableField.trim()}`,
+      };
+    }
+  }
+  return {};
+}
+
 export interface FieldLimits {
   [key: string]: number;
 }
@@ -85,8 +143,11 @@ export function isValidIndianPincode(pincode: string): boolean {
   return regex.test(pincode);
 }
 
-export function isValidPercentage(value: number): boolean {
-  return value >= 0 && value <= 100;
+export function isValidPercentage(value: unknown): boolean {
+  const num = Number(value);
+
+  // Check if it's a real number and between 0–100
+  return !isNaN(num) && isFinite(num) && num >= 0 && num <= 100;
 }
 
 export function isValidUrl(url: string): boolean {
@@ -99,15 +160,15 @@ export function isValidUrl(url: string): boolean {
 }
 
 // Helper to map keys and remove undefined values
-export function mapToDbColumns(
-  obj: Record<string, any>,
-  fieldMap: Record<string, string>
-) {
-  const dbObj: Record<string, any> = {};
-  for (const key in obj) {
-    if (obj[key] !== undefined && fieldMap[key]) {
-      dbObj[fieldMap[key]] = obj[key];
-    }
-  }
-  return dbObj;
-}
+// export function mapToDbColumns(
+//   obj: Record<string, any>,
+//   fieldMap: Record<string, string>
+// ) {
+//   const dbObj: Record<string, any> = {};
+//   for (const key in obj) {
+//     if (obj[key] !== undefined && fieldMap[key]) {
+//       dbObj[fieldMap[key]] = obj[key];
+//     }
+//   }
+//   return dbObj;
+// }

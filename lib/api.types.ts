@@ -1,8 +1,8 @@
-import { Gender } from "@/app/api/register/student/route";
+export type Role = "male" | "female" | "other";
 
-type Role = "male" | "female" | "other";
+export type Gender = "male" | "female" | "other";
 
-export interface TeacherRegistrationData {
+export interface SanitizedTeacherRegistData {
   firstName: string;
   lastName: string;
   email: string;
@@ -17,7 +17,9 @@ export interface TeacherRegistrationData {
   qualification: string;
   tenthPercentage: number;
   twelfthPercentage: number;
-  marksheetTenth: File;
-  marksheetTwelfth: File;
+  marksheetTenth?: File;
+  marksheetTwelfth?: File;
   aadhar: File;
 }
+
+export type TeacherFiles = "marksheetTenth" | "marksheetTwelfth" | "aadhar";

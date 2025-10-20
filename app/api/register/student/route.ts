@@ -4,8 +4,7 @@ import { prisma } from "@/lib/db";
 import { calculateAge } from "@/helper/calculateAge";
 import { EmailFormate } from "@/helper/mail/formateVelidator";
 import { uploadFile } from "@/helper/cloudinaryActions";
-
-type Gender = "male" | "female" | "other";
+import { Gender } from "@/lib/api.types";
 
 type ValidationIssue = {
   field: string;
