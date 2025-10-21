@@ -1,9 +1,14 @@
 import { sendTemplateEmail } from './nodemailer' 
 import { EmailTemplates } from './mailTemplates'
-import { WelcomeEmailData, VerificationEmailData, NotificationEmailData } from './types'
+import { WelcomeEmailData, VerificationEmailData, NotificationEmailData, OTPVerificationEmailData } from './types'
 
 export const sendWelcomeEmail = async (to: string, data: WelcomeEmailData): Promise<void> => {
   const template = EmailTemplates.welcome(data)
+  await sendTemplateEmail(to, template)
+}
+
+export const sendOTPVerificationEmail = async (to: string, data: OTPVerificationEmailData): Promise<void> => {
+  const template = EmailTemplates.otpVerification(data)
   await sendTemplateEmail(to, template)
 }
 
