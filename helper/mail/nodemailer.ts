@@ -6,7 +6,7 @@ import { EmailTemplate, EmailOptions, TransportConfig } from "./types";
 const createTransporter = (): Transporter => {
 
   // for offical SMTP server 
-
+  
   // const config: TransportConfig = {
   //   host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
   //   port: parseInt(process.env.SMTP_PORT || "2525"),

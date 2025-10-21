@@ -33,6 +33,15 @@ export interface VerificationEmailData {
   verificationUrl: string
 }
 
+
+
+export interface OTPVerificationEmailData {
+  name: string;
+  otp: number;
+}
+
+
+
 export interface NotificationEmailData {
   name: string
   title: string

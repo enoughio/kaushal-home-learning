@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { calculateAge } from "@/helper/calculateAge";
 import { EmailFormate } from "@/helper/mail/formateVelidator";
 import { uploadFile } from "@/helper/cloudinaryActions";
+import { sendOTPVerificationEmail } from "@/helper/mail/emailHelpers";
 
 type Gender = "male" | "female" | "other";
 
@@ -16,7 +17,7 @@ const NAME_REGEX = /^[A-Za-z ,'.-]{2,}$/;
 const PHONE_REGEX = /^\+?[0-9]{10,15}$/;
 const PINCODE_REGEX = /^[0-9]{6}$/;
 const VALID_GENDERS: Gender[] = ["male", "female", "other"];
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
+const MAX_FILE_SIZE = 20 * 1024 * 1024;  // 20 mb
 
 function validationError(details: ValidationIssue[]) {
   return NextResponse.json(
@@ -92,7 +93,6 @@ export async function POST(req: NextRequest) {
 
   const {
     firstName: rawFirstName,
-    lasName,
     lastName: rawLastName,
     gender: rawGender,
     DateOfBirth: rawDob,
@@ -102,8 +102,8 @@ export async function POST(req: NextRequest) {
     schoolBoard: altSchoolBoard,
     parentName: rawParentName,
     parentPhone: rawParentPhone,
-    ParentEmail: rawParentEmail,
-    parentEmail: altParentEmail,
+    parentEmail: rawParentEmail,
+    // parentEmail: altParentEmail,
     emergencyNumber: rawEmergencyNumber,
     houseNumber: rawHouseNumber,
     street: rawStreet,
@@ -112,11 +112,11 @@ export async function POST(req: NextRequest) {
     subjectsInterested: rawSubjects,
     locationCoordinates: rawLocation,
     preferedTimeSlots: rawPreferredSlots,
-    preferredTimeSlots: altPreferredSlots,
+    // preferredTimeSlots: altPreferredSlots,
   } = payload as Record<string, unknown>;
 
   const firstName = String(rawFirstName ?? "").trim();
-  const lastName = String(rawLastName ?? lasName ?? "").trim();
+  const lastName = String(rawLastName ?? "").trim();
   const gender = (rawGender ?? "") as Gender;
   const dobString = String(rawDob ?? "").trim();
   const grade = String(rawGrade ?? "").trim();
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
   const schoolBoard = String(rawSchoolBoard ?? altSchoolBoard ?? "").trim();
   const parentName = String(rawParentName ?? "").trim();
   const parentPhone = String(rawParentPhone ?? "").trim();
-  const parentEmail = String(rawParentEmail ?? altParentEmail ?? "").trim().toLowerCase();
+  const parentEmail = String(rawParentEmail ?? "").trim().toLowerCase();
   const emergencyNumber = String(rawEmergencyNumber ?? "").trim();
   const houseNumber = String(rawHouseNumber ?? "").trim();
   const street = String(rawStreet ?? "").trim();
@@ -139,12 +139,8 @@ export async function POST(req: NextRequest) {
 
   const preferredSlotsSource = Array.isArray(rawPreferredSlots)
     ? rawPreferredSlots
-    : Array.isArray(altPreferredSlots)
-      ? altPreferredSlots
       : typeof rawPreferredSlots === "string"
-        ? rawPreferredSlots.split(",")
-        : typeof altPreferredSlots === "string"
-          ? altPreferredSlots.split(",")
+         ? rawPreferredSlots.split(",")
           : [];
 
   const subjects = subjectsList
@@ -282,13 +278,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: "UPLOAD_FAILED",
-          message: "Failed to upload Aadhar file",
+          message: "Server Busy please try again later",
         },
         { status: 500 }
       );
     }
 
-    const userId = await prisma.$transaction(async (tx) => {
+    const data = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.users.create({
         data: {
           email: parentEmail,
@@ -296,7 +292,7 @@ export async function POST(req: NextRequest) {
           first_name: firstName,
           last_name: lastName,
           phone: parentPhone,
-          house_number: houseNumber,
+          house_number: houseNumber,  
           street,
           city,
           pincode,
@@ -305,11 +301,12 @@ export async function POST(req: NextRequest) {
           location: `${houseNumber}, ${street}, ${city}`,
           home_latitude: latitude,
           home_longitude: longitude,
+          is_verified : true,
         },
         select: { id: true },
       });
 
-      await tx.students.create({
+      const createStudent = await tx.students.create({
         data: {
           user_id: createdUser.id,
           grade,
@@ -323,15 +320,22 @@ export async function POST(req: NextRequest) {
           aadhar_url: uploadResult.url,
           aadhar_url_public_id: uploadResult.public_id ?? null,
         },
+        select : {
+          id : true
+        }
       });
-
-      return createdUser.id;
+      return { user:  createdUser, student : createStudent };
     });
+
+    // send mail in production
+    // send email for registration confirmation, 
+    // const otp = 2222
+    // const mailResponse = await sendOTPVerificationEmail(parentEmail, { name : `${firstName} ${lastName}`, otp : otp} );
 
     return NextResponse.json(
       {
         message: "Registration successful. Our team will connect with you for further process.",
-        userId,
+        data,
         age: calculateAge(dobString),
       },
       { status: 201 }

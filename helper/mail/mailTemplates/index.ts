@@ -1,4 +1,4 @@
-import { EmailTemplate, WelcomeEmailData, VerificationEmailData, NotificationEmailData } from '../types'
+import { EmailTemplate, WelcomeEmailData, VerificationEmailData, NotificationEmailData, OTPVerificationEmailData } from '../types'
 
 export class EmailTemplates {
   static welcome(data: WelcomeEmailData): EmailTemplate {
@@ -15,6 +15,42 @@ export class EmailTemplates {
       `
     }
   }
+
+  static otpVerification(data: OTPVerificationEmailData ): EmailTemplate {
+    return {
+      subject: 'Verify Your Email Address with OTP',
+      text: `Hello ${data.name}, please use the following OTP to verify your email: ${data.otp}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #333; text-align: center;">Verify Your Email Address</h1>
+          <p>Hello ${data.name},</p>
+          <p>Thank you for Choosing Kaushaly Home Learning! To complete your registration, please use the following One-Time Password (OTP) to verify your email address:</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="background-color: #007bff; 
+                         color: white; 
+                         padding: 15px 30px; 
+                         font-size: 24px; 
+                         font-weight: bold; 
+                         letter-spacing: 5px; 
+                         border-radius: 5px; 
+                         display: inline-block;">
+              ${data.otp}
+            </span>
+          </div>
+          
+          <p>Please enter this OTP in the verification form to confirm your email address.</p>
+          
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #666; font-size: 12px;">
+            This OTP will expire in 10 minutes. If you didn't request this verification, you can safely ignore this email.
+          </p>
+        </div>
+      `
+    }
+  }
+
+
 
   static verification(data: VerificationEmailData): EmailTemplate {
     return {
