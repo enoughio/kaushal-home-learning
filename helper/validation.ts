@@ -159,6 +159,55 @@ export function isValidUrl(url: string): boolean {
   }
 }
 
+export function validateAssignmentData(data: {
+  studentId: string;
+  title: string;
+  subject: string;
+  dueDate?: string;
+  maxMarks?: string;
+}): { isValid: boolean; message?: string } {
+  const { studentId, title, subject, dueDate, maxMarks } = data;
+
+  if (!studentId || isNaN(Number(studentId))) {
+    return { isValid: false, message: "Valid student ID is required" };
+  }
+
+  if (!title || title.trim().length === 0) {
+    return { isValid: false, message: "Assignment title is required" };
+  }
+
+  if (title.length > 200) {
+    return { isValid: false, message: "Assignment title must not exceed 200 characters" };
+  }
+
+  if (!subject || subject.trim().length === 0) {
+    return { isValid: false, message: "Subject is required" };
+  }
+
+  if (subject.length > 100) {
+    return { isValid: false, message: "Subject must not exceed 100 characters" };
+  }
+
+  if (dueDate && !isValidISODate(dueDate)) {
+    return { isValid: false, message: "Due date must be in YYYY-MM-DD format" };
+  }
+
+  if (dueDate) {
+    const dueDateObj = new Date(dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (dueDateObj < today) {
+      return { isValid: false, message: "Due date cannot be in the past" };
+    }
+  }
+
+  if (maxMarks && (isNaN(Number(maxMarks)) || Number(maxMarks) <= 0 || Number(maxMarks) > 1000)) {
+    return { isValid: false, message: "Max marks must be a number between 1 and 1000" };
+  }
+
+  return { isValid: true };
+}
+
 // Helper to map keys and remove undefined values
 // export function mapToDbColumns(
 //   obj: Record<string, any>,

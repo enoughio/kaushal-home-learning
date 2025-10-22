@@ -45,13 +45,13 @@ export const registrationFieldLimits: FieldLimits = {
   gender: 20,
   dateOfBirth: 10,
   houseNumber: 50,
-  street: 200,
+  street: 2000,
   city: 100,
   pincode: 10,
   qualification: 500,
-  tenthPercentage: 5,
-  twelfthPercentage: 5,
-  aadharUrl: 200,
+  tenthPercentage: 4,
+  twelfthPercentage: 4,
+  aadharUrl: 500,
 };
 
 // Object key -> DB column mapping
@@ -168,7 +168,11 @@ export async function POST(req: NextRequest) {
 
     if (errMessage) {
       return NextResponse.json(
-        { error: "MISSING_REQUIRED_FIELD", message: errMessage, code: "400" },
+        { 
+          error: "MISSING_REQUIRED_FIELD",
+          message: errMessage,
+          code: "400"
+        },
         { status: 400 }
       );
     }
@@ -189,29 +193,7 @@ export async function POST(req: NextRequest) {
       twelfthPercentage,
     } = sanitized as SanitizedTeacherRegistData;
 
-    if (EmailFormate(email) === false) {
-      return NextResponse.json(
-        {
-          error: "INVALID_EMAIL_FORMAT",
-          message: "Invalid email format",
-          code: "400",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
 
-    if (!["male", "female", "other"].includes(gender)) {
-      return NextResponse.json(
-        {
-          error: "INVALID_GENDER",
-          message: "Validation failed, Please enter a valid gender",
-          code: "400",
-        },
-        { status: 400 }
-      );
-    }
 
     if (!isValidISODate(dateOfBirth)) {
       return NextResponse.json(

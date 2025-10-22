@@ -48,3 +48,12 @@ export interface NotificationEmailData {
   message: string
   actionUrl?: string
 }
+
+export interface FeeReminderEmailData {
+  studentName: string
+  month: number
+  year: number
+  amount: number
+  dueDate: Date
+  reminderCount: number
+}
