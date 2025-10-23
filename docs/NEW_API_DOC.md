@@ -328,6 +328,100 @@ Role: admin only
         }
         ```
 
+## Admin - Assign a personal teacher to student Page (pairing)
+
+#### GET /admin/assign-teacher/
+- Description: Get a list of all students without assigned teachers with pagination.
+
+- Request:
+  - Query Parameters:
+    - page (integer, optional, default: 1) - Page number for pagination.
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "students": [
+            {
+            "id": "student123",
+            "name": "Jane Smith",
+            "email": "",
+            "parentPhone": "9876543210",
+            "location": "New Delhi, India",
+            "longitude": "77.2090",
+            "latitude": "28.6139",
+            "pincode": "110001",
+            "status": "active" | "inactive",
+            "enrolledAt": "2024-01-20T14:30:00Z"
+            }
+        ],
+        "page": 1,
+        "totalPages": 10,
+        "totalStudents": 200
+        }
+        ```
+
+
+#### POST /admin/assign-teacher/[studentId]
+- Description: Assign a teacher to a student.
+- Request:
+  - Parameters:
+    - studentId (string, required) - The ID of the student to assign a teacher to.
+  - Body:
+    ```json
+    {
+      "teacherId": "teacher123"
+    }
+    ```
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "message": "Teacher assigned to student successfully",
+        "studentId": "student123",
+        "teacherId": "teacher123"
+        }
+        ```
+
+#### PUT /admin/assign-teacher/[studentId]
+- Description: Update the assigned teacher for a student.
+- Request:
+  - Parameters:
+    - studentId (string, required) - The ID of the student to update the assigned teacher for.
+  - Body:
+    ```json
+    {
+      "teacherId": "teacher456"
+    }
+    ```
+
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "message": "Assigned teacher updated successfully",
+        "studentId": "student123",
+        "newTeacherId": "teacher456"
+        }
+        ```
+
+#### DELETE /admin/assign-teacher/[studentId]
+- Description: Remove the assigned teacher from a student.
+- Request:
+  - Parameters:
+    - studentId (string, required) - The ID of the student to remove the assigned teacher from.
+- Response:
+  - Status: 200 OK
+    - Body:
+        ```json
+        {
+        "message": "Assigned teacher removed successfully",
+        "studentId": "student123"
+        }
+        ```
 
 
 

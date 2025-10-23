@@ -114,6 +114,7 @@ model users {
 model students {
   id                    Int       @id @default(autoincrement())
   user_id               Int
+  assigned_teacher_id   Int?
   grade                 String?
   school_name           String?
   parent_name           String?
@@ -133,6 +134,7 @@ model students {
   updated_at            DateTime  @default(now())
 
   user                  users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  assigned_teacher      teachers? @relation("student_assigned_teacher", fields: [assigned_teacher_id], references: [id])
   student_fees          student_fees[]
   teacher_student_assignments teacher_student_assignments[]
   assignments           assignments[]
@@ -198,6 +200,7 @@ model teachers {
 
   user                            users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   approved_by_user                users?    @relation("teachers_approved_by", fields: [approved_by], references: [id])
+  assigned_students               students[] @relation("student_assigned_teacher")
   teacher_student_assignments     teacher_student_assignments[]
   assignments                     assignments[]
   assignment_submissions          assignment_submissions[] // As graded_by
