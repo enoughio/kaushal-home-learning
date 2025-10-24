@@ -25,13 +25,11 @@ const PUBLIC_PATHS = [
 
 const RBAC_PREFIXES: { prefix: string; allowed: Role[] }[] = [
 	{ prefix: "/admin", allowed: ["admin"] },
-	// { prefix: "/api/admin", allowed: ["admin"] },
+	{ prefix: "/api/admin", allowed: ["admin"] },
 	{ prefix: "/teachers", allowed: ["teacher"] },
-	// { prefix: "/api/teacher", allowed: ["teacher"] },
+	{ prefix: "/api/teacher", allowed: ["teacher"] },
 	{ prefix: "/student", allowed: ["student"] },
-	// { prefix: "/api/student", allowed: ["student"] },
-    //TODO :
-	// API routes that need role checks can be added, e.g. { prefix: "/api/admin", allowed: ["admin"] } ccurrently nuterilized for development
+	{ prefix: "/api/student", allowed: ["student"] },
 ];
 
 
@@ -54,6 +52,7 @@ function findRbacRule(pathname: string) {
 export function middleware(req: NextRequest) {
 	try {
 		const { pathname } = req.nextUrl;
+		const isApiRoute = pathname.startsWith('/api/');
 
 		// Allow public paths immediately
 		if (isPublicPath(pathname)) return NextResponse.next();
@@ -61,7 +60,13 @@ export function middleware(req: NextRequest) {
 		// Read token
 		const token = req.cookies.get("auth-token")?.value;
 		if (!token) {
-			// No token -> redirect to login
+			// No token -> redirect to login for pages, return 401 for API routes
+			if (isApiRoute) {
+				return NextResponse.json(
+					{ success: false, message: "Authentication required", error: { code: "UNAUTHENTICATED" } },
+					{ status: 401 }
+				);
+			}
 			const loginUrl = new URL("/auth/login", req.url);
 			return NextResponse.redirect(loginUrl);
 		}
@@ -83,12 +88,24 @@ export function middleware(req: NextRequest) {
 			if (!payload.id || !payload.role) payload = null;
 		
         } catch (e) {
-			// invalid/expired token -> redirect to login
+			// invalid/expired token -> redirect to login for pages, return 401 for API routes
+			if (isApiRoute) {
+				return NextResponse.json(
+					{ success: false, message: "Invalid or expired token", error: { code: "UNAUTHENTICATED" } },
+					{ status: 401 }
+				);
+			}
 			const loginUrl = new URL("/auth/login", req.url);
 			return NextResponse.redirect(loginUrl);
 		}
 
 		if (!payload) {
+			if (isApiRoute) {
+				return NextResponse.json(
+					{ success: false, message: "Authentication required", error: { code: "UNAUTHENTICATED" } },
+					{ status: 401 }
+				);
+			}
 			const loginUrl = new URL("/auth/login", req.url);
 			return NextResponse.redirect(loginUrl);
 		}
@@ -99,7 +116,13 @@ export function middleware(req: NextRequest) {
 		const rule = findRbacRule(pathname);
 		if (rule) {
             if (!rule.allowed.includes(payload.role)) {
-                // Unauthorized for this role -> redirect to a 403 page or login
+                // Unauthorized for this role -> redirect to 403 page for pages, return 403 for API routes
+				if (isApiRoute) {
+					return NextResponse.json(
+						{ success: false, message: `Access denied. Required role: ${rule.allowed.join(', ')}`, error: { code: "FORBIDDEN" } },
+						{ status: 403 }
+					);
+				}
 				const forbiddenUrl = new URL("/403", req.url);
 				return NextResponse.redirect(forbiddenUrl);
 			}

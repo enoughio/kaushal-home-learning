@@ -1,14 +1,10 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
-import { requireRole } from "@/app/api/_lib/auth";
 
 export async function GET(req: NextRequest) {
-  try {
-    requireRole(req, "admin");
-  } catch (error) {
-    return error as Response;
-  }
+  // Authentication and authorization are now handled by middleware
+  // No need for requireRole check here
 
   try {
     const pending = await prisma.temp_users.findMany({
@@ -17,7 +13,7 @@ export async function GET(req: NextRequest) {
       include: {
         temp_teachers: true,
       },
-      take: 5,
+      take: 10,
     });
 
     const pendingTeachers = pending.map((user) => {

@@ -26,26 +26,26 @@ export function getAuthUser(req: NextRequest): AuthUser | null {
   };
 }
 
-export function requireAuth(req: NextRequest): AuthUser {
-  const user = getAuthUser(req);
-  if (!user) {
-    throw respondWithError({
-      error: "UNAUTHENTICATED",
-      message: "Authentication required",
-      status: 401,
-    });
-  }
-  return user;
-}
+// export function requireAuth(req: NextRequest): AuthUser {
+//   const user = getAuthUser(req);
+//   if (!user) {
+//     throw respondWithError({
+//       error: "UNAUTHENTICATED",
+//       message: "Authentication required",
+//       status: 401,
+//     });
+//   }
+//   return user;
+// // }
 
-export function requireRole(req: NextRequest, requiredRole: "admin" | "teacher" | "student"): AuthUser {
-  const user = requireAuth(req);
-  if (user.role !== requiredRole) {
-    throw respondWithError({
-      error: "FORBIDDEN",
-      message: `Access denied. Required role: ${requiredRole}`,
-      status: 403,
-    });
-  }
-  return user;
-}
+// export function requireRole(req: NextRequest, requiredRole: "admin" | "teacher" | "student"): AuthUser {
+//   const user = requireAuth(req);
+//   if (user.role !== requiredRole) {
+//     throw respondWithError({
+//       error: "FORBIDDEN",
+//       message: `Access denied. Required role: ${requiredRole}`,
+//       status: 403,
+//     });
+//   }
+//   return user;
+// }
