@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Mail, ArrowLeft, Send, CheckCircle, AlertCircle } from "lucide-react"
 import Link from 'next/link'
+import { ForgotPasswordRequest, ApiResponse } from '@/lib/types'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -21,27 +22,30 @@ export default function ForgotPasswordPage() {
     setError('')
 
     try {
-      // Simulate API call to send reset email
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Check if email exists (mock validation)
-      const isValidEmail = email.includes('@') // Simple mock validation
-      
-      if (isValidEmail) {
+      const requestData: ForgotPasswordRequest = { email }
+      const response = await fetch('/api/auth/forgot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      })
+
+      const result: ApiResponse = await response.json()
+
+      if (result.success) {
         setIsEmailSent(true)
       } else {
-        setError('Email address not found. Please check and try again.')
+        // For security reasons, we always show success even if email doesn't exist
+        // The API returns success to prevent email enumeration attacks
+        setIsEmailSent(true)
       }
     } catch (err) {
-      setError('Something went wrong. Please try again later.')
+      console.error('Forgot password error:', err)
+      setError('Network error. Please check your connection and try again.')
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleResendEmail = () => {
-    setIsEmailSent(false)
-    setEmail('')
   }
 
   return (
@@ -80,8 +84,8 @@ export default function ForgotPasswordPage() {
             </CardTitle>
             <CardDescription className={isEmailSent ? 'text-green-700' : ''}>
               {isEmailSent 
-                ? "We've sent password reset instructions to your email"
-                : "No worries! Enter your email and we'll send you reset instructions"
+                ? "If an account exists with this email, we've sent password reset instructions"
+                : "No worries! Enter your email and we'll send you reset instructions if an account exists"
               }
             </CardDescription>
           </CardHeader>
@@ -145,31 +149,16 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-2">
                   <h3 className="font-semibold text-green-800">Reset link sent!</h3>
                   <p className="text-sm text-green-700">
-                    We&apos;ve sent a password reset link to:
+                    If an account with this email exists, we&apos;ve sent password reset instructions.
                   </p>
-                  <p className="font-medium text-green-800 bg-green-100 px-3 py-2 rounded-md">
-                    {email}
-                  </p>
+   
                 </div>
 
                 <div className="space-y-3 pt-4">
-                  <p className="text-sm text-green-700">
-                    Click the link in your email to reset your password. 
-                    The link will expire in 24 hours.
-                  </p>
-                  
                   <div className="space-y-2">
                     <p className="text-xs text-green-600">
-                      Didn&apos;t receive the email? Check your spam folder or
+                      Didn&apos;t receive the email? Check your spam folder or try again
                     </p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleResendEmail}
-                      className="text-green-700 border-green-300 hover:bg-green-100"
-                    >
-                      Try a different email
-                    </Button>
                   </div>
                 </div>
               </div>

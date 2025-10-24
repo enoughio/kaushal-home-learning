@@ -26,7 +26,7 @@ const PUBLIC_PATHS = [
 const RBAC_PREFIXES: { prefix: string; allowed: Role[] }[] = [
 	{ prefix: "/admin", allowed: ["admin"] },
 	// { prefix: "/api/admin", allowed: ["admin"] },
-	{ prefix: "/teacher", allowed: ["teacher"] },
+	{ prefix: "/teachers", allowed: ["teacher"] },
 	// { prefix: "/api/teacher", allowed: ["teacher"] },
 	{ prefix: "/student", allowed: ["student"] },
 	// { prefix: "/api/student", allowed: ["student"] },

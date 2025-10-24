@@ -5,7 +5,6 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: {
     code: string;
-    message: string;
     details?: any;
   };
 }
@@ -32,6 +31,16 @@ export interface RegisterTeacherRequest {
 
 export interface VerifyEmailRequest {
   token: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface CreatePasswordRequest {
+  token: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface ApiError {

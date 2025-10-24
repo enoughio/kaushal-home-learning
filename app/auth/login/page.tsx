@@ -9,8 +9,26 @@ import { Separator } from "@/components/ui/separator"
 import { Mail, Lock, Eye, EyeOff, LogIn, ArrowRight } from "lucide-react"
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { LoginRequest, ApiResponse, LoginResponse } from '@/lib/types'
+import { LoginRequest, ApiResponse } from '@/lib/types'
 import { useRouter } from 'next/navigation'
+
+// Define the login response type that matches the API
+interface LoginApiResponse {
+  success: boolean;
+  message: string;
+  user?: {
+    id: number;
+    email: string;
+    role: string;
+    firstName: string | null;
+    lastName: string | null;
+  };
+  error?: {
+    code: string;
+    message?: string;
+    details?: any;
+  };
+}
 
 
 export default function LoginPage() {
@@ -22,10 +40,12 @@ export default function LoginPage() {
   
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>('')
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setErrorMessage('') // Clear any previous error messages
 
 
     try {
@@ -37,27 +57,27 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       })
 
-      const result: ApiResponse<LoginResponse> = await response.json()
+      const result: LoginApiResponse = await response.json()
 
       if (result.success) {
         // Success case
         toast.success(result.message || 'Login successful!')
-        if( result.data?.role == "admin" ){
-          router.push('/dashboard/admin')
-        } else if ( result.data?.role == "teacher" ) {
-          router.push('/dashboard/teacher')
-        } else if ( result.data?.role == "student" ) {
-          router.push('/dashboard/student')
+        if( result.user?.role == "admin" ){
+          router.push('/admin')
+        } else if ( result.user?.role == "teacher" ) {
+          router.push('/teachers')
+        } else if ( result.user?.role == "student" ) {
+          router.push('/student')
         }
 
       } else {
         // Error case
-        const errorMessage = result.error?.message || result.message || 'Login failed'
-        toast.error(errorMessage)
+        const errorMessage =  result.message || 'Login failed'
+        setErrorMessage(errorMessage)
       }
     } catch (error) {
       console.error("Login error:", error)
-      toast.error('Network error. Please check your connection and try again.')
+      setErrorMessage('Network error. Please check your connection and try again.')
 
     } finally {
       setIsLoading(false)
@@ -67,6 +87,9 @@ export default function LoginPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    if (errorMessage) {
+      setErrorMessage('') // Clear error message when user starts typing
+    }
   }
 
   return (
@@ -91,6 +114,12 @@ export default function LoginPage() {
           </CardHeader>
 
           <CardContent className="space-y-4">
+            {errorMessage && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{errorMessage}</p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Field */}
               <div className="space-y-2">
