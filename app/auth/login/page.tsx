@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Mail, Lock, Eye, EyeOff, LogIn, ArrowRight } from "lucide-react"
 import Link from 'next/link'
-
-
+import toast from 'react-hot-toast'
+import { LoginRequest, ApiResponse, LoginResponse } from '@/lib/types'
+import { useRouter } from 'next/navigation'
 
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState< { email : string,  password : string } >({
+  const router = useRouter();
+  const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: ''
   })
@@ -24,20 +26,41 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    
+
 
     try {
-      const res =  fetch('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(formData),
-    })
-    } catch (error) { 
-      console.error("Login error:", error)
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-      
+      const result: ApiResponse<LoginResponse> = await response.json()
+
+      if (result.success) {
+        // Success case
+        toast.success(result.message || 'Login successful!')
+        if( result.data?.role == "admin" ){
+          router.push('/dashboard/admin')
+        } else if ( result.data?.role == "teacher" ) {
+          router.push('/dashboard/teacher')
+        } else if ( result.data?.role == "student" ) {
+          router.push('/dashboard/student')
+        }
+
+      } else {
+        // Error case
+        const errorMessage = result.error?.message || result.message || 'Login failed'
+        toast.error(errorMessage)
+      }
+    } catch (error) {
+      console.error("Login error:", error)
+      toast.error('Network error. Please check your connection and try again.')
 
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
 
   }

@@ -1,7 +1,43 @@
-export type AttendanceStatus = "present" | "absent" | "none"
-export type DayAttendance = {
-  date: string // YYYY-MM-DD
-  status: AttendanceStatus
+// API Response Types
+export interface ApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  id: number;
+  email: string;
+  role: string;
+  firstName: string | null;
+  lastName: string | null;
+}
+
+export interface RegisterTeacherRequest {
+  json: string; // JSON string containing teacher data
+  marksheetTenthFile?: File;
+  marksheetTwelfthFile?: File;
+  aadharFile?: File;
+}
+
+export interface VerifyEmailRequest {
+  token: string;
+}
+
+export interface ApiError {
+  code: string;
+  message: string;
+  details?: any;
 }
 
 
