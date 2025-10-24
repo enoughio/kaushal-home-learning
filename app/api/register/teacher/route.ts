@@ -15,7 +15,8 @@ import {
 } from "@/helper/validation";
 import { SanitizedTeacherRegistData, TeacherFiles } from "@/lib/api.types";
 import { uploadFile } from "@/helper/cloudinaryActions";
-import { sendWelcomeEmail } from "@/helper/mail/emailHelpers";
+import { sendVerificationEmail } from "@/helper/mail/emailHelpers";
+import { generateVerificationToken } from "@/app/api/_lib/verify";
 
 const teacherRequiredFields = [
   "firstName",
@@ -310,6 +311,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Generate verification token
+    const verificationToken = await generateVerificationToken();
+
     const userId = await prisma.$transaction(async (tx) => {
       // Insert some fields data in temp_users
       const createdUser = await tx.temp_users.create({
@@ -325,6 +329,7 @@ export async function POST(req: NextRequest) {
           street,
           city,
           pincode,
+          verification_token: verificationToken,
         },
         select: { id: true },
       });
@@ -350,10 +355,13 @@ export async function POST(req: NextRequest) {
       return createdUser.id;
     });
 
-    // Send successful account creation mail
+    // Send verification email
     try {
-      await sendWelcomeEmail(email, {
+      const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify?token=${verificationToken}`;
+      await sendVerificationEmail(email, {
         name: firstName,
+        verificationToken,
+        verificationUrl,
       });
     } catch (error) {
       return NextResponse.json(
@@ -371,7 +379,7 @@ export async function POST(req: NextRequest) {
       {
         userId,
         message:
-          "Registration successful. Our team will connect with you for further process.",
+          "Registration successful. Please check your email to verify your account.",
         code: "201",
       },
       { status: 201 }

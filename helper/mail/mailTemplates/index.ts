@@ -60,7 +60,7 @@ export class EmailTemplates {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #333; text-align: center;">Verify Your Email Address</h1>
           <p>Hello ${data.name},</p>
-          <p>Thank you for signing up! To complete your registration, please verify your email address by clicking the button below:</p>
+          <p>Thank you for Registring at Kaushaly! To complete your registration, please verify your email address by clicking the button below:</p>
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${data.verificationUrl}" 
@@ -81,6 +81,9 @@ export class EmailTemplates {
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           <p style="color: #666; font-size: 12px;">
             This verification link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+          </p>
+          <p style=" font-size: 6px;">
+            If the token is expired please redo the registration process.
           </p>
         </div>
       `

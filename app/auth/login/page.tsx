@@ -9,25 +9,37 @@ import { Separator } from "@/components/ui/separator"
 import { Mail, Lock, Eye, EyeOff, LogIn, ArrowRight } from "lucide-react"
 import Link from 'next/link'
 
+
+
+
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState< { email : string,  password : string } >({
     email: '',
     password: ''
   })
   
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
     
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false)
-      // Handle login logic here
-      console.log('Login attempt:', formData)
-    }, 2000)
+
+    try {
+      const res =  fetch('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+    })
+    } catch (error) { 
+      console.error("Login error:", error)
+
+      
+
+    } finally {
+      setIsLoading(false);
+    }
+
   }
 
   const handleInputChange = (field: string, value: string) => {

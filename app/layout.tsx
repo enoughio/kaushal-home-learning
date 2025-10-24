@@ -44,6 +44,7 @@ export default function RootLayout({
         className={`${urbanist.variable} ${gothicA1.variable}  ${syne.variable} antialiased`}
       >
         {/* <NavBar /> */}
+        
         {children}
         <Fotter />
       </body>

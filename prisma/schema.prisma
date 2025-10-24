@@ -186,7 +186,7 @@ model teachers {
   marksheet_url_twelfth           String?
   marksheet_url_twelfth_public_id String?
   approval_status                 String    @default("pending")
-  approved_by                     Int?
+  approved_by                     Int?  // remove this line
   approved_at                     DateTime?
   rejection_reason                String?
   availability_schedule           Json?
