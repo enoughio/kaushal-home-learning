@@ -13,15 +13,27 @@ type PlatformStatsPlaceholder = {
 }
 
 async function fetchPlatformStats(): Promise<PlatformStatsPlaceholder> {
-  // Placeholder data - replace with API call later
-  return {
-    totalUsers: 12450,
-    monthlyGrowth: 4,
-    approvedTeachers: 320,
-    pendingTeachers: 12,
-    totalRevenue: 1250000,
-    yearlyGrowth: 18,
-    totalStudents: 9800,
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/admin/dashboard`);
+    if (!response.ok) {
+      const result = await response.json();
+      throw new Error(result.message);
+    }
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching platform stats:', error);
+    // Fallback to placeholder data in case of error
+    return {
+      totalUsers: 0,
+      monthlyGrowth: 0,
+      approvedTeachers: 0,
+      pendingTeachers: 0,
+      totalRevenue: 0,
+      yearlyGrowth: 0,
+      totalStudents: 0,
+    };
   }
 }
 

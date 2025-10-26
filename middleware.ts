@@ -16,7 +16,7 @@ const PUBLIC_PATHS = [
 	"/",
 	"/about",
 	"/contact",
-	"/auth/signup",
+	"/auth/login",
 	"/auth/verify",
 	"/auth/forgot",
 	"/favicon.ico",
@@ -68,14 +68,15 @@ export async function middleware(req: NextRequest) {
 
   try {
 		const { pathname } = req.nextUrl;
-		const isApiRoute = pathname.startsWith('/api/');
-	
+		
 		
 		// Allow public paths immediately
 		if (isPublicPath(pathname)) return NextResponse.next();
+		const isApiRoute = pathname.startsWith('/api/');
 		
+		if(isApiRoute) return NextResponse.next();
 		// Read token
-		const token = req.cookies.get("auth-token")?.value;
+		const token = req.cookies.get("auth-token")?.value || req.headers.get("authorization")?.replace("Bearer ", "");
 		if (!token) {
 			// No token -> redirect to login for pages, return 401 for API routes
 			if (isApiRoute) {

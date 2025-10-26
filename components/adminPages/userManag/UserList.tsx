@@ -7,6 +7,7 @@ import ToggelUserStatus from "./ToggelUserStatus";
 import DeleteUser from "./DeleteUser";
 import Pagination from "./Pagination";
 import UserFilters from "./UserFilters";
+import { cookies } from 'next/headers'
 
 type User = {
   id: string;
@@ -59,61 +60,60 @@ export default async function UserList({
   const roleFilter = (params?.role ?? "all").toString();
   const statusFilter = (params?.status ?? "all").toString();
 
-  
-
-
   async function fetchUsers() {
-    // placeholder dataset - replace with API fetch
-    const all: User[] = [
-      {
-        id: "1",
-        name: "Aisha Kumar",
-        email: "aisha@example.com",
-        joinedDate: "2025-09-28",
-        lastActive: "2025-10-10",
-        role: "student",
-        status: "active",
-      },
-      {
-        id: "2",
-        name: "Rahul Singh",
-        email: "rahul@example.com",
-        joinedDate: "2025-10-01",
-        lastActive: "2025-10-11",
-        role: "teacher",
-        status: "pending",
-      },
-      {
-        id: "3",
-        name: "Meera Patel",
-        email: "meera@example.com",
-        joinedDate: "2025-10-05",
-        lastActive: "2025-10-12",
-        role: "student",
-        status: "inactive",
-      },
-      
-    ];
+    try {
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth-token");
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const url = new URL(`${baseUrl}/api/admin/users-managment`);
+      url.searchParams.set('page', page.toString());
+      url.searchParams.set('limit', pageSize.toString());
+      if (searchTerm) url.searchParams.set('search', searchTerm);
+      if (roleFilter !== 'all') url.searchParams.set('role', roleFilter);
+      if (statusFilter !== 'all') url.searchParams.set('status', statusFilter);
 
-    let filtered = all;
-    if (searchTerm)
-      filtered = filtered.filter(
-        (u) =>
-          u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    if (roleFilter !== "all")
-      filtered = filtered.filter((u) => u.role === roleFilter);
-    if (statusFilter !== "all")
-      filtered = filtered.filter((u) => u.status === statusFilter);
+      const response = await fetch(url.toString(), {
+        headers: {
+          "authorization": `Bearer ${token?.value}` || "",
+        },
+      });
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message);
+      }
+      const result = await response.json();
+      const { users, pagination } = result.data;
 
-    const totalItems = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, totalItems);
-    const users = filtered.slice(startIndex, endIndex);
+      const mappedUsers: User[] = users.map((user: any) => ({
+        id: user.id.toString(),
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown',
+        email: user.email,
+        joinedDate: new Date(user.createdAt).toLocaleDateString(),
+        lastActive: new Date(user.createdAt).toLocaleDateString(), // Using createdAt as placeholder
+        role: user.role,
+        status: user.isActive ? 'active' : 'inactive',
+      }));
 
-    return { users, totalItems, totalPages, startIndex, endIndex, page };
+      return {
+        users: mappedUsers,
+        totalItems: pagination.total,
+        totalPages: pagination.totalPages,
+        startIndex: (page - 1) * pageSize,
+        endIndex: Math.min(page * pageSize, pagination.total),
+        page
+      };
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      // Fallback to empty data
+      return {
+        users: [],
+        totalItems: 0,
+        totalPages: 1,
+        startIndex: 0,
+        endIndex: 0,
+        page: 1
+      };
+    }
   }
 
   const {

@@ -1,12 +1,192 @@
 // API Response Types
 export interface ApiResponse<T = any> {
-  success: boolean;
-  message: string;
+  success?: boolean;
+  message?: string;
   data?: T;
   error?: {
     code: string;
     details?: any;
   };
+  status?: number;
+  code?: number;
+}
+
+// Admin Stats Response
+export interface AdminStatsResponse {
+  totalUsers: number;
+  activeTeachers: number;
+  totalRevenue: number;
+  TotalStudents: number;
+}
+
+// Paginated Response
+export interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+// User Response
+export interface UserResponse {
+  id: number;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  role: "admin" | "teacher" | "student";
+  isActive: boolean;
+  createdAt: string;
+}
+
+// Recent User Response
+export interface RecentUserResponse {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+// Teacher Approval Request
+export interface TeacherApprovalResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  location: string;
+  experience: number;
+  subjects: string[];
+  createdAt: string;
+  status: "pending" | "approved" | "rejected";
+}
+
+// Student Response
+export interface StudentResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  location: string;
+  parentName: string;
+  parentPhone: string;
+  pincode: string;
+  profileImg: string;
+  status: string;
+  enrolledAt: string;
+}
+
+// Teacher Response
+export interface TeacherResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  location: string;
+  experience: number;
+  subjects: string[];
+  hourlyRate: number;
+  bio: string;
+  profileImg: string;
+  status: string;
+  createdAt: string;
+}
+
+// Teacher Stats Response
+export interface TeacherStatsResponse {
+  totalStudents: number;
+  totalEarnings: number;
+  pendingAssignments: number;
+}
+
+// Student Stats Response
+export interface StudentStatsResponse {
+  pendingAssignments: number;
+  activeTeachers: number;
+  attendanceRate: number;
+}
+
+// Assignment Response
+export interface AssignmentResponse {
+  id: number;
+  title: string;
+  description: string;
+  subject: string;
+  teacherId: number;
+  studentId: number;
+  dueDate: string;
+  status: "pending" | "submitted" | "graded";
+  grade?: number | null;
+  feedback?: string | null;
+  submittedAt?: string | null;
+  createdAt: string;
+  attachments?: AttachmentResponse[];
+  submission?: SubmissionResponse | null;
+}
+
+// Attachment Response
+export interface AttachmentResponse {
+  fileName: string;
+  fileUrl: string;
+  mimeType: string;
+  size: number;
+}
+
+// Submission Response
+export interface SubmissionResponse {
+  id: number;
+  fileName: string;
+  fileUrl: string;
+  submittedAt: string;
+  status: "submitted" | "graded";
+}
+
+// Attendance Response
+export interface AttendanceResponse {
+  id: number;
+  studentId: number;
+  teacherId: number;
+  date: string;
+  status: "present" | "absent";
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+// Payment Response
+export interface PaymentResponse {
+  id: number;
+  type: string;
+  studentId?: number;
+  teacherId?: number;
+  amount: number;
+  status: "paid" | "pending" | "due" | "overdue";
+  date: string;
+  dueDate?: string;
+  method?: string;
+  transactionId?: string;
+}
+
+// Analytics Response
+export interface AnalyticsUserGrowthResponse {
+  userGrowth: Array<{
+    month: string;
+    students: number;
+    teachers: number;
+  }>;
+}
+
+export interface AnalyticsPaymentDistributionResponse {
+  distribution: Array<{
+    type: string;
+    percentage: number;
+    amount: number;
+  }>;
 }
 
 export interface LoginRequest {
@@ -238,11 +418,13 @@ export interface AssignmentStats {
   bySubject: { subject: string; count: number; avgGrade: number }[]
 }
 
-export interface PlatformAnalytics {
-  userGrowth: { month: string; students: number; teachers: number }[]
-  revenueAnalytics: { month: string; studentFees: number; teacherSalaries: number; profit: number }[]
-  engagementMetrics: { metric: string; value: number; change: number }[]
-  geographicDistribution: { location: string; students: number; teachers: number }[]
+export interface RecentUser {
+  id: number
+  name: string
+  email: string
+  role: string
+  isActive: boolean
+  createdAt: Date
 }
 
 

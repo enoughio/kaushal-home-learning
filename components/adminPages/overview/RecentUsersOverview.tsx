@@ -3,23 +3,30 @@ import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-
-type RecentUser = {
-  id: string
-  name: string
-  email: string
-  joinedDate: string
-  role: string
-  status: 'active' | 'inactive' | 'pending'
-}
+import { cookies } from 'next/headers'
+import { RecentUser } from '@/lib/types'
 
 async function fetchRecentUsers(): Promise<RecentUser[]> {
-  // Placeholder data - replace with API call later
-  return [
-    { id: '1', name: 'Aisha Kumar', email: 'aisha@example.com', joinedDate: '2025-09-28', role: 'student', status: 'active' },
-    { id: '2', name: 'Rahul Singh', email: 'rahul@example.com', joinedDate: '2025-10-01', role: 'teacher', status: 'active' },
-    { id: '3', name: 'Meera Patel', email: 'meera@example.com', joinedDate: '2025-10-05', role: 'student', status: 'inactive' },
-  ]
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token");
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const response = await fetch(`${baseUrl}/api/admin/dashboard/recent-users`, {
+      headers: {
+        "authorization": `Bearer ${token?.value}` || "",
+      },
+    });
+    if (!response.ok) {
+      const result = await response.json();
+      throw new Error(result.message);
+    }
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error("Error fetching recent users:", error);
+    // Fallback to empty array
+    return [];
+  }
 }
 
 const RecentUsersOverview = async () => {
@@ -35,20 +42,22 @@ const RecentUsersOverview = async () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {recentUsers.map((user) => (
+          {recentUsers.length > 0 ? recentUsers.map((user) => (
             <div key={user.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
               <div>
                 <p className="font-medium">{user.name}</p>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
-                <p className="text-xs text-muted-foreground">Joined: {user.joinedDate}</p>
+                <p className="text-xs text-muted-foreground">Joined: {new Date(user.createdAt).toLocaleDateString()}</p>
               </div>
               <div className="text-right">
                 <Badge variant="outline" className="mb-1">{user.role}</Badge>
                 <br />
-                <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>{user.status}</Badge>
+                <Badge variant={user.isActive ? 'default' : 'secondary'}>{user.isActive ? 'active' : 'inactive'}</Badge>
               </div>
             </div>
-          ))}
+          )) : (
+            <p className="text-muted-foreground text-center py-4">No recent users found.</p>
+          )}
         </div>
       </CardContent>
     </Card>

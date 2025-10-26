@@ -1,82 +1,71 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
-import { requireRole } from "@/app/api/_lib/auth";
+import { prisma } from "@/lib/db";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { paymentId: string } }
 ) {
   try {
-    requireRole(req, "admin");
-  } catch (error) {
-    return error as Response;
-  }
+    const paymentId = parseInt(params.paymentId);
 
-  const { paymentId } = params;
+    if (isNaN(paymentId)) {
+      return respondWithError({
+        error: "INVALID_REQUEST",
+        message: "Invalid payment ID",
+        status: 400,
+      });
+    }
 
-  if (!paymentId || isNaN(Number(paymentId))) {
-    return respondWithError({
-      error: "INVALID_PAYMENT_ID",
-      message: "Invalid payment ID",
-      status: 400,
-    });
-  }
-
-  try {
     const payment = await prisma.payments.findUnique({
-      where: { id: Number(paymentId) },
+      where: { id: paymentId },
       include: {
         student: {
           include: {
             user: true,
           },
         },
-        processed_by_user: true,
       },
     });
 
     if (!payment) {
       return respondWithError({
-        error: "PAYMENT_NOT_FOUND",
+        error: "NOT_FOUND",
         message: "Payment not found",
         status: 404,
       });
     }
 
-    const paymentDetails = {
-      id: payment.id,
-      studentId: payment.student_id,
-      studentName: `${payment.student.user.first_name} ${payment.student.user.last_name}`.trim(),
-      studentEmail: payment.student.user.email,
-      parentName: payment.student.parent_name,
-      parentEmail: payment.student.parent_email,
-      amount: payment.amount,
-      paymentType: payment.payment_type,
-      paymentStatus: payment.payment_status,
-      paymentMethod: payment.payment_method,
-      transactionId: payment.transaction_id,
-      paymentDate: payment.payment_date,
-      dueDate: payment.due_date,
-      lateFee: payment.late_fee,
-      discount: payment.discount,
-      notes: payment.notes,
-      processedBy: payment.processed_by_user
-        ? `${payment.processed_by_user.first_name} ${payment.processed_by_user.last_name}`.trim()
-        : null,
-      createdAt: payment.created_at,
-      updatedAt: payment.updated_at,
-    };
-
     return respondWithSuccess({
-      data: paymentDetails,
+      data: {
+        id: payment.id.toString(),
+        userId: payment.student.user_id.toString(),
+        userName: `${payment.student.user.first_name || ""} ${payment.student.user.last_name || ""}`.trim(),
+        type: payment.payment_type,
+        amount: payment.amount,
+        status: payment.payment_status,
+        date: payment.payment_date?.toISOString() || new Date().toISOString(),
+        dueDate: payment.due_date?.toISOString() || new Date().toISOString(),
+        method: payment.payment_method || "cash",
+        transactionId: payment.transaction_id || "",
+        UserDetails: {
+          id: payment.student.user_id.toString(),
+          name: `${payment.student.user.first_name || ""} ${payment.student.user.last_name || ""}`.trim(),
+          email: payment.student.user.email,
+          profileImg: payment.student.user.profile_image_url || "https://example.com/photo.jpg",
+          phone: payment.student.user.phone || "",
+          location: payment.student.user.location || "",
+          role: payment.student.user.role,
+        },
+      },
+      status: 200,
     });
   } catch (error) {
-    console.error("GET /admin/payments/:paymentId error", error);
     return respondWithError({
-      error: "PAYMENT_FETCH_FAILED",
-      message: "Unable to fetch payment details",
+      error: "INTERNAL_SERVER_ERROR",
+      message: "Failed to fetch payment details",
       status: 500,
+      details: error instanceof Error ? error.message : undefined,
     });
   }
 }

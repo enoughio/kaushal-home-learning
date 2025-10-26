@@ -61,7 +61,6 @@ export default function LoginPage() {
 
       if (result.success) {
         // Success case
-        console.log("redirecting after login:", result)
         toast.success(result.message || 'Login successful!')
         if( result.user?.role == "admin" ){
           router.push('/admin')

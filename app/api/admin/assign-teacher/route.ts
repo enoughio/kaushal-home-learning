@@ -1,68 +1,64 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
-import { parsePagination } from "@/app/api/_lib/pagination";
-import { requireRole } from "@/app/api/_lib/auth";
+import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   try {
-    requireRole(req, "admin");
-  } catch (error) {
-    return error as Response;
-  }
+    const searchParams = req.nextUrl.searchParams;
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = 20; // Fixed limit as per API spec
 
-  const { searchParams } = new URL(req.url);
-  const { page, limit, skip } = parsePagination(searchParams, { limit: 20 });
+    const skip = (page - 1) * limit;
 
-  try {
-    const [total, students] = await Promise.all([
-      prisma.students.count({
-        where: {
-          assigned_teacher_id: null,
-          is_active: true,
-        },
-      }),
+    const [students, totalStudents] = await Promise.all([
       prisma.students.findMany({
         where: {
           assigned_teacher_id: null,
-          is_active: true,
         },
+        skip,
+        take: limit,
         include: {
           user: true,
         },
         orderBy: { created_at: "desc" },
-        skip,
-        take: limit,
+      }),
+      prisma.students.count({
+        where: {
+          assigned_teacher_id: null,
+        },
       }),
     ]);
 
-    const studentList = students.map((student) => ({
-      id: student.id,
-      name: `${student.user.first_name} ${student.user.last_name}`.trim(),
+    const formattedStudents = students.map((student) => ({
+      id: student.id.toString(),
+      name: `${student.user.first_name || ""} ${student.user.last_name || ""}`.trim(),
       email: student.user.email,
-      parentPhone: student.parent_phone,
-      location: student.user.location,
-      longitude: student.user.home_longitude,
-      latitude: student.user.home_latitude,
-      pincode: student.user.pincode,
+      parentPhone: student.parent_phone || "",
+      location: student.user.location || "",
+      longitude: student.user.home_longitude?.toString() || "77.2090",
+      latitude: student.user.home_latitude?.toString() || "28.6139",
+      pincode: student.user.pincode || "",
       status: student.is_active ? "active" : "inactive",
-      enrolledAt: student.enrollment_date,
+      enrolledAt: student.enrollment_date.toISOString(),
     }));
+
+    const totalPages = Math.ceil(totalStudents / limit);
 
     return respondWithSuccess({
       data: {
-        students: studentList,
+        students: formattedStudents,
         page,
-        totalPages: Math.ceil(total / limit) || 1,
-        totalStudents: total,
+        totalPages,
+        totalStudents,
       },
+      status: 200,
     });
   } catch (error) {
-    console.error("GET /admin/assign-teacher error", error);
     return respondWithError({
-      error: "STUDENTS_FETCH_FAILED",
-      message: "Unable to fetch students without assigned teachers",
+      error: "INTERNAL_SERVER_ERROR",
+      message: "Failed to fetch unassigned students",
       status: 500,
+      details: error instanceof Error ? error.message : undefined,
     });
   }
 }

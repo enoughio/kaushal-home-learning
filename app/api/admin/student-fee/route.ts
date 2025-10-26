@@ -1,30 +1,19 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
-import { parsePagination } from "@/app/api/_lib/pagination";
-import { requireRole } from "@/app/api/_lib/auth";
+import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   try {
-    requireRole(req, "admin");
-  } catch (error) {
-    return error as Response;
-  }
+    const searchParams = req.nextUrl.searchParams;
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = 20;
 
-  const { searchParams } = new URL(req.url);
-  const action = searchParams.get("action");
+    const skip = (page - 1) * limit;
 
-  if (action === "stats") {
-    return getFeeStats();
-  }
-
-  // Default: list student fees
-  const { page, limit, skip } = parsePagination(searchParams, { limit: 20 });
-
-  try {
-    const [total, fees] = await Promise.all([
-      prisma.student_fees.count(),
+    const [fees, totalFees] = await Promise.all([
       prisma.student_fees.findMany({
+        skip,
+        take: limit,
         include: {
           student: {
             include: {
@@ -32,96 +21,39 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-        orderBy: { due_date: "asc" },
-        skip,
-        take: limit,
+        orderBy: { created_at: "desc" },
       }),
+      prisma.student_fees.count(),
     ]);
 
-    const feeList = fees.map((fee) => ({
-      id: fee.id,
-      studentId: fee.student_id,
-      studentName: `${fee.student.user.first_name} ${fee.student.user.last_name}`.trim(),
-      email: fee.student.user.email,
-      month: fee.month,
-      year: fee.year,
-      amount: fee.amount,
-      dueDate: fee.due_date,
+    const formattedFees = fees.map((fee) => ({
+      id: fee.id.toString(),
+      studentId: fee.student.id.toString(),
+      studentName: `${fee.student.user.first_name || ""} ${fee.student.user.last_name || ""}`.trim(),
+      fee: fee.amount,
       status: fee.status,
-      reminderSent: fee.reminder_sent,
-      createdAt: fee.created_at,
+      date: fee.created_at.toISOString(),
+      ReminderSent: fee.reminder_sent,
+      dueDate: fee.due_date.toISOString(),
     }));
 
-    return respondWithSuccess({
-      data: {
-        studentFees: feeList,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit) || 1,
-        },
-      },
-    });
-  } catch (error) {
-    console.error("GET /admin/student-fee error", error);
-    return respondWithError({
-      error: "FEE_FETCH_FAILED",
-      message: "Unable to fetch student fees",
-      status: 500,
-    });
-  }
-}
-
-async function getFeeStats() {
-  try {
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1;
-    const currentYear = currentDate.getFullYear();
-
-    const [totalStudents, paidThisMonth, pendingThisMonth, overdueFees, totalCollected] = await Promise.all([
-      prisma.students.count({ where: { is_active: true } }),
-      prisma.student_fees.count({
-        where: {
-          month: currentMonth,
-          year: currentYear,
-          status: "paid",
-        },
-      }),
-      prisma.student_fees.count({
-        where: {
-          month: currentMonth,
-          year: currentYear,
-          status: "due",
-        },
-      }),
-      prisma.student_fees.count({
-        where: {
-          due_date: { lt: currentDate },
-          status: "due",
-        },
-      }),
-      prisma.student_fees.aggregate({
-        where: { status: "paid" },
-        _sum: { amount: true },
-      }),
-    ]);
+    const totalPages = Math.ceil(totalFees / limit);
 
     return respondWithSuccess({
       data: {
-        totalStudents,
-        paidThisMonth,
-        pendingThisMonth,
-        overdueFees,
-        totalCollected: totalCollected._sum.amount || 0,
+        studentFees: formattedFees,
+        page,
+        totalPages,
+        totalFees,
       },
+      status: 200,
     });
   } catch (error) {
-    console.error("GET /admin/student-fee/stats error", error);
     return respondWithError({
-      error: "FEE_STATS_FAILED",
-      message: "Unable to fetch fee statistics",
+      error: "INTERNAL_SERVER_ERROR",
+      message: "Failed to fetch student fees",
       status: 500,
+      details: error instanceof Error ? error.message : undefined,
     });
   }
 }

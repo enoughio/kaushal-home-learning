@@ -52,9 +52,7 @@ const PendingapprovalsOverView = () => {
         throw new Error(result.message || `HTTP error! status: ${response.status}`)
       }
 
-      console.log("Pending Teachers Fetch Result:", result)
-
-      if (result.success && result.data?.pendingTeachers) {
+      if (result.data?.pendingTeachers) {
         setPendingTeachers(result.data.pendingTeachers)
       } else {
         throw new Error(result.message || 'Failed to fetch pending teachers')

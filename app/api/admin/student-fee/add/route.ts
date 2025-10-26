@@ -1,124 +1,66 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
-import { requireRole } from "@/app/api/_lib/auth";
-
-type AddFeePayload = {
-  studentId: number;
-  month: number;
-  year: number;
-  amount: number;
-  dueDate?: string;
-};
+import { prisma } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
-    requireRole(req, "admin");
-  } catch (error) {
-    return error as Response;
-  }
+    const body = await req.json();
+    const { studentId, fee, dueDate } = body;
 
-  let payload: AddFeePayload;
-  try {
-    payload = await req.json();
-  } catch (error) {
-    return respondWithError({
-      error: "INVALID_JSON",
-      message: "Request body must be valid JSON",
-      status: 400,
-    });
-  }
+    if (!studentId || !fee) {
+      return respondWithError({
+        error: "INVALID_REQUEST",
+        message: "studentId and fee are required",
+        status: 400,
+      });
+    }
 
-  const { studentId, month, year, amount, dueDate } = payload;
-
-  if (!studentId || !Number.isInteger(studentId) || studentId <= 0) {
-    return respondWithError({
-      error: "INVALID_STUDENT_ID",
-      message: "Valid student id is required",
-      status: 400,
-    });
-  }
-
-  if (!month || !year || month < 1 || month > 12 || year < 2020) {
-    return respondWithError({
-      error: "INVALID_MONTH_YEAR",
-      message: "Valid month (1-12) and year (>= 2020) are required",
-      status: 400,
-    });
-  }
-
-  if (!amount || amount <= 0) {
-    return respondWithError({
-      error: "INVALID_AMOUNT",
-      message: "Fee amount must be greater than 0",
-      status: 400,
-    });
-  }
-
-  try {
     const student = await prisma.students.findUnique({
-      where: { id: studentId },
-      include: { user: true },
+      where: { id: parseInt(studentId) },
     });
 
     if (!student) {
       return respondWithError({
-        error: "STUDENT_NOT_FOUND",
-        message: "The requested student does not exist",
+        error: "NOT_FOUND",
+        message: "Student not found",
         status: 404,
       });
     }
 
-    // Check if fee already exists for this month/year
-    const existingFee = await prisma.student_fees.findUnique({
-      where: {
-        student_id_month_year: {
-          student_id: studentId,
-          month,
-          year,
-        },
-      },
-    });
+    const dueDateObj = new Date(dueDate);
+    const month = dueDateObj.getMonth() + 1;
+    const year = dueDateObj.getFullYear();
 
-    if (existingFee) {
-      return respondWithError({
-        error: "FEE_ALREADY_EXISTS",
-        message: "Fee record already exists for this month and year",
-        status: 409,
-      });
-    }
-
-    const calculatedDueDate = dueDate
-      ? new Date(dueDate)
-      : new Date(year, month - 1, student.fee_due_date?.getDate() || 1);
-
-    const newFee = await prisma.student_fees.create({
+    // Create student fee record
+    const studentFee = await prisma.student_fees.create({
       data: {
-        student_id: studentId,
+        student_id: parseInt(studentId),
+        amount: fee,
+        due_date: dueDateObj,
         month,
         year,
-        amount,
-        due_date: calculatedDueDate,
+        status: "due",
       },
     });
 
     return respondWithSuccess({
       data: {
-        feeId: newFee.id,
-        studentId,
-        month,
-        year,
-        amount,
-        dueDate: newFee.due_date,
+        message: "Fee record added successfully",
+        studentId: student.id.toString(),
+        feeDetails: {
+          fee,
+          status: "due",
+          dueDate,
+        },
       },
-      message: "Student fee record added successfully",
+      status: 200,
     });
   } catch (error) {
-    console.error("POST /admin/student-fee/add error", error);
     return respondWithError({
-      error: "FEE_ADD_FAILED",
-      message: "Unable to add student fee record",
+      error: "INTERNAL_SERVER_ERROR",
+      message: "Failed to add fee record",
       status: 500,
+      details: error instanceof Error ? error.message : undefined,
     });
   }
 }
