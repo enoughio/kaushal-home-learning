@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import jwt from "jsonwebtoken";
 import NavLinks from "./NavLinks";
 
 // TODO : make signout a server action
@@ -10,10 +11,26 @@ import NavLinks from "./NavLinks";
 import { PowerIcon } from "lucide-react";
 
 export default async function SideNav() {
+  let role: string = "guest";
 
-  const cookieStore = await cookies();
-  const role = cookieStore.get("role")?.value ?? "guest";
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
 
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+        role = decoded.role || "guest";
+      } catch (error) {
+        // Invalid token, treat as guest
+        console.error("Invalid token in SideNav:", error);
+        role = "guest";
+      }
+    }
+  } catch (error) {
+    console.error("Error reading cookies in SideNav:", error);
+    role = "guest";
+  }
 
   return (
     <div className="flex h-full flex-col px-3 py-4 md:px-2 md:overflow-y-auto">
@@ -27,7 +44,7 @@ export default async function SideNav() {
         </div>
       </Link>
 
-  <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
+      <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
         <NavLinks role={role} />
 
         <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
@@ -48,16 +65,18 @@ export default async function SideNav() {
   export async function signOutAction() {
     "use server";
     // Perform any server-side sign-out logic here (clear cookies, revoke tokens).
-    // Minimal behavior: redirect to home.
     try {
-      const cookieStore = typeof cookies === "function" ? await cookies() : undefined;
-      // If the runtime supports deletion, attempt to delete the role cookie.
+      const cookieStore = await cookies();
+      // Delete the auth token cookie
+      cookieStore.delete("auth-token");
+      // Also delete any other auth-related cookies if they exist
+      cookieStore.delete("role");
       
-      cookieStore?.delete?.("role");
-    } catch (_err) {
-      // ignore
-      console.error(_err);
+      // Redirect to home page after logout
+      redirect("/"); 
+    } catch (err) {
+      console.error("Sign out error:", err);
+      // Even if cookie deletion fails, redirect to home
+      redirect("/");
     }
-
-    redirect("/");
   }

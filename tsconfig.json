@@ -23,6 +23,6 @@
       "@/*": ["./*"]  // maps @/something → project root. So, @ oints to project rrot as there is not src folder.
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "middelware.ts"],
   "exclude": ["node_modules", "node"]
 }

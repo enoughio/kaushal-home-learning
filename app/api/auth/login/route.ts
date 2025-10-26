@@ -137,8 +137,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<LoginResponse
 
     if (!user) {
       return createErrorResponse({
-        code: 'INVALID_CREDENTIALS',
-        message: 'Invalid email or password',
+        code: 'INVALID_USER',
+        message: 'User does not exist ',
         status: 401,
       });
     }
@@ -187,17 +187,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<LoginResponse
       role: user.role,
     };
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      console.error('JWT_SECRET environment variable is not set');
-      return createErrorResponse({
-        code: 'SERVER_ERROR',
-        message: 'Authentication service temporarily unavailable',
-        status: 500,
-      });
-    }
 
-    const token = jwt.sign(tokenPayload, jwtSecret, {
+
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET!, {
       expiresIn: '15d',
     });
 

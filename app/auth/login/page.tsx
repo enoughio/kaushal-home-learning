@@ -61,6 +61,7 @@ export default function LoginPage() {
 
       if (result.success) {
         // Success case
+        console.log("redirecting after login:", result)
         toast.success(result.message || 'Login successful!')
         if( result.user?.role == "admin" ){
           router.push('/admin')
@@ -77,7 +78,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("Login error:", error)
-      setErrorMessage('Network error. Please check your connection and try again.')
+      setErrorMessage('Server is busy try again.')
 
     } finally {
       setIsLoading(false)
