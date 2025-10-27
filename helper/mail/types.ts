@@ -27,6 +27,19 @@ export interface WelcomeEmailData {
   activationUrl?: string
 }
 
+
+export interface ApprovalEmailData {
+  name: string
+  actionUrl?: string
+  approvalDate: string
+}
+
+
+export interface RejectionEmailData {
+  name: string
+  rejectionDate: string
+}
+
 export interface VerificationEmailData {
   name: string
   verificationToken: string

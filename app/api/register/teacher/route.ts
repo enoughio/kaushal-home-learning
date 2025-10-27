@@ -314,6 +314,26 @@ export async function POST(req: NextRequest) {
     // Generate verification token
     const verificationToken = await generateVerificationToken();
 
+     // Send verification email
+    try {
+      const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify?token=${verificationToken}`;
+      await sendVerificationEmail(email, {
+        name: firstName,
+        verificationToken,
+        verificationUrl,
+      });
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error: "ERROR_SENDING_MAIL",
+          message: "Email sending failed try again",
+          details: { error },
+          code: "500",
+        },
+        { status: 500 }
+      );
+    }
+
     const userId = await prisma.$transaction(async (tx) => {
       // Insert some fields data in temp_users
       const createdUser = await tx.temp_users.create({
@@ -355,25 +375,7 @@ export async function POST(req: NextRequest) {
       return createdUser.id;
     });
 
-    // Send verification email
-    try {
-      const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify?token=${verificationToken}`;
-      await sendVerificationEmail(email, {
-        name: firstName,
-        verificationToken,
-        verificationUrl,
-      });
-    } catch (error) {
-      return NextResponse.json(
-        {
-          error: "ERROR_SENDING_MAIL",
-          message: "Email sending failed",
-          details: { error },
-          code: "500",
-        },
-        { status: 500 }
-      );
-    }
+   
 
     return NextResponse.json(
       {

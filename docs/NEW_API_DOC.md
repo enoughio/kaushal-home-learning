@@ -126,7 +126,7 @@ All endpoints below require authentication via JWT-based cookies; no token needs
           "id": "teacher123",
           "name": "John Doe",
           "email": "asdfj@example.com",
-          "aadharNumber": "1234-5678-9012",
+          "aadharURL": "1234-5678-9012",
           "phone" : "9876543210",
           "location": "New Delhi, India",
            "pincode": "110001",
@@ -194,7 +194,6 @@ Role: admin only
 
 
 ## Admin - Users Page
-
 ####  GET /admin/users-managment
 
 - Description: Get a list of all users (students and teachers) with pagination and filtering options.

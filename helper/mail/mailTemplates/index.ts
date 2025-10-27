@@ -1,4 +1,4 @@
-import { EmailTemplate, WelcomeEmailData, VerificationEmailData, NotificationEmailData, OTPVerificationEmailData, FeeReminderEmailData } from '../types'
+import { EmailTemplate, WelcomeEmailData, VerificationEmailData, NotificationEmailData, OTPVerificationEmailData, FeeReminderEmailData, ApprovalEmailData, RejectionEmailData } from '../types'
 
 export class EmailTemplates {
   static welcome(data: WelcomeEmailData): EmailTemplate {
@@ -15,6 +15,82 @@ export class EmailTemplates {
       `
     }
   }
+
+  static approval(data: ApprovalEmailData) : EmailTemplate {
+    return {
+      subject: 'Your Application Has Been Approved!',
+      text: `Hello ${data.name}, congratulations! Your application has been approved. Please set your password using the forgot password option and login to the application.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #28a745; text-align: center;">Application Approved! 🎉</h1>
+          <p>Dear ${data.name},</p>
+          <p>Congratulations! Your application to become a teacher at Kaushaly Home Learning has been <strong>approved</strong>.</p>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #333;">Next Steps:</h3>
+            <p>To complete your account setup and start teaching, please follow these steps:</p>
+            <ol style="color: #666;">
+              <li>Visit the login page and click on <strong>"Forgot Password"</strong></li>
+              <li>Enter your registered email address</li>
+              <li>Follow the instructions to create a new password</li>
+              <li>Log in to your account with your new password</li>
+            </ol>
+            <p>Date: <strong>${data.approvalDate}</strong></p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="#" style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+              Go to Login Page
+            </a>
+          </div>
+          
+          <p>Once you've set your password and logged in, you'll be able to access your teacher dashboard and start creating courses.</p>
+          
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #666; font-size: 12px;">
+            If you have any questions or need assistance, please don't hesitate to contact our support team.
+          </p>
+          <p style="color: #666; font-size: 12px;">
+            Welcome to the Kaushaly Home Learning family!
+          </p>
+        </div>
+      `
+    }
+  }
+
+
+  static rejection(data: RejectionEmailData) : EmailTemplate {
+    return {
+      subject: 'Application Status Update',
+      text: `Hello ${data.name}, we regret to inform you that your application has not been approved at this time.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #dc3545; text-align: center;">Application Status Update</h1>
+          <p>Dear ${data.name},</p>
+          <p>Thank you for applying to become a teacher at Kaushaly Home Learning. We appreciate your interest and the time you spent on your application.</p>
+          
+          <p>Unfortunately, we regret to inform you that your application has <strong>not been approved</strong> at this time.</p>
+          
+          <p>We encourage you to review your qualifications and consider reapplying in the future. We're always looking for talented educators to join our community.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="#" style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+              Reapply
+            </a>
+          </div>
+          
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #666; font-size: 12px;">
+            If you have any questions or would like more detailed feedback on your application, please contact our support team.
+          </p>
+          <p style="color: #666; font-size: 12px;">
+            We hope to see you again in the future!
+          </p>
+        </div>
+      `
+    }
+  }
+
 
   static otpVerification(data: OTPVerificationEmailData ): EmailTemplate {
     return {
