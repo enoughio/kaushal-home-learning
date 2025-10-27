@@ -1,9 +1,15 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { authenticateAndValidateAdmin } from "../../_lib/verify";
+
 
 export async function GET(req: NextRequest) {
   try {
+
+    const authResult = await authenticateAndValidateAdmin(req)
+    if( "error" in authResult) return authResult.error
+    
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = 20;

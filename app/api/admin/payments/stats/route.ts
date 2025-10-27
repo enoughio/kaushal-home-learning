@@ -1,9 +1,14 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
 export async function GET(req: NextRequest) {
   try {
+
+    const authResult = await authenticateAndValidateAdmin(req)
+    if( "error" in authResult) return authResult.error
+
     const totalPaymentsCount = await prisma.payments.count();
     const duePayments = await prisma.payments.count({
       where: {

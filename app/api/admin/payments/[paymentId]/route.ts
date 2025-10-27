@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { paymentId: string } }
+  { params }: { params: Promise<{ paymentId: string }> }
 ) {
   try {
-    const paymentId = parseInt(params.paymentId);
+    const data = await params
+    const paymentId = parseInt(data.paymentId);
 
     if (isNaN(paymentId)) {
       return respondWithError({
