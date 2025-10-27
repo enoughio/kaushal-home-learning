@@ -32,7 +32,6 @@ model temp_users {
   expires_at          DateTime  @default(dbgenerated("NOW() + INTERVAL '24 hours'"))
   created_at          DateTime  @default(now())
   verified            Boolean   @default(false)
-
   temp_teachers       temp_teachers[]
 }
 
@@ -66,7 +65,6 @@ model temp_teachers {
   max_students                    Int       @default(20)
   created_at                      DateTime  @default(now())
   updated_at                      DateTime  @default(now())
-
   temp_user                       temp_users @relation(fields: [temp_user_id], references: [id], onDelete: Cascade)
 }
 
@@ -185,7 +183,7 @@ model teachers {
   marksheet_url_tenth_public_id   String?
   marksheet_url_twelfth           String?
   marksheet_url_twelfth_public_id String?
-  approval_status                 String    @default("pending")
+  approval_status                 String    @default("pending")   // remove this latter
   approved_by                     Int?  // remove this line
   approved_at                     DateTime?
   rejection_reason                String?

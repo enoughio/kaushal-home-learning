@@ -113,8 +113,8 @@ All endpoints below require authentication via JWT-based cookies; no token needs
     ```
 
 
-#### GET /admin/teacher-managment/
-- Description: Get all pending approvals for teachers for the overview page.
+#### GET /admin/approvals/
+- Description: Get all pending approvals for teachers for the page.
 
 - Response:
   - Status: 200 OK
@@ -145,7 +145,7 @@ All endpoints below require authentication via JWT-based cookies; no token needs
 
 
 
-#### POST /admin/teacher-managment/:teacherId/approve
+#### POST /admin/approvals/:teacherId/approve
 - Description: Approve a teacher's application. 
 
 - Process: Move the teacher from the temp_user table to the user table and update related info in the teachers table.
@@ -171,7 +171,7 @@ Role: admin only
 
 
 
-#### POST /admin/teacher-managment/:teacherId/reject
+#### POST /admin/approvals/:teacherId/reject
 - Description: Reject a teacher's application.
 - Process: Delete the teacher from the temp_user table and related info in the teachers table.
 - Role: admin only
