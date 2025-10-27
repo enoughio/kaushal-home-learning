@@ -669,7 +669,6 @@ Role: admin only
     - type (string, optional) - Filter by payment type (e.g., "student_fee", "teacher_salary").
     - status (string, optional) - Filter by payment status (e.g., "completed", "pending").
 
-
 - Response:
   - Status: 200 OK
     - Body:

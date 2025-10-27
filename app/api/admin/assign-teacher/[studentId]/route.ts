@@ -1,80 +1,30 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { jwtVerify } from "jose";
-import { Prisma } from "../generated/prisma";
+import { Prisma } from "@/generated/prisma";
+
+
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
+import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
+
 
 // Define types for request and response
 interface AssignTeacherRequest {
   teacherId: string;
 }
 
-interface AssignTeacherResponse {
-  message: string;
-  studentId: string;
-  studentName: string;
-  teacherId: string | null;
-  teacherName: string | null;
-}
-
-// Define JWT payload type
-interface JwtPayload {
-  userId: number;
-  role: string;
-}
-
 // Define Prisma types for query results
-type StudentWithUser = Prisma.StudentGetPayload<{
+type StudentWithUser = Prisma.studentsGetPayload<{
   include: { user: { select: { first_name: true; last_name: true } } };
 }>;
 
-type TeacherWithUser = Prisma.TeacherGetPayload<{
+type TeacherWithUser = Prisma.teachersGetPayload<{
   include: { user: { select: { first_name: true; last_name: true } } };
 }>;
 
-type AssignmentWithTeacher = Prisma.TeacherStudentAssignmentGetPayload<{
+type AssignmentWithTeacher = Prisma.teacher_student_assignmentsGetPayload<{
   include: { teacher: { include: { user: { select: { first_name: true; last_name: true } } } } };
 }>;
 
-// Shared authentication logic
-async function authenticateAndValidateAdmin(
-  req: NextRequest
-): Promise<{ payload: JwtPayload } | { error: Response }> {
-  const token = req.cookies.get("auth-token")?.value;
-
-  if (!token) {
-    return {
-      error: respondWithError({
-        error: "UNAUTHENTICATED",
-        message: "Authentication required",
-        status: 401,
-      }),
-    };
-  }
-
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-    const { payload } = await jwtVerify(token, secret);
-    if (payload.role !== "admin") {
-      return {
-        error: respondWithError({
-          error: "UNAUTHORIZED",
-          message: "Admin access required",
-          status: 403,
-        }),
-      };
-    }
-    return { payload: payload as JwtPayload };
-  } catch (error) {
-    return {
-      error: respondWithError({
-        error: "UNAUTHENTICATED",
-        message: "Invalid or expired token",
-        status: 401,
-      }),
-    };
-  }
-}
 
 // Shared validation for student and teacher
 async function validateStudentAndTeacher(
@@ -130,10 +80,13 @@ async function validateStudentAndTeacher(
 // POST: Assign a teacher to a student
 export async function POST(
   req: NextRequest,
-  { params }: { params: { studentId: string } }
+  { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
-    const studentId = parseInt(params.studentId);
+
+    const data = await params;
+    const studentId = parseInt(data.studentId);
+    
     if (isNaN(studentId)) {
       return respondWithError({
         error: "INVALID_REQUEST",
@@ -146,6 +99,7 @@ export async function POST(
     if ("error" in authResult) return authResult.error;
 
     let body: AssignTeacherRequest;
+
     try {
       body = await req.json();
     } catch (error) {
@@ -171,12 +125,10 @@ export async function POST(
     const { student, teacher } = validationResult;
 
     // Check for existing assignment
-    const existingAssignment = await prisma.teacher_student_assignments.findUnique({
+    const existingAssignment = await prisma.teacher_student_assignments.findFirst({
       where: {
-        teacher_id_student_id: {
-          teacher_id: teacherId,
-          student_id: studentId,
-        },
+        teacher_id: teacherId,
+        student_id: studentId,
       },
     });
 
@@ -240,10 +192,13 @@ export async function POST(
 // PUT: Update the assigned teacher for a student
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { studentId: string } }
+  { params }: { params: Promise <{ studentId: string }> }
 ) {
   try {
-    const studentId = parseInt(params.studentId);
+    
+    const data =  await params;
+    const studentId = parseInt(data.studentId);
+
     if (isNaN(studentId)) {
       return respondWithError({
         error: "INVALID_REQUEST",
@@ -281,12 +236,10 @@ export async function PUT(
     const { student, teacher } = validationResult;
 
     // Check for existing assignment
-    const existingAssignment = await prisma.teacher_student_assignments.findUnique({
+    const existingAssignment = await prisma.teacher_student_assignments.findFirst({
       where: {
-        // teacher_id_student_id: {
-          // teacher_id: teacherId,
-          student_id: studentId,
-        // },
+        student_id : studentId,
+        teacher_id: teacherId,
       },
     });
 
@@ -307,10 +260,7 @@ export async function PUT(
       if (oldAssignment) {
         await tx.teacher_student_assignments.delete({
           where: {
-            teacher_id_student_id: {
-              teacher_id: oldAssignment.teacher_id,
-              student_id: studentId,
-            },
+            id: oldAssignment.id,
           },
         });
         await tx.teachers.update({
@@ -340,7 +290,7 @@ export async function PUT(
           action: "UPDATE_TEACHER_ASSIGNMENT",
           table_name: "teacher_student_assignments",
           record_id: studentId,
-          old_values: oldAssignment ? { teacherId: oldAssignment.teacher_id } : null,
+          old_values: oldAssignment ? { teacherId: oldAssignment.teacher_id } : undefined,
           new_values: { teacherId },
         },
       });
@@ -367,13 +317,17 @@ export async function PUT(
   }
 }
 
+
+
 // DELETE: Remove the assigned teacher from a student
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { studentId: string } }
+  { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
-    const studentId = parseInt(params.studentId);
+    const data = await params;
+    const studentId = parseInt(data.studentId);
+
     if (isNaN(studentId)) {
       return respondWithError({
         error: "INVALID_REQUEST",
@@ -411,10 +365,7 @@ export async function DELETE(
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.teacher_student_assignments.delete({
         where: {
-          teacher_id_student_id: {
-            teacher_id: existingAssignment.teacher_id,
-            student_id: studentId,
-          },
+          id: existingAssignment.id,
         },
       });
       await tx.teachers.update({

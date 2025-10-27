@@ -14,10 +14,9 @@ export async function GET() {
         is_verified : true,
         is_active : true,
     };
-    
 
-    try {
     
+    try {
     const hash =  await bcrypt.hash(data.password_hash, 10);
     data.password_hash = hash;
 
