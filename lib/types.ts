@@ -380,6 +380,13 @@ export interface TeacherSalary {
   paymentDate?: string
 }
 
+export interface JwtPayload {
+  userId: number;
+  role: string;
+}
+
+
+
 export interface StudentFee {
   id: string
   studentId: string
