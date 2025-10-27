@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { calculateAge } from "@/helper/calculateAge";
 import { EmailFormate } from "@/helper/mail/formateVelidator";
 import { uploadFile } from "@/helper/cloudinaryActions";
-import { sendOTPVerificationEmail } from "@/helper/mail/emailHelpers";
+import { studentWelcomeEmail } from "@/helper/mail/emailHelpers";
 
 type Gender = "male" | "female" | "other";
 
@@ -17,7 +17,7 @@ const NAME_REGEX = /^[A-Za-z ,'.-]{2,}$/;
 const PHONE_REGEX = /^\+?[0-9]{10,15}$/;
 const PINCODE_REGEX = /^[0-9]{6}$/;
 const VALID_GENDERS: Gender[] = ["male", "female", "other"];
-const MAX_FILE_SIZE = 20 * 1024 * 1024;  // 20 mb
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 mb
 
 function validationError(details: ValidationIssue[]) {
   return NextResponse.json(
@@ -124,7 +124,9 @@ export async function POST(req: NextRequest) {
   const schoolBoard = String(rawSchoolBoard ?? altSchoolBoard ?? "").trim();
   const parentName = String(rawParentName ?? "").trim();
   const parentPhone = String(rawParentPhone ?? "").trim();
-  const parentEmail = String(rawParentEmail ?? "").trim().toLowerCase();
+  const parentEmail = String(rawParentEmail ?? "")
+    .trim()
+    .toLowerCase();
   const emergencyNumber = String(rawEmergencyNumber ?? "").trim();
   const houseNumber = String(rawHouseNumber ?? "").trim();
   const street = String(rawStreet ?? "").trim();
@@ -139,9 +141,9 @@ export async function POST(req: NextRequest) {
 
   const preferredSlotsSource = Array.isArray(rawPreferredSlots)
     ? rawPreferredSlots
-      : typeof rawPreferredSlots === "string"
-         ? rawPreferredSlots.split(",")
-          : [];
+    : typeof rawPreferredSlots === "string"
+    ? rawPreferredSlots.split(",")
+    : [];
 
   const subjects = subjectsList
     .map((val) => String(val).trim())
@@ -332,6 +334,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // send an email for registration
+    try {
+      await studentWelcomeEmail(parentEmail, {
+        name: firstName,
+      });
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error: "ERROR_SENDING_MAIL",
+          message: "Email sending failed try again",
+          details: { error },
+          code: "500",
+        },
+        { status: 500 }
+      );
+    }
+
     const data = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.users.create({
         data: {
@@ -340,7 +359,7 @@ export async function POST(req: NextRequest) {
           first_name: firstName,
           last_name: lastName,
           phone: parentPhone,
-          house_number: houseNumber,  
+          house_number: houseNumber,
           street,
           city,
           pincode,
@@ -349,7 +368,7 @@ export async function POST(req: NextRequest) {
           location: `${houseNumber}, ${street}, ${city}`,
           home_latitude: latitude,
           home_longitude: longitude,
-          is_verified : true,
+          is_verified: true,
         },
         select: { id: true },
       });
@@ -368,21 +387,17 @@ export async function POST(req: NextRequest) {
           aadhar_url: uploadResult.url,
           aadhar_url_public_id: uploadResult.public_id ?? null,
         },
-        select : {
-          id : true
-        }
+        select: {
+          id: true,
+        },
       });
-      return { user:  createdUser, student : createStudent };
+      return { user: createdUser, student: createStudent };
     });
-
-    // send mail in production
-    // send email for registration confirmation, 
-    // const otp = 2222
-    // const mailResponse = await sendOTPVerificationEmail(parentEmail, { name : `${firstName} ${lastName}`, otp : otp} );
 
     return NextResponse.json(
       {
-        message: "Registration successful. Our team will connect with you for further process.",
+        message:
+          "Registration successful. Our team will connect with you for further process.",
         data,
         age: calculateAge(dobString),
       },

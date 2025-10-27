@@ -1,13 +1,18 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { jwtVerify } from 'jose'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const userId = parseInt(params.userId);
+
+    let id  = (await params).userId;
+    let userId = parseInt(id);
+
+    
 
     if (isNaN(userId)) {
       return respondWithError({
@@ -41,8 +46,7 @@ export async function GET(
       status: user.is_active ? "active" : "inactive",
       joinedAt: user.created_at.toISOString(),
       profile: {
-        aadharNumber: "1234-5678-9012",
-        photoUrl: user.profile_image_url || "https://example.com/photo.jpg",
+        // photoUrl: user.profile_image_url || "",
         phone: user.phone || "",
         location: user.location || "",
         pincode: user.pincode || "",
@@ -83,12 +87,16 @@ export async function GET(
   }
 }
 
+
+
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const userId = parseInt(params.userId);
+
+    let param = await params
+    let userId =  parseInt(param.userId); 
 
     if (isNaN(userId)) {
       return respondWithError({
@@ -98,14 +106,42 @@ export async function PUT(
       });
     }
 
-    const body = await req.json();
-    const { name, email, status, phone, location, pincode, additionalInfo } =
-      body;
 
-    // Parse name into first and last name
-    const nameParts = (name || "").split(" ");
-    const first_name = nameParts[0] || null;
-    const last_name = nameParts.slice(1).join(" ") || null;
+        // Verify JWT and check admin role
+    const token = req.cookies.get("auth-token")?.value;
+
+    if (!token) {
+      return respondWithError({
+        error: "UNAUTHENTICATED",
+        message: "Authentication required",
+        status: 401,
+      });
+    }
+
+    let payload;
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+      const { payload: verifiedPayload } = await jwtVerify(token, secret);
+      payload = verifiedPayload;
+    } catch (error) {
+      return respondWithError({
+        error: "UNAUTHENTICATED",
+        message: "Invalid or expired token",
+        status: 401,
+      });
+    }
+
+    if (payload.role !== "admin") {
+      return respondWithError({
+        error: "UNAUTHORIZED",
+        message: "Admin access required",
+        status: 403,
+      });
+    }
+
+    const body = await req.json();
+    const { firstName, lastName, email, status, phone, location, pincode, additionalInfo } =
+      body;
 
     const user = await prisma.users.findUnique({
       where: { id: userId },
@@ -122,8 +158,8 @@ export async function PUT(
     const updatedUser = await prisma.users.update({
       where: { id: userId },
       data: {
-        first_name: first_name || user.first_name,
-        last_name: last_name || user.last_name,
+        first_name: firstName || user.first_name,
+        last_name: lastName || user.last_name,
         email: email || user.email,
         is_active: status === "active" ? true : false,
         phone: phone || user.phone,
@@ -158,12 +194,15 @@ export async function PUT(
   }
 }
 
+
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const userId = parseInt(params.userId);
+
+    let param = await params
+    let userId =  parseInt(param.userId); 
 
     if (isNaN(userId)) {
       return respondWithError({
@@ -173,8 +212,46 @@ export async function DELETE(
       });
     }
 
+    // Verify JWT and check admin role
+    const token = req.cookies.get("auth-token")?.value;
+
+    if (!token) {
+      return respondWithError({
+        error: "UNAUTHENTICATED",
+        message: "Authentication required",
+        status: 401,
+      });
+    }
+
+    let payload;
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+      const { payload: verifiedPayload } = await jwtVerify(token, secret);
+      payload = verifiedPayload;
+    } catch (error) {
+      return respondWithError({
+        error: "UNAUTHENTICATED",
+        message: "Invalid or expired token",
+        status: 401,
+      });
+    }
+
+    if (payload.role !== "admin") {
+      return respondWithError({
+        error: "UNAUTHORIZED",
+        message: "Admin access required",
+        status: 403,
+      });
+    }
+
+    // Find the user with name fields for response
     const user = await prisma.users.findUnique({
       where: { id: userId },
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+      },
     });
 
     if (!user) {
@@ -185,23 +262,38 @@ export async function DELETE(
       });
     }
 
-    await prisma.users.delete({
-      where: { id: userId },
+    // Delete user and related teachers records in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Delete related teachers records first due to foreign key constraint
+      await tx.teachers.deleteMany({
+        where: { user_id: userId },
+      });
+
+      await tx.students.deleteMany({
+        where: { user_id: userId },
+      });
+      // Delete the user
+      await tx.users.delete({
+        where: { id: userId },
+      });
     });
+
 
     return respondWithSuccess({
       data: {
         message: "User deleted successfully",
         userId: user.id.toString(),
+        userName: `${user.first_name || ""} ${user.last_name || ""}`.trim() || "Unknown",
       },
       status: 200,
     });
   } catch (error) {
+    console.error("Error deleting user:", error);
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
       message: "Failed to delete user",
       status: 500,
-      details: error instanceof Error ? error.message : undefined,
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }

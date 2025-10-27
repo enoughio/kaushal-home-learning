@@ -16,6 +16,23 @@ export class EmailTemplates {
     }
   }
 
+  static studentWelcome(data: WelcomeEmailData): EmailTemplate {
+    return {
+      subject: `Welcome to Kaushaly Home Learning, ${data.name}!`,
+      text: `Hello ${data.name}, welcome to Kaushaly Home Learning!`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #333; text-align: center;">Welcome to Kaushaly Home Learning!</h1>
+          <p>Dear ${data.name},</p>
+          <p>We're thrilled to welcome you to the Kaushaly Home Learning community! Your journey towards knowledge and growth begins here.</p>
+          <p>Our team will soon contact you for further processing and providieng the best tutor for your child.</p>
+          <p>Best regards,<br>The Kaushaly Team</p>
+        </div>
+      `
+    }
+  }
+
+
   static approval(data: ApprovalEmailData) : EmailTemplate {
     return {
       subject: 'Your Application Has Been Approved!',
