@@ -7,11 +7,15 @@ export const sendWelcomeEmail = async (to: string, data: WelcomeEmailData): Prom
   await sendTemplateEmail(to, template)
 }
 
+export const studentWelcomeEmail = async (to: string, data: WelcomeEmailData) : Promise<void> => {
+  const template = EmailTemplates.studentWelcome(data)
+  await sendTemplateEmail(to, template)
+}
+
 export const sendApprovalEmail = async (to : string, data: ApprovalEmailData) : Promise<void> => {
   const template = EmailTemplates.approval(data)
   await sendTemplateEmail(to, template)
 }
-
 
 export const sendRejectionEmail = async (to : string, data: RejectionEmailData) : Promise<void> => {
   const template = EmailTemplates.rejection(data)

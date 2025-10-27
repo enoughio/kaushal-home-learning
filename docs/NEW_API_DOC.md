@@ -279,7 +279,8 @@ Role: admin only
   - Body:
     ```json
     {
-      "name": "Jane Doe",
+      "firstName": "Jane",
+      "LastName": "Doe",
       "email": "",
       "status": "active" | "inactive", 
         "phone": "9876543210",
@@ -326,6 +327,8 @@ Role: admin only
         "userId": "user123"
         }
         ```
+
+
 
 ## Admin - Assign a personal teacher to student Page (pairing)
 

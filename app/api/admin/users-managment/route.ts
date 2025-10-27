@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const whereClause: Record<string, unknown> = {};
     if (role) whereClause.role = role;
     if (status === "active") whereClause.is_active = true;
-    if (status === "inactive") whereClause.is_active = false;
+    else if (status === "inactive") whereClause.is_active = false;
 
     const [users, totalUsers] = await Promise.all([
       prisma.users.findMany({
