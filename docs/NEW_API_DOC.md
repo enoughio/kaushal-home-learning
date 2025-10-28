@@ -761,12 +761,13 @@ Role: admin only
         ```
 
 #### GET /admin/teacher-salary
-- Description: Get a list of all teacher salaries with pagination and filtering options.
+- Description: Get a list of all teacher salaries information with pagination and filtering options.
 
 - Request: 
   - Query Parameters:
+   
     - page (integer, optional, default: 1) - Page number for pagination.
-    - status (string, optional) - Filter by salary status (e.g., "paid").
+    - status (string, optional) - Filter by salary detail status (e.g., "added" ,"not added").
 
 - Response: 
    - Status : 200 OK
@@ -777,9 +778,8 @@ Role: admin only
       [
         {
           "name" : "xyz", 
-          "Date"  : "",
-          "Base" : "33,293",
-          "Bonus" : "3,32",
+          "payDate"  : "",
+          "base" : "33,293",
           "thisMonthStatus" : "paid" | "due",
           "thisMonthPaidDate" : "",
         }
@@ -810,7 +810,6 @@ Role: admin only
         "subjects": ["Math", "Science"],
         "salaryDetails": {
             "baseSalary": 3000,
-            "bonus": 300,
             "totalSalary": 3300,
             "MonthPaidDate": "2024-01-20T14:30:00Z"
         },
@@ -818,7 +817,6 @@ Role: admin only
             {
             "month": "Dec",
             "baseSalary": 3000,
-            "bonus": 300,
             "totalSalary": 3300,
             "paidDate": "2023-12-20T14:30:00Z",
             "status": "paid"
@@ -826,7 +824,6 @@ Role: admin only
             {
             "month": "Nov",
             "baseSalary": 3000,
-            "bonus": 300,
             "totalSalary": 3300,
             "paidDate": "2023-11-20T14:30:00Z",
             "status": "paid"
@@ -838,7 +835,7 @@ Role: admin only
 
 #### POST /admin/teacher-salary/:teacherId/pay
 - Description: Mark a teacher's salary as paid for the current month.
-- Process: create a new payment entry in the payments table, update the salary history for the teacher, and update the last paid month and paid date in the teachers table.
+- Process: create a new salary payment entry in the payments table, update the salary history for the teacher, and update the last paid month and paid date in the teachers table.
 
 
 - Request:
@@ -883,7 +880,6 @@ Role: admin only
     {
       "teacherId": "teacher123",
       "baseSalary": 3000,
-      "bonus": 300, 
       "payDay"  : 20  // day of month when salary is to be paid
     }
     ```
@@ -897,7 +893,6 @@ Role: admin only
         "teacherId": "teacher123",
         "salaryDetails": {
             "baseSalary": 3000,
-            "bonus": 300,
             "totalSalary": 3300,
             "payDay" : 20
         }
@@ -1503,7 +1498,6 @@ Role: admin only
 
         "salaryDetails": {
             "baseSalary": 3000,
-            "bonus": 300,
             "totalSalary": 3300,
             "lastPaidMonth": "Jan",
             "lastPaidDate": "2024-01-20T14:30:00Z"
@@ -1532,7 +1526,6 @@ Role: admin only
             {
             "month": "Dec",
             "baseSalary": 3000,
-            "bonus": 300,
             "totalSalary": 3300,
             "paidDate": "2023-12-20T14:30:00Z",
             "status": "paid"
@@ -1540,7 +1533,6 @@ Role: admin only
             {
             "month": "Nov",
             "baseSalary": 3000,
-            "bonus": 300,
             "totalSalary": 3300,
             "paidDate": "2023-11-20T14:30:00Z",
             "status": "paid"
