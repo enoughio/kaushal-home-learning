@@ -1,22 +1,26 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
 export async function GET(req: NextRequest) {
   try {
-    const totalSalaries = await prisma.salary_payments.count();
-    
-    const dueSalaries = await prisma.salary_payments.count({
-      where: {
-        payment_status: "pending",
-      },
-    });
+    const authResult = await authenticateAndValidateAdmin(req);
+    if ("error" in authResult) return authResult.error;
 
-    const activeTeachers = await prisma.teachers.count({
-      where: {
-        is_active: true,
-      },
-    });
+    const [totalSalaries, dueSalaries, activeTeachers] = await Promise.all([
+      prisma.salary_payments.count(),
+      prisma.salary_payments.count({
+        where: {
+          payment_status: "pending",
+        },
+      }),
+      prisma.teachers.count({
+        where: {
+          is_active: true,
+        },
+      }),
+    ]);
 
     return respondWithSuccess({
       data: {
