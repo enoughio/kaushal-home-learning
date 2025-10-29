@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         totalUsers,
         activeTeachers,
         totalRevenue,
-        TotalStudents: totalStudents,
+        totalStudents: totalStudents,
       },
       status: 200,
     });

@@ -1,63 +1,75 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search } from "lucide-react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useDebouncedCallback } from "use-debounce"
+import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
 
 type Props = {
   initial?: {
-    search?: string
-    role?: string
-    status?: string
-  }
-}
+    search?: string;
+    role?: string;
+    status?: string;
+  };
+};
 
 export default function UserFilters() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const pathName = usePathname()
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathName = usePathname();
 
-  const [search, setSearch] = useState("")
-  const [role, setRole] = useState("all")
-  const [status, setStatus] = useState("all")
+  const [search, setSearch] = useState("");
+  const [role, setRole] = useState("all");
+  const [status, setStatus] = useState("all");
 
-  //  Debounced update for search input
+  // Debounced update for search input
   const handleSearchChange = useDebouncedCallback((term: string) => {
-    const params = new URLSearchParams(searchParams)
-    if (term) params.set("search", term)
-    else params.delete("search")
+    const params = new URLSearchParams(searchParams);
 
-    if (role !== "all") params.set("role", role)
-    else params.delete("role")
+    const trimmedSearch = search.trim();
+    const trimmedRole = role.trim();
+    const trimmedStatus = status.trim();
 
-    if (status !== "all") params.set("status", status)
-    else params.delete("status")
+    if (trimmedSearch) params.set("search", trimmedSearch);
+    else params.delete("search");
 
-    router.replace(`${pathName}?${params.toString()}`)
-  }, 500)
+    if (trimmedRole !== "all") params.set("role", trimmedRole);
+    else params.delete("role");
+
+    if (trimmedStatus !== "all") params.set("status", trimmedStatus);
+    else params.delete("status");
+
+    router.replace(`${pathName}?${params.toString()}`);
+  }, 500);
 
   // Unified function to apply filters (for Apply button or dropdowns)
   const applyFilters = () => {
-    const params = new URLSearchParams(searchParams)
-    if (search) params.set("search", search)
-    else params.delete("search")
+    const params = new URLSearchParams(searchParams);
 
-    if (role !== "all") params.set("role", role)
-    else params.delete("role")
+    if (search) params.set("search", search);
+    else params.delete("search");
 
-    if (status !== "all") params.set("status", status)
-    else params.delete("status")
+    if (role !== "all") params.set("role", role);
+    else params.delete("role");
 
-    router.replace(`${pathName}?${params.toString()}`)
-  }
+    if (status !== "all") params.set("status", status);
+    else params.delete("status");
+
+    router.replace(`${pathName}?${params.toString()}`);
+  };
 
   // 🔄 When role or status changes, apply filters immediately
   useEffect(() => {
-    applyFilters()
-  }, [role, status]) // only trigger when dropdowns change
+    applyFilters();
+  }, [role, status]); // only trigger when dropdowns change
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -67,8 +79,8 @@ export default function UserFilters() {
           placeholder="Search by name or email..."
           value={search}
           onChange={(e) => {
-            setSearch(e.target.value)
-            handleSearchChange(e.target.value)
+            setSearch(e.target.value);
+            handleSearchChange(e.target.value);
           }}
           className="pl-10 bg-input"
         />
@@ -107,5 +119,5 @@ export default function UserFilters() {
         </button>
       </div>
     </div>
-  )
+  );
 }

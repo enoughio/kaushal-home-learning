@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Mail, Lock, Eye, EyeOff, LogIn, ArrowRight } from "lucide-react"
 import Link from 'next/link'
-import toast from 'react-hot-toast'
+import {toast} from 'react-hot-toast'
 import { LoginRequest, ApiResponse } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 

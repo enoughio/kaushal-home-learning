@@ -16,7 +16,7 @@ interface TeacherManagementResponse {
     highestQualification: string;
     "10thPercentage": number;
     "12thPercentage": number;
-    applyedAt: string;
+    appliedAt: string;
     marksheetUrl10: string;
     marksheetUrl12: string;
     resume: string;
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
             highestQualification: teacher.qualification || "N/A",
             "10thPercentage": teacher.tenth_percentage || 0,
             "12thPercentage": teacher.twelfth_percentage || 0,
-            applyedAt: teacher.created_at.toISOString(),
+            appliedAt: teacher.created_at.toISOString(),
             marksheetUrl10: teacher.marksheet_url_tenth || "N/A",
             marksheetUrl12: teacher.marksheet_url_twelfth || "N/A",
             resume: teacher.resume_url || "N/A",

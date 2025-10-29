@@ -1,21 +1,17 @@
-import React from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Phone, MapPin, Calendar, BookOpen, Award, UserCheck } from 'lucide-react'
-import ApproveAction from './ApproveAction'
-import RejectAction from './RejectAction'
-
-type Teacher = {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  location?: string
-  appliedDate?: string
-  experience?: number
-  idProof?: string
-  skillsToTeach?: string[]
-}
+import React from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Phone,
+  MapPin,
+  Calendar,
+  BookOpen,
+  // Award,
+  UserCheck,
+} from "lucide-react";
+import ApproveAction from "./ApproveAction";
+import RejectAction from "./RejectAction";
+import { Teacher } from "@/app/(dashboards)/admin/approvals/page";
 
 export default function RequestCard({ teacher }: { teacher: Teacher }) {
   return (
@@ -41,35 +37,39 @@ export default function RequestCard({ teacher }: { teacher: Teacher }) {
               <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
               <span>{teacher.location}</span>
             </div>
-            <div className="flex items-center text-sm">
-              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-              <span>Applied: {teacher.appliedDate}</span>
-            </div>
           </div>
           <div className="space-y-3">
-            <div className="flex items-center text-sm">
+            {/* <div className="flex items-center text-sm">
               <Award className="h-4 w-4 mr-2 text-muted-foreground" />
               <span>{teacher.experience} years experience</span>
-            </div>
+            </div> */}
             <div className="flex items-center text-sm">
               <UserCheck className="h-4 w-4 mr-2 text-muted-foreground" />
-              <span>ID: {teacher.idProof}</span>
+              <span>ID: {teacher.aadharUrl ?? "N/A"}</span>
+            </div>
+            <div className="flex items-center text-sm">
+              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>
+                Applied: {new Date(teacher.appliedAt).toLocaleDateString()}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Skills */}
-        <div>
+        <div className="flex gap-2">
           <div className="flex items-center mb-3">
             <BookOpen className="h-4 w-4 mr-2 text-muted-foreground" />
             <span className="font-medium">Teaching Subjects:</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {teacher.skillsToTeach?.map((skill) => (
-              <Badge key={skill} variant="outline">
-                {skill}
-              </Badge>
-            ))}
+            {teacher.subjects?.length > 0
+              ? teacher.subjects?.map((skill) => (
+                  <Badge key={skill} variant="outline">
+                    {skill}
+                  </Badge>
+                ))
+              : "N/A"}
           </div>
         </div>
 
@@ -80,5 +80,5 @@ export default function RequestCard({ teacher }: { teacher: Teacher }) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

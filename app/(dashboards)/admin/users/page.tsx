@@ -4,61 +4,18 @@ import UserList from "@/components/adminPages/userManag/UserList";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import UserFilters from "@/components/adminPages/userManag/UserFilters";
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  joinedDate: string;
-  lastActive: string;
-  role: string;
-  status: string;
-};
-
-// async function fetchUsersPlaceholder(): Promise<User[]> {
-//   return [
-//     {
-//       id: "1",
-//       name: "Aisha Kumar",
-//       email: "aisha@example.com",
-//       joinedDate: "2025-09-28",
-//       lastActive: "2025-10-10",
-//       role: "student",
-//       status: "active",
-//     },
-//     {
-//       id: "2",
-//       name: "Rahul Singh",
-//       email: "rahul@example.com",
-//       joinedDate: "2025-10-01",
-//       lastActive: "2025-10-11",
-//       role: "teacher",
-//       status: "pending",
-//     },
-//     {
-//       id: "3",
-//       name: "Meera Patel",
-//       email: "meera@example.com",
-//       joinedDate: "2025-10-05",
-//       lastActive: "2025-10-12",
-//       role: "student",
-//       status: "inactive",
-//     },
-//   ];
-// }
-
 function StatsFallback() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
       {[...Array(5)].map((_, i) => (
-        <div
-          key={i}
-          className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-900/50 animate-pulse"
-        >
-          <div className="flex flex-col items-center space-y-2">
-            <div className="h-7 w-16 rounded-md bg-neutral-300/60 dark:bg-neutral-700/60" />
-            <div className="h-3 w-20 rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-          </div>
-        </div>
+        <Card key={i}>
+          <CardContent className="p-4">
+            <div className="text-center space-y-2 animate-pulse">
+              <div className="mx-auto h-7 w-14 rounded-md bg-neutral-300"></div>
+              <div className="mx-auto h-4 w-20 rounded-md bg-neutral-200"></div>
+            </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );
@@ -118,9 +75,7 @@ function ListFallback() {
   );
 }
 
-export default async function UserManagementPage( ) {
-
-
+export default async function UserManagementPage() {
   return (
     <div className="space-y-6">
       <div>
@@ -135,12 +90,9 @@ export default async function UserManagementPage( ) {
         <UserManagmentStats />
       </Suspense>
 
-
-      
       <Suspense fallback={<FiltersFallback />}>
         <UserFilters />
       </Suspense>
-
 
       <Suspense fallback={<ListFallback />}>
         {/* server component: fetches based on searchParams */}
@@ -149,10 +101,6 @@ export default async function UserManagementPage( ) {
     </div>
   );
 }
-
-
-
-
 
 function FiltersFallback() {
   return (

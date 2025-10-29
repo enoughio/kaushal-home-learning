@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Mail, Calendar } from "lucide-react";
@@ -6,19 +6,23 @@ import ViewDets from "./ViewDets";
 import ToggelUserStatus from "./ToggelUserStatus";
 import DeleteUser from "./DeleteUser";
 import Pagination from "./Pagination";
-import UserFilters from "./UserFilters";
 
 type User = {
   id: string;
   name: string;
   email: string;
-  joinedDate: string;
+  joinedAt: string;
   lastActive: string;
   role: string;
   status: string;
 };
 
-// type Props = { users: User[]; totalItems: number; page: number; pageSize: number; totalPages: number; startIndex: number; endIndex: number }
+type UsersManagement = {
+  users: User[];
+  page: number;
+  totalPages: number;
+  totalUsers: number;
+};
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -46,74 +50,88 @@ function getRoleColor(role: string) {
   }
 }
 
-
 export default async function UserList({
   searchParams,
 }: {
-  searchParams?: Promise<{ page ?: string; pageSize ?: string; search ?: string; role ?: string; status ?: string  }>;
+  searchParams?: Promise<{
+    page?: string;
+    pageSize?: string;
+    search?: string;
+    role?: string;
+    status?: string;
+  }>;
 }) {
-  const params = await searchParams ?? {};
+  const params = (await searchParams) ?? {};
   const page = Number(params?.page ?? 1);
   const pageSize = Number(params?.pageSize ?? 10);
   const searchTerm = (params?.search ?? "").toString();
   const roleFilter = (params?.role ?? "all").toString();
   const statusFilter = (params?.status ?? "all").toString();
 
-  
-
+  console.log(searchTerm);
 
   async function fetchUsers() {
-    // placeholder dataset - replace with API fetch
-    const all: User[] = [
-      {
-        id: "1",
-        name: "Aisha Kumar",
-        email: "aisha@example.com",
-        joinedDate: "2025-09-28",
-        lastActive: "2025-10-10",
-        role: "student",
-        status: "active",
-      },
-      {
-        id: "2",
-        name: "Rahul Singh",
-        email: "rahul@example.com",
-        joinedDate: "2025-10-01",
-        lastActive: "2025-10-11",
-        role: "teacher",
-        status: "pending",
-      },
-      {
-        id: "3",
-        name: "Meera Patel",
-        email: "meera@example.com",
-        joinedDate: "2025-10-05",
-        lastActive: "2025-10-12",
-        role: "student",
-        status: "inactive",
-      },
-      
-    ];
+    try {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
 
-    let filtered = all;
-    if (searchTerm)
-      filtered = filtered.filter(
-        (u) =>
-          u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    if (roleFilter !== "all")
-      filtered = filtered.filter((u) => u.role === roleFilter);
-    if (statusFilter !== "all")
-      filtered = filtered.filter((u) => u.status === statusFilter);
+      const res = await fetch(`${baseUrl}/api/admin/users-management`);
+      // const res = await fetch(
+      //   `${baseUrl}/api/admin/users-management?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(
+      //     searchTerm
+      //   )}&role=${roleFilter}&status=${statusFilter}`,
+      //   {
+      //     cache: "no-store",
+      //     headers: {
+      //       Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_ADMIN_TOKEN}`,
+      //     },
+      //   }
+      // );
+      const result = await res.json();
 
-    const totalItems = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, totalItems);
-    const users = filtered.slice(startIndex, endIndex);
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to fetch users");
+      }
 
-    return { users, totalItems, totalPages, startIndex, endIndex, page };
+      if (!result?.data) {
+        throw new Error("No data received from server");
+      }
+
+      const userData = result.data as UsersManagement;
+
+      let filtered = userData.users as User[];
+
+      // Filter on the server side as well, in case API doesn't support it
+      if (searchTerm)
+        filtered = filtered.filter(
+          (u) =>
+            u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      if (roleFilter !== "all")
+        filtered = filtered.filter((u) => u.role === roleFilter);
+      if (statusFilter !== "all")
+        filtered = filtered.filter((u) => u.status === statusFilter);
+
+      const totalItems = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, totalItems);
+      const users = filtered.slice(startIndex, endIndex);
+
+      return { users, totalItems, totalPages, startIndex, endIndex, page };
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      // Fallback to placeholder data
+      return {
+        users: [],
+        totalItems: 0,
+        totalPages: 1,
+        startIndex: 0,
+        endIndex: 0,
+        page: 1,
+      };
+    }
   }
 
   const {
@@ -127,8 +145,6 @@ export default async function UserList({
 
   return (
     <>
-
-
       <Card>
         <CardHeader>
           <CardTitle>Users ({totalItems})</CardTitle>
@@ -159,12 +175,12 @@ export default async function UserList({
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          Joined: {user.joinedDate}
+                          Joined: {new Date(user.joinedAt).toLocaleDateString()}
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      {/* <p className="text-xs text-muted-foreground">
                         Last active: {user.lastActive}
-                      </p>
+                      </p> */}
                     </div>
                   </div>
 
@@ -208,28 +224,5 @@ export default async function UserList({
         </CardContent>
       </Card>
     </>
-  );
-}
-
-
-
-
-function FiltersFallback() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
-      {/* Search Input */}
-      <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded bg-neutral-300/60 dark:bg-neutral-700/60" />
-        <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-      </div>
-      {/* Role Select */}
-      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-      {/* Status Select */}
-      <div className="h-10 w-full rounded-md bg-neutral-200/60 dark:bg-neutral-800/60" />
-      {/* Apply Button */}
-      <div className="md:col-span-3 flex justify-end">
-        <div className="h-9 w-20 rounded-md bg-neutral-300/60 dark:bg-neutral-700/60" />
-      </div>
-    </div>
   );
 }
