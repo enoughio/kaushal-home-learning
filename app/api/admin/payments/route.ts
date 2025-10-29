@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = 20;
     const type = searchParams.get("type");
+    const search = searchParams.get("search");
     const status = searchParams.get("status");
 
     const skip = (page - 1) * limit;
@@ -21,8 +22,10 @@ export async function GET(req: NextRequest) {
     const whereClause: Record<string, unknown> = {};
     if (type) whereClause.payment_type = type;
     if (status) whereClause.status = status;
+    // if (search) whereClause. = status;
 
     const [payments, totalPayments] = await Promise.all([
+      
       prisma.payments.findMany({
         where: whereClause,
         skip,
@@ -69,8 +72,6 @@ export async function GET(req: NextRequest) {
         where : whereClause
       })
     ]);
-
-
 
 
     const formattedPayments = payments.map((payment) => ({

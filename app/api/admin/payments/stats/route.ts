@@ -9,21 +9,22 @@ export async function GET(req: NextRequest) {
     if ("error" in authResult) return authResult.error;
 
     // get current month
-    const month = new Date().getMonth();
+    const now = new Date()
+    const month = now.getMonth()
 
     const totalPaymentDone = await prisma.payments.aggregate({
       _sum: { amount: true },
       where: { status: "SUCCESS" },
     });
 
-    const totalFeesRecived = await prisma.feePayment.aggregate({
+    const totalFeesRecived = await prisma.payments.aggregate({
       _sum: { amount: true },
-      where: { status: "PAID" },
+      where: { payment_type: "FEE", status : "SUCCESS" },
     });
 
     // this will only work if cron job is working
     const totalDueFee = await prisma.feePayment.aggregate({
-      _sum: { amount: true },
+      _sum: { total_amount: true },
       where: { status: "DUE" },
     });
 
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
       data: {
         totalPayments: Number(totalPaymentDone._sum.amount ?? 0), // total money that went through Payments
         SalaryPaid: Number(totalSalaryPaid._sum.total_amount), // fees actually collected
-        dueAmount: Number(totalDueFee._sum.amount), // fees still owed
+        dueAmount: Number(totalDueFee._sum.total_amount), // fees still owed
         feeRecived: Number(totalFeesRecived._sum.amount), // salaries already paid
       },
       status: 200,

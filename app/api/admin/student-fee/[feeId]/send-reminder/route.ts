@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 
 export async function POST(
@@ -17,7 +17,7 @@ export async function POST(
       });
     }
 
-    const fee = await prisma.student_fees.findUnique({
+    const fee = await prisma.feePayment.findUnique({
       where: { id: feeId },
       include: {
         student: {
@@ -37,7 +37,7 @@ export async function POST(
     }
 
     // Increment reminder count
-    const updatedFee = await prisma.student_fees.update({
+    const updatedFee = await prisma.feePayment.update({
       where: { id: feeId },
       data: {
         reminder_sent: fee.reminder_sent + 1,
@@ -53,7 +53,7 @@ export async function POST(
         feeId: fee.id.toString(),
         studentId: fee.student.id.toString(),
         studentName: `${fee.student.user.first_name || ""} ${fee.student.user.last_name || ""}`.trim(),
-        dueDate: fee.due_date.toISOString(),
+        dueDate: fee.due_date?.toISOString() || 0,
         ReminderSent: updatedFee.reminder_sent,
       },
       status: 200,
