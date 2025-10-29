@@ -1,15 +1,24 @@
+// app/api/admin/teacher-salary/[teacherId]/route.ts
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { teacherId: string } }
+  { params }: { params: Promise <{ teacherId: string }> }
 ) {
   try {
-    const teacherId = parseInt(params.teacherId);
 
-    if (isNaN(teacherId)) {
+    const data = await params
+    const teacherId = parseInt(data.teacherId);
+
+    const authResult = await authenticateAndValidateAdmin(req);
+    if ("error" in authResult) return authResult.error;
+
+
+    // Validate teacherId
+    if (isNaN(teacherId) || teacherId < 1) {
       return respondWithError({
         error: "INVALID_REQUEST",
         message: "Invalid teacher ID",
@@ -17,13 +26,28 @@ export async function GET(
       });
     }
 
+    // Fetch Teacher with Salary Payments
     const teacher = await prisma.teachers.findUnique({
       where: { id: teacherId },
+
       include: {
-        user: true,
+        user: {
+          select: {
+            first_name: true,
+            last_name: true,
+            email: true,
+            phone: true,
+            location: true,
+            profile_image_url: true,
+          },
+        },
         salary_payments: {
-          orderBy: { created_at: "desc" },
-          take: 12, // Last 12 months
+          select: {
+            month: true,
+            year: true,
+          },
+          orderBy: [{ month: "desc" }, { year: "desc" }],
+          take: 1,
         },
       },
     });
@@ -36,44 +60,46 @@ export async function GET(
       });
     }
 
-    const currentMonth = teacher.salary_payments[0];
+    // if current month salary entry exist then check if it is paid or not, if not exist then mark it as unpaid
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
 
-    const salaryHistory = teacher.salary_payments.map((payment) => ({
-      month: new Date(payment.created_at).toLocaleString("default", {
-        month: "short",
-      }),
-      baseSalary: payment.base_salary,
-      bonus: payment.bonus,
-      totalSalary: payment.total_amount,
-      paidDate: payment.payment_date?.toISOString() || "",
-      status: payment.payment_status,
-    }));
+    let latestPayment = teacher.salary_payments[0];
+
+    let isCurrentMonthPaid =
+      latestPayment &&
+      latestPayment.month == currentMonth &&
+      latestPayment.year == currentYear;
 
     return respondWithSuccess({
       data: {
         teacherId: teacher.id.toString(),
-        name: `${teacher.user.first_name || ""} ${teacher.user.last_name || ""}`.trim(),
-        email: teacher.user.email,
-        profileImg: teacher.user.profile_image_url || "https://example.com/photo.jpg",
-        phone: teacher.user.phone || "",
-        location: teacher.user.location || "",
+        name:
+          `${teacher.user.first_name || ""} ${
+            teacher.user.last_name || ""
+          }`.trim() || "Unknown Teacher",
+        email: teacher.user.email || "",
+        profileImg: teacher.user.profile_image_url || null,
+        phone: teacher.user.phone || null,
+        location: teacher.user.location || "India",
         subjects: teacher.subjects_taught || [],
+        isSalaryAssingend: teacher.salary_assigned,
+        isCurrentMonthPaid: isCurrentMonthPaid,
         salaryDetails: {
-          baseSalary: teacher.monthly_salary,
-          bonus: currentMonth?.bonus || 0,
-          totalSalary: currentMonth?.total_amount || teacher.monthly_salary,
-          MonthPaidDate: currentMonth?.payment_date?.toISOString() || "",
+          payDay: teacher?.salary_pay_day || "NA",
+          monthlySalary: teacher.monthly_salary || "NA",
         },
-        salaryHistory,
       },
       status: 200,
     });
   } catch (error) {
+    console.error("Error fetching teacher salary details:", error);
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
       message: "Failed to fetch teacher salary details",
       status: 500,
-      details: error instanceof Error ? error.message : undefined,
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }

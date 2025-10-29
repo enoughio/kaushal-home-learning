@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
     const whereClause: Record<string, unknown> = {};
     if (type) whereClause.payment_type = type;
-    if (status) whereClause.payment_status = status;
+    if (status) whereClause.status = status;
 
     const [payments, totalPayments] = await Promise.all([
       prisma.payments.findMany({
@@ -28,26 +28,61 @@ export async function GET(req: NextRequest) {
         skip,
         take: limit,
         include: {
-          student: {
-            include: {
-              user: true,
-            },
+          feePayment : {
+            include : {
+              student : {
+                include : {
+                  user : {
+                    select : {
+                      id : true,
+                      first_name : true,
+                      last_name : true,
+                      role : true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          salaryPayment : {
+            include : {
+              teacher : {
+                include : {
+                  user : {
+                    select : {
+                      id : true,
+                      first_name : true,
+                      last_name : true,
+                      role : true
+                    }
+                  }
+                }
+              }
+            }
           },
         },
         orderBy: { created_at: "desc" },
       }),
-      prisma.payments.count({ where: whereClause }),
+
+
+      prisma.payments.count({
+        where : whereClause
+      })
     ]);
+
+
+
 
     const formattedPayments = payments.map((payment) => ({
       id: payment.id.toString(),
-      userId: payment.student.user_id.toString(),
-      userName: `${payment.student.user.first_name || ""} ${payment.student.user.last_name || ""}`.trim(),
+      userId: payment.payment_type == "FEE" ? payment.feePayment?.studentId : payment.salaryPayment?.teacherId ,
+      userName:  payment.payment_type == "FEE" ? `${payment.feePayment?.student.user.first_name} ${payment.feePayment?.student.user.last_name}`  : `${payment.salaryPayment?.teacher.user.first_name} ${payment.salaryPayment?.teacher.user.last_name}`,
       type: payment.payment_type,
       amount: payment.amount,
-      status: payment.payment_status,
+      transactionId : payment.transactionId,
+      status: payment.status,
       date: payment.payment_date?.toISOString() || new Date().toISOString(),
-      dueDate: payment.due_date?.toISOString() || new Date().toISOString(),
+      // : payment.payment_date?.toISOString() || new Date().toISOString(),
       method: payment.payment_method || "cash",
     }));
 

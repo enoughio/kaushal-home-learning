@@ -5,33 +5,39 @@ import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
 export async function GET(req: NextRequest) {
   try {
+    const authResult = await authenticateAndValidateAdmin(req);
+    if ("error" in authResult) return authResult.error;
 
-    const authResult = await authenticateAndValidateAdmin(req)
-    if( "error" in authResult) return authResult.error
+    // get current month
+    const month = new Date().getMonth();
 
-    const totalPaymentsCount = await prisma.payments.count();
-    const duePayments = await prisma.payments.count({
-      where: {
-        payment_status: "pending",
-      },
+    const totalPaymentDone = await prisma.payments.aggregate({
+      _sum: { amount: true },
+      where: { status: "SUCCESS" },
     });
 
-    const paidResult = await prisma.payments.aggregate({
+    const totalFeesRecived = await prisma.feePayment.aggregate({
       _sum: { amount: true },
-      where: { payment_status: "completed" },
+      where: { status: "PAID" },
     });
 
-    const dueResult = await prisma.payments.aggregate({
+    // this will only work if cron job is working
+    const totalDueFee = await prisma.feePayment.aggregate({
       _sum: { amount: true },
-      where: { payment_status: "pending" },
+      where: { status: "DUE" },
+    });
+
+    const totalSalaryPaid = await prisma.salaryPayment.aggregate({
+      _sum: { total_amount: true },
+      where: { status: "PAID" },
     });
 
     return respondWithSuccess({
       data: {
-        totalPayments: totalPaymentsCount,
-        duePayments,
-        paidAmmount: Math.round(paidResult._sum?.amount || 0),
-        dueAmmount: Math.round(dueResult._sum?.amount || 0),
+        totalPayments: Number(totalPaymentDone._sum.amount ?? 0), // total money that went through Payments
+        SalaryPaid: Number(totalSalaryPaid._sum.total_amount), // fees actually collected
+        dueAmount: Number(totalDueFee._sum.amount), // fees still owed
+        feeRecived: Number(totalFeesRecived._sum.amount), // salaries already paid
       },
       status: 200,
     });

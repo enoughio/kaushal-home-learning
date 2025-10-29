@@ -42,12 +42,6 @@ model temp_teachers {
   experience_years                Int?
   subjects_taught                 String[]
   teaching_mode                   String?
-  hourly_rate                     Float?
-  monthly_salary                  Float     @default(0)
-  bank_account_number             String?
-  bank_ifsc_code                  String?
-  bank_name                       String?
-  account_holder_name             String?
   pan_number                      String?
   aadhar_url                      String?
   aadhar_url_public_id            String?
@@ -62,7 +56,6 @@ model temp_teachers {
   marksheet_url_twelfth           String?
   marksheet_url_twelfth_public_id String?
   availability_schedule           Json?
-  max_students                    Int       @default(20)
   created_at                      DateTime  @default(now())
   updated_at                      DateTime  @default(now())
   temp_user                       temp_users @relation(fields: [temp_user_id], references: [id], onDelete: Cascade)
@@ -102,8 +95,10 @@ model users {
   teachers                  teachers[]
   teacher_student_assignments teacher_student_assignments[] // As assigned_by
   attendance                attendance[] // As marked_by
-  payments                  payments[] // As processed_by
-  salary_payments           salary_payments[] // As processed_by
+  
+  payments                  Payments[] // As processed_by
+  // salary_payments           SalaryPayment[] // As processed_by
+
   system_settings           system_settings[] // As updated_by
   audit_logs                audit_logs[] // As user_id
   teachers_approved_by      teachers[] @relation("teachers_approved_by")
@@ -121,11 +116,14 @@ model students {
   emergency_contact     String?
   subjects_interested   String[]
   preferred_schedule    String?
+
+// fee details
   monthly_fee           Float     @default(0)
   fee_due_date          DateTime?
+  grace_period_end      DateTime?
+  
   aadhar_url            String?
   aadhar_url_public_id  String?
-  grace_period_end      DateTime?
   enrollment_date       DateTime  @default(dbgenerated("CURRENT_DATE"))
   is_active             Boolean   @default(true)
   created_at            DateTime  @default(now())
@@ -133,30 +131,17 @@ model students {
 
   user                  users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   assigned_teacher      teachers? @relation("student_assigned_teacher", fields: [assigned_teacher_id], references: [id])
-  student_fees          student_fees[]
+  // student_fees          student_fees[]
   teacher_student_assignments teacher_student_assignments[]
   assignments           assignments[]
   assignment_submissions assignment_submissions[]
   attendance            attendance[]
-  payments              payments[]
+
+  fee_payments          FeePayment[]
+  // payments              payments[]
 }
 
-model student_fees {
-  id         Int       @id @default(autoincrement())
-  student_id Int
-  month      Int
-  year       Int
-  amount     Float
-  due_date   DateTime
-  status     String    @default("due")
-  reminder_sent Int    @default(0)
-  created_at DateTime  @default(now())
-  updated_at DateTime  @default(now())
 
-  student    students  @relation(fields: [student_id], references: [id], onDelete: Cascade)
-
-  @@unique([student_id, month, year])
-}
 
 model teachers {
   id                              Int       @id @default(autoincrement())
@@ -165,8 +150,11 @@ model teachers {
   experience_years                Int?
   subjects_taught                 String[]
   teaching_mode                   String?
+
+  salary_assigned                 Boolean   @default(false)
   monthly_salary                  Float     @default(0)
   salary_pay_day                  Int       @default(1)
+  
   bank_account_number             String?
   bank_ifsc_code                  String?
   bank_name                       String?
@@ -186,7 +174,7 @@ model teachers {
   approval_status                 String    @default("pending")   // remove this latter
   approved_by                     Int?  // remove this line
   approved_at                     DateTime?
-  rejection_reason                String?
+  // rejection_reason                String?
   availability_schedule           Json?
   max_students                    Int       @default(20)
   current_students                Int       @default(0)
@@ -203,7 +191,7 @@ model teachers {
   assignments                     assignments[]
   assignment_submissions          assignment_submissions[] // As graded_by
   attendance                      attendance[]
-  salary_payments                 salary_payments[]
+  salary_payments                 SalaryPayment[]
 }
 
 
@@ -302,50 +290,106 @@ model attendance {
   @@unique([student_id, teacher_id, date, subject])
 }
 
-model payments {
-  id             Int       @id @default(autoincrement())
-  student_id     Int
-  amount         Float
-  payment_type   String    @default("monthly_fee")
-  payment_method String?
-  payment_status String    @default("pending")
-  transaction_id String?
-  payment_date   DateTime?
-  due_date       DateTime?
-  late_fee       Float     @default(0)
-  discount       Float     @default(0)
-  notes          String?
-  processed_by   Int?
-  created_at     DateTime  @default(now())
-  updated_at     DateTime  @default(now())
 
-  student        students  @relation(fields: [student_id], references: [id], onDelete: Cascade)
-  processed_by_user users? @relation(fields: [processed_by], references: [id])
+enum PaymentType {
+  SALARY
+  FEE
 }
 
-model salary_payments {
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  ONLINE_PAYMENT
+}
+
+enum PaymentStatus {
+  SUCCESS
+  PENDING
+  FAILED
+}
+
+model Payments {
+  id              Int             @id @default(autoincrement())
+  amount          Float
+  payment_type    PaymentType
+  payment_method  PaymentMethod
+  transactionId   String          @unique
+  payment_date    DateTime        @default(now())
+  status PaymentStatus            @default(SUCCESS)
+  notes           String?         // for remarks like “via Razorpay”, “manual correction”, etc.
+
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @default(now())
+
+  processedById   Int?
+  processedBy     users?           @relation(fields: [processedById], references: [id])
+
+  salaryPaymentId Int?            @unique
+  salaryPayment   SalaryPayment?  @relation(fields: [salaryPaymentId], references: [id], onDelete: Cascade)
+  
+  feePaymentId    Int?            @unique
+  feePayment      FeePayment?     @relation(fields: [feePaymentId], references: [id], onDelete: Cascade)
+
+
+  @@index([payment_type, payment_date])
+  @@index([processedById])
+}
+
+enum SalaryStatus {
+  PAID
+  UNPAID
+}
+
+model SalaryPayment {
+  id              Int       @id @default(autoincrement())
+  month           Int
+  year            Int
+  base_salary     Float
+  bonus           Float     @default(0)
+  deductions      Float     @default(0)
+  total_amount    Float
+  status          SalaryStatus    @default(UNPAID) // or paid, processing, etc.
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @default(now())
+
+  teacherId       Int
+  teacher         teachers   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  // processedById   Int?
+  // processedBy     users?     @relation(fields: [processedById], references: [id])
+
+  payment         Payments?
+
+  @@unique([teacherId, month, year])
+  @@index([month, year])
+}
+
+enum FeeStatus {
+  DUE
+  PAID
+  OVERDUE
+}
+
+model FeePayment {
   id             Int       @id @default(autoincrement())
-  teacher_id     Int
   month          Int
   year           Int
-  base_salary    Float
-  bonus          Float     @default(0)
-  deductions     Float     @default(0)
-  total_amount   Float
-  payment_status String    @default("pending")
-  payment_date   DateTime?
-  payment_method String?
-  transaction_id String?
-  notes          String?
-  processed_by   Int?
+  amount         Float
+  due_date       DateTime
+  status         FeeStatus    @default(DUE) 
+  reminder_sent  Int       @default(0)
   created_at     DateTime  @default(now())
   updated_at     DateTime  @default(now())
 
-  teacher        teachers  @relation(fields: [teacher_id], references: [id], onDelete: Cascade)
-  processed_by_user users? @relation(fields: [processed_by], references: [id])
+  studentId      Int
+  student        students   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  @@unique([teacher_id, month, year])
+  payment        Payments?
+
+  @@unique([studentId, month, year])
+  @@index([month, year])
 }
+
 
 model system_settings {
   id           Int       @id @default(autoincrement())
