@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     // Calculate total revenue from payments
     const totalRevenueData = await prisma.payments.aggregate({
       _sum: { amount: true },
-      where: { payment_status: "completed" },
+      where: { status: "SUCCESS" },
     });
 
     const totalRevenue = totalRevenueData._sum?.amount || 0;

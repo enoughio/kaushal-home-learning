@@ -2,19 +2,21 @@
 import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify"; 
+import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { teacherId: string } }
+  { params }: { params: Promise <{ teacherId: string }> }
 ) {
   try {
-  
+
+    const data = await params
+    const teacherId = parseInt(data.teacherId);
+
     const authResult = await authenticateAndValidateAdmin(req);
     if ("error" in authResult) return authResult.error;
 
-    const teacherId = parseInt(params.teacherId, 10);
-    
+
     // Validate teacherId
     if (isNaN(teacherId) || teacherId < 1) {
       return respondWithError({
@@ -27,6 +29,7 @@ export async function GET(
     // Fetch Teacher with Salary Payments
     const teacher = await prisma.teachers.findUnique({
       where: { id: teacherId },
+
       include: {
         user: {
           select: {
@@ -39,10 +42,12 @@ export async function GET(
           },
         },
         salary_payments: {
-          orderBy: [
-            { year: "desc" },
-            { month: "desc" },
-          ],
+          select: {
+            month: true,
+            year: true,
+          },
+          orderBy: [{ month: "desc" }, { year: "desc" }],
+          take: 1,
         },
       },
     });
@@ -55,60 +60,39 @@ export async function GET(
       });
     }
 
-    // === 3. Determine Current Month Salary ===
+    // if current month salary entry exist then check if it is paid or not, if not exist then mark it as unpaid
     const now = new Date();
-    const currentMonth = now.getMonth() + 1; // 1-12
+    const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    // Find salary payment for current month (if exists)
-    const currentMonthPayment = teacher.salary_payments.find(
-      (p) => p.month === currentMonth && p.year === currentYear
-    );
+    let latestPayment = teacher.salary_payments[0];
 
-    // // Latest payment (most recent month, may or may not be current month)
-    // const latestPayment = teacher.salary_payments[0];
+    let isCurrentMonthPaid =
+      latestPayment &&
+      latestPayment.month == currentMonth &&
+      latestPayment.year == currentYear;
 
-    // === 4. Build Salary Details ===
-    const salaryDetails = {
-      baseSalary: teacher.monthly_salary.toFixed(2),
-      bonus: currentMonthPayment?.bonus.toFixed(2) || "0.00",
-      totalSalary: (
-        teacher.monthly_salary + (currentMonthPayment?.bonus || 0)
-      ).toFixed(2),
-      MonthPaidDate: currentMonthPayment?.payment_date?.toISOString() || null,
-    };
-
-    // === 5. Build Salary History ===
-    const salaryHistory = teacher.salary_payments.map((payment) => {
-      const monthName = new Date(payment.year, payment.month - 1, 1)
-        .toLocaleString("default", { month: "short" });
-
-      return {
-        month: monthName,
-        baseSalary: payment.base_salary.toFixed(2),
-        bonus: payment.bonus.toFixed(2),
-        totalSalary: payment.total_amount.toFixed(2),
-        paidDate: payment.payment_date?.toISOString() || null,
-        status: payment.payment_status,
-      };
-    });
-
-    // === 6. Final Response ===
     return respondWithSuccess({
       data: {
         teacherId: teacher.id.toString(),
-        name: `${teacher.user.first_name || ""} ${teacher.user.last_name || ""}`.trim() || "Unknown Teacher",
+        name:
+          `${teacher.user.first_name || ""} ${
+            teacher.user.last_name || ""
+          }`.trim() || "Unknown Teacher",
         email: teacher.user.email || "",
         profileImg: teacher.user.profile_image_url || null,
         phone: teacher.user.phone || null,
         location: teacher.user.location || "India",
         subjects: teacher.subjects_taught || [],
-        salaryDetails,
-        salaryHistory,
+        isSalaryAssingend: teacher.salary_assigned,
+        isCurrentMonthPaid: isCurrentMonthPaid,
+        salaryDetails: {
+          payDay: teacher?.salary_pay_day || "NA",
+          monthlySalary: teacher.monthly_salary || "NA",
+        },
       },
       status: 200,
     });
-
   } catch (error) {
     console.error("Error fetching teacher salary details:", error);
     return respondWithError({

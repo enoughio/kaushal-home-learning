@@ -151,6 +151,7 @@ model teachers {
   subjects_taught                 String[]
   teaching_mode                   String?
 
+  salary_assigned                 Boolean   @default(false)
   monthly_salary                  Float     @default(0)
   salary_pay_day                  Int       @default(1)
   
@@ -301,6 +302,12 @@ enum PaymentMethod {
   ONLINE_PAYMENT
 }
 
+enum PaymentStatus {
+  SUCCESS
+  PENDING
+  FAILED
+}
+
 model Payments {
   id              Int             @id @default(autoincrement())
   amount          Float
@@ -308,7 +315,7 @@ model Payments {
   payment_method  PaymentMethod
   transactionId   String          @unique
   payment_date    DateTime        @default(now())
-  status          String?         @default("success") // optional: success, pending, failed
+  status PaymentStatus            @default(SUCCESS)
   notes           String?         // for remarks like “via Razorpay”, “manual correction”, etc.
 
   created_at      DateTime        @default(now())
@@ -328,6 +335,10 @@ model Payments {
   @@index([processedById])
 }
 
+enum SalaryStatus {
+  PAID
+  UNPAID
+}
 
 model SalaryPayment {
   id              Int       @id @default(autoincrement())
@@ -337,7 +348,7 @@ model SalaryPayment {
   bonus           Float     @default(0)
   deductions      Float     @default(0)
   total_amount    Float
-  status          String    @default("unpaid") // or paid, processing, etc.
+  status          SalaryStatus    @default(UNPAID) // or paid, processing, etc.
   created_at      DateTime  @default(now())
   updated_at      DateTime  @default(now())
 
@@ -353,6 +364,11 @@ model SalaryPayment {
   @@index([month, year])
 }
 
+enum FeeStatus {
+  DUE
+  PAID
+  OVERDUE
+}
 
 model FeePayment {
   id             Int       @id @default(autoincrement())
@@ -360,7 +376,7 @@ model FeePayment {
   year           Int
   amount         Float
   due_date       DateTime
-  status         String    @default("due")
+  status         FeeStatus    @default(DUE) 
   reminder_sent  Int       @default(0)
   created_at     DateTime  @default(now())
   updated_at     DateTime  @default(now())
