@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
@@ -10,17 +10,17 @@ export async function GET(req: NextRequest) {
     const totalCollectionResult = await prisma.payments.aggregate({
       _sum: { amount: true },
       where: {
-        payment_type: "monthly_fee",
-        payment_status: "completed",
+        payment_type: "FEE",
+        status : "SUCCESS",
       },
     });
 
     // Due fees = fees that have crossed due date
-    const dueFees = await prisma.student_fees.aggregate({
-      _sum: { amount: true },
+    const dueFees = await prisma.feePayment.aggregate({
+      _sum: { total_amount: true },
       where: {
         due_date: { lt: currentDate },
-        status: "due",
+        status: "DUE",
       },
     });
 
@@ -28,12 +28,10 @@ export async function GET(req: NextRequest) {
     const currentMonth = currentDate.getMonth() + 1;
     const currentYear = currentDate.getFullYear();
 
-    const pendingFees = await prisma.student_fees.aggregate({
-      _sum: { amount: true },
+    const pendingFees = await prisma.feePayment.aggregate({
+      _sum: { total_amount: true },
       where: {
-        month: currentMonth,
-        year: currentYear,
-        status: "due",
+        status: "DUE",
         due_date: { gte: currentDate },
       },
     });
@@ -41,8 +39,8 @@ export async function GET(req: NextRequest) {
     return respondWithSuccess({
       data: {
         totalCollection: Math.round(totalCollectionResult._sum?.amount || 0),
-        dueFees: Math.round(dueFees._sum?.amount || 0),
-        pendingFees: Math.round(pendingFees._sum?.amount || 0),
+        dueFees: Math.round(dueFees._sum?.total_amount || 0),
+        pendingFees: Math.round(pendingFees._sum?.total_amount || 0),
       },
       status: 200,
     });

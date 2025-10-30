@@ -69,8 +69,10 @@ All endpoints below require authentication via JWT-based cookies; no token needs
 
 - Description: Get recent users for the admin overview page.
 - Response:
+
   - Status: 200 OK
   - Body:
+
     ```json
     {
       "recentUsers": [
@@ -903,7 +905,9 @@ Role: admin only
     ```
 
 - Response:
+
   - Status: 200 OK
+
     - Body:
       ```json
       {
@@ -916,6 +920,7 @@ Role: admin only
         }
       }
       ```
+
     ```
 
     ```
@@ -951,8 +956,7 @@ Role: admin only
     {
       "studentFees": [
         {
-          "id": "fee123",
-          "studentId": "student123",
+          "id": "student123",
           "studentName": "Jane Smith",
           "fee": 100,
           "status": "paid" | "due",
@@ -967,20 +971,19 @@ Role: admin only
     }
     ```
 
-#### GET /admin/student-fee/:feeId
+#### GET /admin/student-fee/:studentId
 
-- Description: Get detailed information about a specific student fee by its ID along with its history.
+- Description: Get detailed information about a specific student fee.
 
 - Request:
   - Parameters:
-    - feeId (string, required) - The ID of the fee to retrieve.
+    - studentId (string, required) - The ID of student to retrieve fee data.
 - Response:
   - Status: 200 OK
     - Body:
       ```json
       {
-      "id": "fee123",
-      "studentId": "student123",
+      "id": "student123",
       "studentName": "Jane Smith",
       "studentEmail": "",
       "profileImg": "https://example.com/photo.jpg",
@@ -993,19 +996,46 @@ Role: admin only
           "dueDate": "2024-02-20T14:30:00Z",
           "ReminderSent": 3
       },
+      }
+      ```
+
+#### GET /admin/student-fee/:studentId/history
+
+- Description: Get payment history for a specific student fee.
+- Request:
+  - Parameters:
+    - studnetId (string, required) - The ID of the student to retrieve payment history for.
+- Response:
+  - Status: 200 OK
+    - Body:
+
+      ```json
+      {
+      "feeId": "fee123",
       "paymentHistory": [
           {
-          "paymentId": "payment123",
           "amount": 100,
-          "date": "2024-01-20T14:30:00Z",
-          "method": "cash" | "bank_transfer" | "upi",
-          "transactionId": "txn_456789"
+          "paymentMethod": "bank_transfer" | "upi" | "cash",
+          "transactionId": "txn_456789",
+          "date": "2024-01-20T14:30:00Z"
+          },
+          {
+          "amount": 100,
+          "paymentMethod": "bank_transfer" | "upi" | "cash",
+          "transactionId": "txn_456789",
+          "date": "2024-01-20T14:30:00Z"
+          },
+          {
+          "amount": 100,
+          "paymentMethod": "bank_transfer" | "upi" | "cash",
+          "transactionId": "txn_456789",
+          "date": "2024-01-20T14:30:00Z"
           }
       ]
       }
       ```
 
-#### POST /admin/student-fee/:feeId/paid
+#### POST /admin/student-fee/paid/feeId
 
 - Description: Mark the fee as paid.
 - Process: Create a new payment entry in the payments table and update the fee status in the student_fees table.

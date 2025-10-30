@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 
 export async function POST(
@@ -20,7 +20,7 @@ export async function POST(
     const body = await req.json();
     const { paymentMethod, transactionId, date } = body;
 
-    const fee = await prisma.student_fees.findUnique({
+    const fee = await prisma.feePayment.findUnique({
       where: { id: feeId },
     });
 

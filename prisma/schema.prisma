@@ -85,6 +85,7 @@ model users {
   access_token              String?
   profile_image_url         String? // remove this later
   profile_image_url_public_id String?  // remove this later
+
   is_active                 Boolean   @default(true)
   is_deleted                Boolean   @default(false)
   created_at                DateTime  @default(now())
@@ -118,8 +119,9 @@ model students {
   preferred_schedule    String?
 
 // fee details
+  fee_assigned           Boolean   @default(false)
   monthly_fee           Float     @default(0)
-  fee_due_date          DateTime?
+  fee_due_date          DateTime 
   grace_period_end      DateTime?
   last_fee_payment_date DateTime?
   
@@ -376,7 +378,7 @@ enum FeeStatus {
 
 model FeePayment {
   id             Int       @id @default(autoincrement())
-  date           DateTime
+  paidAt           DateTime
 
   total_amount         Float
   due_date       DateTime?
@@ -391,8 +393,8 @@ model FeePayment {
 
   payment        Payments?
 
-  @@unique([studentId, date])
-  @@index(date)
+  @@unique([studentId, paidAt])
+  @@index(paidAt)
 }
 
 

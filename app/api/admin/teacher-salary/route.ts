@@ -21,15 +21,15 @@ export async function GET(req: NextRequest) {
       assignedStatusParam === "false" ? false :
       true;
 
+
+      
       
       // Build WHERE clause
     const where: any = {
       is_active: true,
     };
 
-    if (assignedStatusFilter !== undefined) {
-      where.salary_assigned = assignedStatusFilter;
-    }
+    where.salary_assigned = assignedStatusFilter;
     
     if (search) {
       where.user = {
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    // 2. Fetch teachers 
+    // Fetch teachers 
     const [teachers, totalTeachers] = await Promise.all([
       prisma.teachers.findMany({
         where,

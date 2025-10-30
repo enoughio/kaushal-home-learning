@@ -1,16 +1,69 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
+export async function GET(req: NextRequest) {
+  // get all the students who do not have a fee assigned yet
+  try {
+    const authResult = await authenticateAndValidateAdmin(req);
+    if ("error" in authResult) return authResult.error;
+
+    const students = await prisma.students.findMany({
+      where: {
+        last_fee_payment_date: null,
+        monthly_fee: 0,
+      },
+
+      select: {
+        id: true,
+        parent_name: true,
+        enrollment_date: true,
+        grade: true,
+        parent_phone: true,
+        parent_email: true,
+        preferred_schedule: true,
+        fee_due_date: true,
+        monthly_fee: true,
+
+        user: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            location: true,
+          },
+        },
+      },
+    });
+
+    return respondWithSuccess({
+      data: {
+        students: students,
+      },
+      status: 200,
+    });
+  } catch (error) {
+    return respondWithError({
+      error: "INTERNAL_SERVER_ERROR",
+      message: "Failed to fetch students without fee",
+      status: 500,
+    });
+  }
+}
+
+
+
+// assign a monthly fee to a student
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { studentId, fee, dueDate } = body;
+    const { studentId, feeAmount, dueDate } = body;
 
-    if (!studentId || !fee) {
+    if (!studentId || !feeAmount) {
       return respondWithError({
         error: "INVALID_REQUEST",
-        message: "studentId and fee are required",
+        message: "studentId and feeAmount are required",
         status: 400,
       });
     }
@@ -31,25 +84,23 @@ export async function POST(req: NextRequest) {
     const month = dueDateObj.getMonth() + 1;
     const year = dueDateObj.getFullYear();
 
-    // Create student fee record
-    const studentFee = await prisma.student_fees.create({
+    // Update student fee record
+    const studentFee = await prisma.students.update({
+      where: { id: student.id },
       data: {
-        student_id: parseInt(studentId),
-        amount: fee,
-        due_date: dueDateObj,
-        month,
-        year,
-        status: "due",
+        
+        monthly_fee: feeAmount,
+        fee_due_date: dueDateObj,
+        grace_period_end : new Date(year, month - 1, 7), 
       },
     });
 
     return respondWithSuccess({
       data: {
-        message: "Fee record added successfully",
+        message: "Fee Details added successfully",
         studentId: student.id.toString(),
         feeDetails: {
-          fee,
-          status: "due",
+          fee : studentFee.monthly_fee,
           dueDate,
         },
       },
