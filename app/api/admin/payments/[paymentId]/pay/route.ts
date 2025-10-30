@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { generateTransactionId } from "@/app/api/_lib/helper";
 
 interface AddPaymentRequestBody {
   amount: number;
@@ -12,9 +13,7 @@ interface AddPaymentRequestBody {
   notes?: string;
 }
 
-function generateTransactionId(): string {
-  return `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-}
+
 
 export async function POST(
   req: NextRequest,

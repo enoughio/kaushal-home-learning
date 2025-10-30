@@ -18,23 +18,22 @@ export async function GET(req: NextRequest) {
       user: {
         is_active: true,
       },
-      fee_assigned: true,
+      // fee_assigned: true,
     };
 
     if (search) {
       where.user = {
         OR: [
-          { id: { contains: search, case: "insenstive" } },
-          { first_name: { contains: search, case: "insenstive" } },
-          { last_name: { contains: search, case: "insenstive" } },
-          { email: { contains: search, case: "insenstive" } },
-          { location: { contains: search, case: "insenstive" } },
+          { id: { contains: search, mode: "insensitive" } },
+          { first_name: { contains: search, mode: "insensitive" } },
+          { last_name: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+          { location: { contains: search, mode: "insensitive" } },
         ],
       };
     }
 
-    const [studentsData, studentsFeeData, totalStudentFeeData, ] = await Promise.all([
-      
+    const [studentsData, studentsFeeData, totalStudentFeeData] = await Promise.all([
       prisma.students.findMany({
         where,
         skip,
@@ -44,6 +43,7 @@ export async function GET(req: NextRequest) {
           monthly_fee: true,
           fee_due_date: true,
           last_fee_payment_date: true,
+          fee_assigned: true,
 
           user: {
             select: {
@@ -56,74 +56,73 @@ export async function GET(req: NextRequest) {
         orderBy: { created_at: "desc" },
       }),
 
-
       prisma.feePayment.findMany({
-        where : { //fetch only current month fee payments
-          created_at : { gte : new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
+        where: {
+          //fetch only current month fee payments
+          created_at: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
         },
 
-        select : {
+        select: {
           id: true,
           status: true,
-          date: true,
-         due_date: true,
-        reminder_sent: true,
+          paidAt: true,
+          due_date: true,
+          reminder_sent: true,
+          
           student: {
             select: {
               id: true,
               fee_due_date: true,
-            }
-          }
-
+            },
+          },
         },
         orderBy: { created_at: "desc" },
       }),
 
-      
       prisma.students.count({
-        where : where
+        where: where,
       }),
-    
     ]);
-    
 
-    const studentsIds = studentsFeeData.map( (fee) => fee.student.id );
+    const studentsIds = studentsFeeData.map((fee) => fee.student.id);
     // for liner time search
     const idSet = new Set(studentsIds);
 
     // you will be need a cron job for this
-    const formattedFees = studentsData.map((st) => {
+    const feeRecordMap = new Map(
+      studentsFeeData.map((fee) => [fee.student.id, fee])
+    );
 
+    const formattedFees = studentsData.map((st) => {
       const now = new Date();
       const lastPaymentDate = st.last_fee_payment_date;
-      
-      const feeStatus = 
-        lastPaymentDate && lastPaymentDate.getMonth() === now.getMonth() && lastPaymentDate.getFullYear() === now.getFullYear()
-      
-      const feeRecoredAvailable = idSet.has(st.id);
 
+      const feeStatus =
+        lastPaymentDate &&
+        lastPaymentDate.getMonth() === now.getMonth() &&
+        lastPaymentDate.getFullYear() === now.getFullYear();
+
+      const feeRecord = feeRecordMap.get(st.id);
 
       return {
-        //  id: fee.id.toString(),
         studentId: st.id.toString(),
-        studentName: `${st.user.first_name || ""} ${
-          st.user.last_name || ""
-        }`.trim(),
+        feeAssigned: st.fee_assigned,
+        studentName: `${st.user.first_name || ""} ${st.user.last_name || ""}`.trim(),
         fee: st.monthly_fee || 0,
-        status: feeRecoredAvailable  ? studentsFeeData.fee.status : feeStatus ? "PAID" : "DUE",
-        paidOn: feeRecoredAvailable && studentsFeeData.fee.date .toISOString(),
-        ReminderSent: st. .reminder_sent,
-        dueDate: fee.student.fee_due_date.toISOString(),
+        status: feeRecord ? feeRecord.status : feeStatus ? "PAID" : "DUE",
+        paidOn: feeRecord?.paidAt?.toISOString() || "NA",
+        ReminderSent: feeRecord?.reminder_sent || 0,
+        dueDate: st.fee_due_date?.toISOString() || "NA",
       };
     });
 
-    const totalPages = Math.ceil(totalFees / limit);
+    const totalPages = Math.ceil(totalStudentFeeData / limit);
     return respondWithSuccess({
       data: {
         studentFees: formattedFees,
         page,
         totalPages,
-        totalFees,
+        totalStudentFeeData,
       },
       status: 200,
     });

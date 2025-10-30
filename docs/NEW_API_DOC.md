@@ -1035,7 +1035,7 @@ Role: admin only
       }
       ```
 
-#### POST /admin/student-fee/paid/feeId
+#### POST /admin/student-fee/paid/:feeId
 
 - Description: Mark the fee as paid.
 - Process: Create a new payment entry in the payments table and update the fee status in the student_fees table.

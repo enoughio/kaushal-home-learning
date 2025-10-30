@@ -378,7 +378,7 @@ enum FeeStatus {
 
 model FeePayment {
   id             Int       @id @default(autoincrement())
-  paidAt           DateTime
+  paidAt           DateTime?  // as not paid fees can have null paidAt
 
   total_amount         Float
   due_date       DateTime?

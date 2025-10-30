@@ -68,6 +68,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
+        if (feeAmount < 100 ) {
+      return respondWithError({
+        error: "INVALID_REQUEST",
+        message: "feeAmount should be at least 100",
+        status: 400,
+      });
+    }
+
+
     const student = await prisma.students.findUnique({
       where: { id: parseInt(studentId) },
     });
