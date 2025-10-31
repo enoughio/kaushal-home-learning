@@ -3,19 +3,14 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-// import { cookies } from "next/headers";
 import { RecentUser } from "@/lib/types";
 
 async function fetchRecentUsers(): Promise<RecentUser[]> {
   try {
-    // const cookieStore = await cookies();
-    // const token = cookieStore.get("auth-token");
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "localhost:3000";
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const response = await fetch(`${baseUrl}/api/admin/recent-users`);
-    //   headers: {
-    //     "authorization": `Bearer ${token?.value}` || "",
-    //   },
-    // });
+
     const result = await response.json();
 
     if (!response.ok) {
