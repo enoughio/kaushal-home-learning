@@ -1,9 +1,10 @@
+
 import type { Metadata } from "next";
-import { Urbanist, Syne, Gothic_A1 } from "next/font/google";
+import { Urbanist, Syne,Gothic_A1 } from "next/font/google";
 import "./globals.css";
-// NavBar was previously imported but is unused in RootLayout. Keep import removed to satisfy lint.
+import NavBar from '@/components/NavBar';
 import Fotter from "@/components/Fotter";
-import { Toaster } from "react-hot-toast";
+
 
 // Configure Google Fonts
 const urbanist = Urbanist({
@@ -42,8 +43,7 @@ export default function RootLayout({
       <body
         className={`${urbanist.variable} ${gothicA1.variable}  ${syne.variable} antialiased`}
       >
-        {/* <NavBar /> */}
-        <Toaster position="bottom-right" reverseOrder={true} />
+        <NavBar />
         {children}
         <Fotter />
       </body>
