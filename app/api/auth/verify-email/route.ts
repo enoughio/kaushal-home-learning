@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.temp_users.findFirst({
       where: {
         verification_token: token,
-        verified: false,
+        is_verified: false,
       },
     });
 
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     await prisma.temp_users.update({
       where: { id: user.id },
       data: {
-        verified: true,
+        is_verified: true,
         verification_token: null,
       },
     });

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { sendApprovalEmail } from "@/helper/mail/emailHelpers";
+import { UserRole } from "@/generated/prisma";
 
 export async function POST(
   req: NextRequest,
@@ -60,8 +61,11 @@ export async function POST(
           street: tempTeacher.temp_user.street,
           city: tempTeacher.temp_user.city,
           pincode: tempTeacher.temp_user.pincode,
-          role: "teacher", 
+          role: UserRole.teacher, 
           is_active: true,
+          is_verified: true,
+          date_of_birth: tempTeacher.temp_user.date_of_birth,
+          gender: tempTeacher.temp_user.gender,
           created_at: tempTeacher.temp_user.created_at,
         },
       });

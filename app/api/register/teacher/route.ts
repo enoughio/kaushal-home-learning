@@ -1,4 +1,4 @@
-import { Prisma } from "@/generated/prisma";
+import { Gender, Prisma, UserRole } from "@/generated/prisma";
 import { prisma } from "@/lib/db";
 
 import { EmailFormate } from "@/helper/mail/formateVelidator";
@@ -339,11 +339,11 @@ export async function POST(req: NextRequest) {
       const createdUser = await tx.temp_users.create({
         data: {
           email,
-          role: "teacher",
+          role: UserRole.teacher,
           first_name: firstName,
           last_name: lastName,
           date_of_birth: new Date(dateOfBirth),
-          gender,
+          gender :  Gender.MALE,
           phone,
           house_number: houseNumber,
           street,

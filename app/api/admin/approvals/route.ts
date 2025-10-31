@@ -8,7 +8,7 @@ interface TeacherManagementResponse {
     id: string;
     name: string;
     email: string;
-    aadharNumber: string;
+    aadharURL: string;
     phone: string;
     location: string;
     pincode: string;
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     // Fetch email-verified users with related temp_teachers data
     const pendingTeachers = await prisma.temp_users.findMany({
       where: {
-        verified: true, // Email-verified users
+        is_verified: true, // Email-verified users
         temp_teachers: {
           some: {}, // Ensure user has at least one temp_teachers record (pending by definition)
         },
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     // Count total pending teachers
     const totalTeachers = await prisma.temp_users.count({
       where: {
-        verified: true,
+        is_verified: true,
         temp_teachers: {
           some: {}, // Count users with temp_teachers records
         },
@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
             id: teacher.id.toString(), // Use temp_teachers.id
             name: `${user.first_name || ""} ${user.last_name || ""}`.trim() || "Unknown",
             email: user.email,
-            aadharNumber: teacher.aadhar_url?.split("/").pop() || "N/A", // Derive from aadhar_url
+            aadharURL: teacher.aadhar_url || "N/A", // Derive from aadhar_url
             phone: user.phone || "N/A",
             location,
             pincode: user.pincode || "N/A",

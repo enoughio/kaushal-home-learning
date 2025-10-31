@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@/generated/prisma";
+import { Gender, Prisma, UserRole } from "@/generated/prisma";
 import { prisma } from "@/lib/db";
 import { calculateAge } from "@/helper/calculateAge";
 import { EmailFormate } from "@/helper/mail/formateVelidator";
 import { uploadFile } from "@/helper/cloudinaryActions";
 import { studentWelcomeEmail } from "@/helper/mail/emailHelpers";
 
-type Gender = "male" | "female" | "other";
 
 type ValidationIssue = {
   field: string;
@@ -16,7 +15,7 @@ type ValidationIssue = {
 const NAME_REGEX = /^[A-Za-z ,'.-]{2,}$/;
 const PHONE_REGEX = /^\+?[0-9]{10,15}$/;
 const PINCODE_REGEX = /^[0-9]{6}$/;
-const VALID_GENDERS: Gender[] = ["male", "female", "other"];
+const VALID_GENDERS: Gender[] = ["MALE", "FEMALE", "OTHER"];
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 mb
 
 function validationError(details: ValidationIssue[]) {
@@ -343,7 +342,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: "ERROR_SENDING_MAIL",
-          message: "Email sending failed try again",
+          message: "Registration failed try again",
           details: { error },
           code: "500",
         },
@@ -355,8 +354,8 @@ export async function POST(req: NextRequest) {
       const createdUser = await tx.users.create({
         data: {
           email: parentEmail,
-          role: "student",
-          first_name: firstName,
+          role: UserRole.student,
+          first_name: firstName,  
           last_name: lastName,
           phone: parentPhone,
           house_number: houseNumber,
@@ -369,6 +368,8 @@ export async function POST(req: NextRequest) {
           home_latitude: latitude,
           home_longitude: longitude,
           is_verified: true,
+          gender : gender,
+
         },
         select: { id: true },
       });
@@ -398,7 +399,7 @@ export async function POST(req: NextRequest) {
       {
         message:
           "Registration successful. Our team will connect with you for further process.",
-        data,
+        // data,
         age: calculateAge(dobString),
       },
       { status: 201 }

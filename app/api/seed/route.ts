@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
+import { Gender, UserRole } from "@/generated/prisma";
 
 // create a admin user for the application
 export async function GET() {
@@ -10,7 +11,8 @@ export async function GET() {
         first_name: "Aniket",
         last_name: "Jatav",
         password_hash: "Aniket@1234",
-        role: "admin",
+        gender: Gender.MALE,
+        role: UserRole.admin,
         is_verified : true,
         is_active : true,
     };

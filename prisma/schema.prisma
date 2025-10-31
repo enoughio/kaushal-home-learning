@@ -14,15 +14,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// change the casing in production
+enum UserRole {
+  admin
+  teacher
+  student
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
 
 model temp_users {
   id                  Int       @id @default(autoincrement())
   email               String    @unique
   first_name          String
   last_name           String
-  role                String
+  role                UserRole     @default(student)
   date_of_birth       DateTime?
-  gender              String?
+  gender              Gender @default(OTHER)
   phone               String?
   house_number        String?
   street              String?
@@ -31,7 +43,7 @@ model temp_users {
   verification_token  String?
   expires_at          DateTime  @default(dbgenerated("NOW() + INTERVAL '24 hours'"))
   created_at          DateTime  @default(now())
-  verified            Boolean   @default(false)
+  is_verified         Boolean   @default(false)
   temp_teachers       temp_teachers[]
 }
 
@@ -66,8 +78,9 @@ model users {
   email                     String    @unique
   password_hash             String?
   role                      String
-  first_name                String?
-  last_name                 String?
+  first_name                String
+  last_name                 String
+  gender                    Gender         @default(OTHER)
   phone                     String?
   house_number              String?
   street                    String?
@@ -121,7 +134,7 @@ model students {
 // fee details
   fee_assigned           Boolean   @default(false)
   monthly_fee           Float     @default(0)
-  fee_due_date          DateTime 
+  fee_due_date          DateTime?
   grace_period_end      DateTime?
   last_fee_payment_date DateTime?
   

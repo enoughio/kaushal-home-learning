@@ -74,7 +74,7 @@ export async function middleware(req: NextRequest) {
 		if (isPublicPath(pathname)) return NextResponse.next();
 		const isApiRoute = pathname.startsWith('/api/');
 		
-		if(isApiRoute) return NextResponse.next();
+		// if(isApiRoute) return NextResponse.next();
 		// Read token
 		const token = req.cookies.get("auth-token")?.value || req.headers.get("authorization")?.replace("Bearer ", "");
 		if (!token) {

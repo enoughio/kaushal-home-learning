@@ -1,6 +1,8 @@
-export type Role = "male" | "female" | "other";
+// export type Role = "male" | "female" | "other";
 
-export type Gender = "male" | "female" | "other";
+import { Gender, UserRole } from "@/generated/prisma";
+
+// export type Gender = "male" | "female" | "other";
 
 export interface SanitizedTeacherRegistData {
   firstName: string;
@@ -8,7 +10,7 @@ export interface SanitizedTeacherRegistData {
   email: string;
   phone: string;
   gender: Gender;
-  role?: Role;
+  role?: UserRole;
   dateOfBirth: string;
   houseNumber: string;
   street: string;

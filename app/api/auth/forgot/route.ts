@@ -98,20 +98,20 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
     // Always return success for security reasons (don't reveal if email exists)
     if (!user) {
       return createSuccessResponse(
-        'If an account with this email exists, we have sent you a password reset link.'
+        'If an account with this email exists, we have sent you a password reset link..'
       );
     }
 
     // Check if user account is active and verified
     if (!user.is_active) {
       return createSuccessResponse(
-        'If an account with this email exists, we have sent you a password reset link.'
+        'If an account with this email exists, we have sent you a password reset link..'
       );
     }
 
     if (!user.is_verified) {
       return createSuccessResponse(
-        'If an account with this email exists, we have sent you a password reset link.'
+        'If an account with this email exists, we have sent you a password reset link.+'
       );
     }
 
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
     }
 
     return createSuccessResponse(
-      'If an account with this email exists, we have sent you a password reset link.'
+      'If an account with this email exists, we have sent you a password reset link.-'
     );
 
   } catch (error: any) {

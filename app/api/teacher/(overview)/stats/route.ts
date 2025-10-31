@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
+import { SalaryStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -31,11 +32,11 @@ export async function GET(req: NextRequest) {
     });
 
     // Get total earnings from completed salary payments
-    const earningsResult = await prisma.salary_payments.aggregate({
+    const earningsResult = await prisma.salaryPayment.aggregate({
       _sum: { total_amount: true },
       where: {
-        teacher_id: teacher.id,
-        payment_status: "completed",
+        teacherId: teacher.id,
+        status: SalaryStatus.PAID,
       },
     });
 

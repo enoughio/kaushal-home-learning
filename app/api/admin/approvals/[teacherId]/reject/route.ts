@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { sendRejectionEmail } from "@/helper/mail/emailHelpers";
-import { promises } from "dns";
 
 export async function POST(
   req: NextRequest,
