@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { respondWithError } from "./http";
+// import { respondWithError } from "./http";
 
 export interface AuthUser {
   id: number;

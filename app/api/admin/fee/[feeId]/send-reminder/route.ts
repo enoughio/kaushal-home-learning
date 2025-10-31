@@ -169,11 +169,11 @@ export async function POST(
       }
 
       // === Fire-and-forget email (non-blocking) ===
-      sendFeeReminderEmail(
+      await sendFeeReminderEmail(
         student.user?.email || "",
         {
           amount: student.monthly_fee,
-          dueDate: student.fee_due_date || new Date(),
+          dueDate: result.updatedFee.due_date  ? result.updatedFee.due_date  : new Date(),
           month: now.getMonth() + 1,
           year: now.getFullYear(),
           reminderCount: updatedFee.reminder_sent,

@@ -13,39 +13,21 @@ import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 
-type Props = {
-  initial?: {
-    search?: string;
-    role?: string;
-    status?: string;
-  };
-};
-
 export default function UserFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathName = usePathname();
 
-  const [search, setSearch] = useState("");
-  const [role, setRole] = useState("all");
-  const [status, setStatus] = useState("all");
+  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [role, setRole] = useState(searchParams.get("role") || "all");
+  const [status, setStatus] = useState(searchParams.get("status") || "all");
 
   // Debounced update for search input
   const handleSearchChange = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams);
 
-    const trimmedSearch = search.trim();
-    const trimmedRole = role.trim();
-    const trimmedStatus = status.trim();
-
-    if (trimmedSearch) params.set("search", trimmedSearch);
+    if (term.trim()) params.set("search", term.trim());
     else params.delete("search");
-
-    if (trimmedRole !== "all") params.set("role", trimmedRole);
-    else params.delete("role");
-
-    if (trimmedStatus !== "all") params.set("status", trimmedStatus);
-    else params.delete("status");
 
     router.replace(`${pathName}?${params.toString()}`);
   }, 500);
@@ -54,7 +36,7 @@ export default function UserFilters() {
   const applyFilters = () => {
     const params = new URLSearchParams(searchParams);
 
-    if (search) params.set("search", search);
+    if (search.trim()) params.set("search", search.trim());
     else params.delete("search");
 
     if (role !== "all") params.set("role", role);
@@ -109,15 +91,6 @@ export default function UserFilters() {
           <SelectItem value="pending">Pending</SelectItem>
         </SelectContent>
       </Select>
-
-      <div className="md:col-span-3 flex justify-end">
-        <button
-          onClick={applyFilters}
-          className="bg-primary text-white rounded-md px-4 py-2 hover:opacity-90 transition"
-        >
-          Apply
-        </button>
-      </div>
     </div>
   );
 }

@@ -9,7 +9,8 @@ import Pagination from "./Pagination";
 
 type User = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   joinedAt: string;
   lastActive: string;
@@ -75,7 +76,7 @@ export default async function UserList({
       const baseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
 
-      const res = await fetch(`${baseUrl}/api/admin/users-management`);
+      const res = await fetch(`${baseUrl}/api/admin/users`);
       // const res = await fetch(
       //   `${baseUrl}/api/admin/users-management?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(
       //     searchTerm
@@ -102,12 +103,7 @@ export default async function UserList({
       let filtered = userData.users as User[];
 
       // Filter on the server side as well, in case API doesn't support it
-      if (searchTerm)
-        filtered = filtered.filter(
-          (u) =>
-            u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            u.email.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+
       if (roleFilter !== "all")
         filtered = filtered.filter((u) => u.role === roleFilter);
       if (statusFilter !== "all")
@@ -167,7 +163,7 @@ export default async function UserList({
                       <Users className="h-6 w-6 text-chart-1" />
                     </div>
                     <div>
-                      <p className="font-medium">{user.name}</p>
+                      <p className="font-medium">{user.firstName + " " + user.lastName}</p>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Mail className="h-4 w-4" />

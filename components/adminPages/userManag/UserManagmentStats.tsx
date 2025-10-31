@@ -13,7 +13,7 @@ async function fetchStats(): Promise<StatsShape> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "localhost:3000";
 
-    const response = await fetch(`${baseUrl}/api/admin/recent-user`);// Intentionaly misspelled URL to return empty data from catch block for now, later the actual stats API will be used
+    const response = await fetch(`${baseUrl}/api/admin/users/stats`);// Intentionaly misspelled URL to return empty data from catch block for now, later the actual stats API will be used
 
     const result = await response.json();
 
