@@ -183,6 +183,8 @@ export class EmailTemplates {
     }
   }
 
+
+
   static notification(data: NotificationEmailData): EmailTemplate {
     return {
       subject: data.title,

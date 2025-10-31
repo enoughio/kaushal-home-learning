@@ -50,6 +50,8 @@ export async function GET(req: NextRequest) {
               email: true,
               first_name: true,
               last_name: true,
+              phone: true,
+              location: true,
             },
           },
         },
@@ -73,6 +75,7 @@ export async function GET(req: NextRequest) {
             select: {
               id: true,
               fee_due_date: true,
+
             },
           },
         },
@@ -108,6 +111,8 @@ export async function GET(req: NextRequest) {
         studentId: st.id.toString(),
         feeAssigned: st.fee_assigned,
         studentName: `${st.user.first_name || ""} ${st.user.last_name || ""}`.trim(),
+        parentEmail: st.user.email,
+        parentPhone: st.user.phone || "NA",
         fee: st.monthly_fee || 0,
         status: feeRecord ? feeRecord.status : feeStatus ? "PAID" : "DUE",
         paidOn: feeRecord?.paidAt?.toISOString() || "NA",
