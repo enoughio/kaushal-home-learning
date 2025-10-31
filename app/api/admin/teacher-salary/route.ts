@@ -21,20 +21,16 @@ export async function GET(req: NextRequest) {
       assignedStatusParam === "false" ? false :
       true;
 
-    // Current month/year for "this month paid" logic
-    const now = new Date();
-    const currentMonth = now.getMonth() + 1; // JS: 0-11 → 1-12
-    const currentYear = now.getFullYear();
 
-    // Build WHERE clause
+      
+      
+      // Build WHERE clause
     const where: any = {
       is_active: true,
     };
 
-    if (assignedStatusFilter !== undefined) {
-      where.salary_assigned = assignedStatusFilter;
-    }
-
+    where.salary_assigned = assignedStatusFilter;
+    
     if (search) {
       where.user = {
         OR: [
@@ -45,15 +41,16 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    // 2. Fetch teachers + latest salary payment
+    // Fetch teachers 
     const [teachers, totalTeachers] = await Promise.all([
       prisma.teachers.findMany({
         where,
         skip,
         take: limit,
-
+        
         select: {
           id: true,
+          last_salary_payment_date : true,
           monthly_salary: true,
           salary_pay_day: true,
           salary_assigned: true,
@@ -65,50 +62,36 @@ export async function GET(req: NextRequest) {
               email: true,
             },
           },
-          salary_payments: {
-            select: {
-              month: true,
-              year: true,
-              created_at: true,
-              payment: {
-                select: {
-                  payment_date: true,
-                },
-              },
-            },
-            orderBy: [
-              { year: "desc" },
-              { month: "desc" },
-            ],
-            take: 1, // Only most recent
-          },
         },
       }
     ),
+    
+    prisma.teachers.count({ where }),
+  ]);
+  
+  // Format response
+  // Current month/year for "this month paid" logic
 
-      prisma.teachers.count({ where }),
-    ]);
+const teacherSalary = teachers.map((t) => {
+  const latestPayment = t.last_salary_payment_date; // Could be null
+  const now = new Date();
 
-    // Format response
-    const teacherSalary = teachers.map((t) => {
-      const latestPayment = t.salary_payments[0];
-      const isPaidThisMonth =
-        latestPayment &&
-        latestPayment.month === currentMonth &&
-        latestPayment.year === currentYear;
+  // Check if payment exists AND is in the current month/year
+  const isPaidThisMonth =
+    latestPayment &&
+    latestPayment.getFullYear() === now.getFullYear() &&
+    latestPayment.getMonth() === now.getMonth();
 
-      const paidDate = latestPayment?.payment?.payment_date;
-
-      return {
-        id: t.id.toString(),
-        name: `${t.user.first_name || ""} ${t.user.last_name || ""}`.trim() || "Unknown",
-        email: t.user.email || "",
-        payDate: t.salary_pay_day?.toString() || "",
-        base: t.salary_assigned ? t.monthly_salary.toString() : "0",
-        thisMonthStatus: isPaidThisMonth ? "paid" : "due",
-        thisMonthPaidDate: isPaidThisMonth && paidDate ? paidDate.toISOString() : "",
-      };
-    });
+  return {
+    id: t.id.toString(),
+    name: `${t.user.first_name || ""} ${t.user.last_name || ""}`.trim() || "Unknown",
+    email: t.user.email || "",
+    payDate: t.salary_pay_day?.toString() || "",
+    base: t.salary_assigned ? t.monthly_salary.toString() : "0",
+    thisMonthStatus: isPaidThisMonth ? "paid" : "due",
+    thisMonthPaidDate: isPaidThisMonth ? latestPayment.toISOString() : "",
+  };
+});
 
     const totalPages = Math.ceil(totalTeachers / limit);
 

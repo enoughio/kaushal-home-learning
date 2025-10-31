@@ -41,14 +41,7 @@ export async function GET(
             profile_image_url: true,
           },
         },
-        salary_payments: {
-          select: {
-            month: true,
-            year: true,
-          },
-          orderBy: [{ month: "desc" }, { year: "desc" }],
-          take: 1,
-        },
+       
       },
     });
 
@@ -62,15 +55,13 @@ export async function GET(
 
     // if current month salary entry exist then check if it is paid or not, if not exist then mark it as unpaid
     const now = new Date();
-    const currentMonth = now.getMonth() + 1;
-    const currentYear = now.getFullYear();
 
-    let latestPayment = teacher.salary_payments[0];
+    let latestPayment = teacher.last_salary_payment_date;
 
     let isCurrentMonthPaid =
       latestPayment &&
-      latestPayment.month == currentMonth &&
-      latestPayment.year == currentYear;
+      latestPayment.getMonth() == now.getMonth() &&
+      latestPayment.getFullYear() == now.getFullYear();
 
     return respondWithSuccess({
       data: {

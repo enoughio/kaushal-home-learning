@@ -20,12 +20,47 @@ export async function GET(
 
     const payment = await prisma.payments.findUnique({
       where: { id: paymentId },
+
       include: {
-        student: {
-          include: {
-            user: true,
-          },
+        feePayment: {
+          include : {
+            student : {
+              include : {
+                user : {
+                  select : {
+                    id : true, 
+                    first_name : true,
+                    last_name : true,
+                    email : true,
+                    profile_image_url : true,
+                    phone : true,
+                    location : true
+                  }
+                }
+              }
+            }
+          }
         },
+        salaryPayment : {
+          include : {
+             teacher : {
+              include : {
+                user : {
+                  select : {
+                    id : true, 
+                    first_name : true,
+                    last_name : true,
+                    email : true,
+                    profile_image_url : true,
+                    phone : true,
+                    location : true,
+                    role : true
+                  }
+                }
+              }
+            }
+          }
+        }
       },
     });
 
@@ -37,26 +72,30 @@ export async function GET(
       });
     }
 
+    const userId = payment.payment_type == "FEE" ? payment.feePayment?.student.user_id : payment.salaryPayment?.teacher.user_id ;
+    const name =   payment.payment_type == "FEE" ?  `${payment.feePayment?.student.user.first_name || ""} ${payment.feePayment?.student.user.last_name || ""}`.trim() : `${payment.salaryPayment?.teacher.user.first_name || ""} ${payment.salaryPayment?.teacher.user.last_name || ""}`.trim();
+
     return respondWithSuccess({
       data: {
         id: payment.id.toString(),
-        userId: payment.student.user_id.toString(),
-        userName: `${payment.student.user.first_name || ""} ${payment.student.user.last_name || ""}`.trim(),
+        userId,
+        userName : name,
         type: payment.payment_type,
         amount: payment.amount,
-        status: payment.payment_status,
+        status: payment.status,
         date: payment.payment_date?.toISOString() || new Date().toISOString(),
-        dueDate: payment.due_date?.toISOString() || new Date().toISOString(),
-        method: payment.payment_method || "cash",
-        transactionId: payment.transaction_id || "",
+        dueDate: payment.payment_type == "FEE" ? payment.feePayment?.due_date?.toISOString() || new Date().toISOString() :  "NA" ,
+        method: payment.payment_method,
+        transactionId: payment.transactionId || "",
+        processed: payment.processedById || "",
         UserDetails: {
-          id: payment.student.user_id.toString(),
-          name: `${payment.student.user.first_name || ""} ${payment.student.user.last_name || ""}`.trim(),
-          email: payment.student.user.email,
-          profileImg: payment.student.user.profile_image_url || "https://example.com/photo.jpg",
-          phone: payment.student.user.phone || "",
-          location: payment.student.user.location || "",
-          role: payment.student.user.role,
+          id: userId,
+          name,
+          email:  payment.salaryPayment?.teacher.user.email ,
+          profileImg: payment.salaryPayment?.teacher.user.profile_image_url || "https://example.com/photo.jpg",
+          phone: payment.salaryPayment?.teacher.user.phone || "",
+          location: payment.salaryPayment?.teacher.user.location || "",
+          role: payment.salaryPayment?.teacher.user.role,
         },
       },
       status: 200,

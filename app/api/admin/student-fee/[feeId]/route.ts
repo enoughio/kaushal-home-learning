@@ -1,24 +1,33 @@
-import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
-import { prisma } from "@/lib/db";
+// pay fee
 
-export async function GET(
+import { NextRequest } from "next/server";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
+import { prisma } from "@/lib/db";
+import { generateTransactionId } from "@/app/api/_lib/helper";
+import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
+
+export async function POST(
   req: NextRequest,
-  { params }: { params: { feeId: string } }
+  { params }: { params: Promise<{ feeId: string }> }
 ) {
   try {
-    const feeId = parseInt(params.feeId);
 
-    if (isNaN(feeId)) {
-      return respondWithError({
-        error: "INVALID_REQUEST",
-        message: "Invalid fee ID",
-        status: 400,
-      });
-    }
 
-    const fee = await prisma.student_fees.findUnique({
-      where: { id: feeId },
+       const authResult = await authenticateAndValidateAdmin(req);
+        if ("error" in authResult) return authResult.error;
+
+
+    const data = await params
+    const entityId = parseInt(data.feeId);
+
+    const body = await req.json();
+    const { paymentMethod, transactionId : transactionIdRaw, date, amount } = body;  
+
+
+    let transactionId = transactionIdRaw || generateTransactionId();
+
+    const fee = await prisma.feePayment.findUnique({
+      where: { id: entityId },
       include: {
         student: {
           include: {
@@ -28,55 +37,98 @@ export async function GET(
       },
     });
 
+    // if fee entity not found then create one
     if (!fee) {
-      return respondWithError({
-        error: "NOT_FOUND",
-        message: "Fee not found",
-        status: 404,
-      });
+
+      const payment = await prisma.payments.create({
+        data : {
+          status: "SUCCESS",
+          amount: amount,
+          payment_type: "FEE",
+          payment_method: paymentMethod,
+          transactionId: transactionId,
+          payment_date: new Date(date),
+          processedById : authResult.payload.userId,
+
+
+          feePayment : {
+            create : {
+              data : {
+                paidAt : new Date(date),
+                total_amount : amount, 
+                due_date : new Date(date),
+                status : "PAID",
+                stu
+
+            }
+          }
+        }
+
+      })
+
+        return respondWithSuccess({
+        data: {
+          message: "Fee paid and entry created successfully",
+          paymentId: payment.id.toString(),
+        },
+        status: 200,
+         })     
     }
 
-    // Get payment history for this fee
-    const payments = await prisma.payments.findMany({
-      where: {
-        student_id: fee.student_id,
-        payment_type: "monthly_fee",
-      },
-      orderBy: { created_at: "desc" },
-    });
 
-    const paymentHistory = payments.map((payment) => ({
-      paymentId: payment.id.toString(),
-      amount: payment.amount,
-      date: payment.payment_date?.toISOString() || "",
-      method: payment.payment_method || "cash",
-      transactionId: payment.transaction_id || "",
-    }));
+    
+    const { feeResult, paymentResult  }  = prisma.$transaction(async (prisma) => {
+
+      // updte fee table entry
+     await prisma.feePayment.update({
+        where: { id: fee.id },
+        data: {
+          status: "PAID",
+          paidAt: new Date(date),
+          total_amount: amount,
+        },
+    })
+
+      await prisma.payments.create({
+        data: {
+          feePayment : {
+            connect : {
+              id : fee.id
+            }
+          },
+
+          amount: amount,
+          payment_type: "FEE",
+          payment_method: paymentMethod,
+          transactionId : transactionId ,
+          payment_date : new Date(date),
+          status: "SUCCESS",
+          notes : "Manual Entry",
+          processedById : authResult.payload.userId,
+
+        }
+      })
+    })
+
+
 
     return respondWithSuccess({
-      data: {
-        id: fee.id.toString(),
-        studentId: fee.student.id.toString(),
-        studentName: `${fee.student.user.first_name || ""} ${fee.student.user.last_name || ""}`.trim(),
-        studentEmail: fee.student.user.email,
-        profileImg: fee.student.user.profile_image_url || "https://example.com/photo.jpg",
-        phone: fee.student.user.phone || "",
-        location: fee.student.user.location || "",
-        feeDetails: {
-          fee: fee.amount,
-          status: fee.status,
-          date: fee.created_at.toISOString(),
-          dueDate: fee.due_date.toISOString(),
-          ReminderSent: fee.reminder_sent,
+     data : {
+        message: "Fee payment recorded successfully",
+        feeId: fee.id.toString(),
+        paymentDetails: {
+          paymentMethod,
+          transactionId,
+          date,
+          amount,
         },
-        paymentHistory,
-      },
+     },
       status: 200,
     });
   } catch (error) {
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
-      message: "Failed to fetch fee details",
+      message: "Failed to create fee payment entry",
       status: 500,
       details: error instanceof Error ? error.message : undefined,
     });

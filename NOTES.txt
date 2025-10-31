@@ -5,3 +5,5 @@ TODO :  add a cron job to create new fee reminder to student
 
 
 TODO : Add aadharUrl field as well in the api/admin/approvals api response inside pendingTeachers to show as idProof in fontend.
+
+TODO : there are many routes that are fining due fee in wrong way fix them

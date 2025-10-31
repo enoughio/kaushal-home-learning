@@ -32,8 +32,6 @@ export const sendVerificationEmail = async (to: string, data: VerificationEmailD
 }
 
 
-
-
 export const sendNotificationEmail = async (to: string, data: NotificationEmailData): Promise<void> => {
   const template = EmailTemplates.notification(data)
   await sendTemplateEmail(to, template)

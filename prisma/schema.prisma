@@ -85,6 +85,7 @@ model users {
   access_token              String?
   profile_image_url         String? // remove this later
   profile_image_url_public_id String?  // remove this later
+
   is_active                 Boolean   @default(true)
   is_deleted                Boolean   @default(false)
   created_at                DateTime  @default(now())
@@ -118,9 +119,11 @@ model students {
   preferred_schedule    String?
 
 // fee details
+  fee_assigned           Boolean   @default(false)
   monthly_fee           Float     @default(0)
-  fee_due_date          DateTime?
+  fee_due_date          DateTime 
   grace_period_end      DateTime?
+  last_fee_payment_date DateTime?
   
   aadhar_url            String?
   aadhar_url_public_id  String?
@@ -154,6 +157,7 @@ model teachers {
   salary_assigned                 Boolean   @default(false)
   monthly_salary                  Float     @default(0)
   salary_pay_day                  Int       @default(1)
+  last_salary_payment_date        DateTime? 
   
   bank_account_number             String?
   bank_ifsc_code                  String?
@@ -310,6 +314,7 @@ enum PaymentStatus {
 
 model Payments {
   id              Int             @id @default(autoincrement())
+
   amount          Float
   payment_type    PaymentType
   payment_method  PaymentMethod
@@ -342,13 +347,14 @@ enum SalaryStatus {
 
 model SalaryPayment {
   id              Int       @id @default(autoincrement())
-  month           Int
-  year            Int
-  base_salary     Float
-  bonus           Float     @default(0)
-  deductions      Float     @default(0)
+  date           DateTime
+  
+  // base_salary     Float
+  // bonus           Float     @default(0)
+  // deductions      Float     @default(0)
   total_amount    Float
   status          SalaryStatus    @default(UNPAID) // or paid, processing, etc.
+
   created_at      DateTime  @default(now())
   updated_at      DateTime  @default(now())
 
@@ -360,8 +366,8 @@ model SalaryPayment {
 
   payment         Payments?
 
-  @@unique([teacherId, month, year])
-  @@index([month, year])
+  @@unique([teacherId, date])
+  @@index(date)
 }
 
 enum FeeStatus {
@@ -372,10 +378,11 @@ enum FeeStatus {
 
 model FeePayment {
   id             Int       @id @default(autoincrement())
-  month          Int
-  year           Int
-  amount         Float
-  due_date       DateTime
+  paidAt           DateTime?  // as not paid fees can have null paidAt
+
+  total_amount         Float
+  due_date       DateTime?
+
   status         FeeStatus    @default(DUE) 
   reminder_sent  Int       @default(0)
   created_at     DateTime  @default(now())
@@ -386,8 +393,8 @@ model FeePayment {
 
   payment        Payments?
 
-  @@unique([studentId, month, year])
-  @@index([month, year])
+  @@unique([studentId, paidAt])
+  @@index(paidAt)
 }
 
 

@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     if ("error" in authResult) return authResult.error;
 
     const body = await req.json();
-    const { teacherId, baseSalary, bonus, payDay } = body;
+    const { teacherId, baseSalary, payDay } = body;
 
     if (!teacherId || !baseSalary) {
       return respondWithError({
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
     const updatedTeacher = await prisma.teachers.update({
       where: { id: parseInt(teacherId) },
       data: {
+        salary_assigned : true,
         monthly_salary: baseSalary,
         salary_pay_day: payDay || 1,
       },
@@ -44,21 +45,20 @@ export async function POST(req: NextRequest) {
 
     return respondWithSuccess({
       data: {
-        message: "Salary record added successfully",
+        message: "Salary record updated successfully",
         teacherId: teacher.id.toString(),
         salaryDetails: {
-          baseSalary,
-          bonus: bonus || 0,
-          totalSalary: baseSalary + (bonus || 0),
-          payDay: payDay || 1,
+          baseSalary : updatedTeacher.monthly_salary,
+          payDay: updatedTeacher.salary_pay_day,
         },
       },
       status: 200,
     });
+
   } catch (error) {
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
-      message: "Failed to add salary record",
+      message: "Failed to update salary record",
       status: 500,
       details: error instanceof Error ? error.message : undefined,
     });

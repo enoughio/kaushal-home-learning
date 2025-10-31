@@ -1,50 +1,133 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { authenticateAndValidateAdmin } from "../../_lib/verify";
 
 export async function GET(req: NextRequest) {
   try {
+    const authResult = await authenticateAndValidateAdmin(req);
+    if ("error" in authResult) return authResult.error;
+
     const searchParams = req.nextUrl.searchParams;
+    const search = searchParams.get("search")?.trim(); // search by user name, id or location or email
     const page = parseInt(searchParams.get("page") || "1");
     const limit = 20;
 
     const skip = (page - 1) * limit;
+    const where: any = {
+      user: {
+        is_active: true,
+      },
+      // fee_assigned: true,
+    };
 
-    const [fees, totalFees] = await Promise.all([
-      prisma.student_fees.findMany({
+    if (search) {
+      where.user = {
+        OR: [
+          { id: { contains: search, mode: "insensitive" } },
+          { first_name: { contains: search, mode: "insensitive" } },
+          { last_name: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+          { location: { contains: search, mode: "insensitive" } },
+        ],
+      };
+    }
+
+    const [studentsData, studentsFeeData, totalStudentFeeData] = await Promise.all([
+      prisma.students.findMany({
+        where,
         skip,
         take: limit,
-        include: {
-          student: {
-            include: {
-              user: true,
+        select: {
+          id: true,
+          monthly_fee: true,
+          fee_due_date: true,
+          last_fee_payment_date: true,
+          fee_assigned: true,
+
+          user: {
+            select: {
+              email: true,
+              first_name: true,
+              last_name: true,
+              phone: true,
+              location: true,
             },
           },
         },
         orderBy: { created_at: "desc" },
       }),
-      prisma.student_fees.count(),
+
+      prisma.feePayment.findMany({
+        where: {
+          //fetch only current month fee payments
+          created_at: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
+        },
+
+        select: {
+          id: true,
+          status: true,
+          paidAt: true,
+          due_date: true,
+          reminder_sent: true,
+          
+          student: {
+            select: {
+              id: true,
+              fee_due_date: true,
+
+            },
+          },
+        },
+        orderBy: { created_at: "desc" },
+      }),
+
+      prisma.students.count({
+        where: where,
+      }),
     ]);
 
-    const formattedFees = fees.map((fee) => ({
-      id: fee.id.toString(),
-      studentId: fee.student.id.toString(),
-      studentName: `${fee.student.user.first_name || ""} ${fee.student.user.last_name || ""}`.trim(),
-      fee: fee.amount,
-      status: fee.status,
-      date: fee.created_at.toISOString(),
-      ReminderSent: fee.reminder_sent,
-      dueDate: fee.due_date.toISOString(),
-    }));
+    const studentsIds = studentsFeeData.map((fee) => fee.student.id);
+    // for liner time search
+    const idSet = new Set(studentsIds);
 
-    const totalPages = Math.ceil(totalFees / limit);
+    // you will be need a cron job for this
+    const feeRecordMap = new Map(
+      studentsFeeData.map((fee) => [fee.student.id, fee])
+    );
 
+    const formattedFees = studentsData.map((st) => {
+      const now = new Date();
+      const lastPaymentDate = st.last_fee_payment_date;
+
+      const feeStatus =
+        lastPaymentDate &&
+        lastPaymentDate.getMonth() === now.getMonth() &&
+        lastPaymentDate.getFullYear() === now.getFullYear();
+
+      const feeRecord = feeRecordMap.get(st.id);
+
+      return {
+        studentId: st.id.toString(),
+        feeAssigned: st.fee_assigned,
+        studentName: `${st.user.first_name || ""} ${st.user.last_name || ""}`.trim(),
+        parentEmail: st.user.email,
+        parentPhone: st.user.phone || "NA",
+        fee: st.monthly_fee || 0,
+        status: feeRecord ? feeRecord.status : feeStatus ? "PAID" : "DUE",
+        paidOn: feeRecord?.paidAt?.toISOString() || "NA",
+        ReminderSent: feeRecord?.reminder_sent || 0,
+        dueDate: st.fee_due_date?.toISOString() || "NA",
+      };
+    });
+
+    const totalPages = Math.ceil(totalStudentFeeData / limit);
     return respondWithSuccess({
       data: {
         studentFees: formattedFees,
         page,
         totalPages,
-        totalFees,
+        totalStudentFeeData,
       },
       status: 200,
     });
