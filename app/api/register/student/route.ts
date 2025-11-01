@@ -16,7 +16,7 @@ const NAME_REGEX = /^[A-Za-z ,'.-]{2,}$/;
 const PHONE_REGEX = /^\+?[0-9]{10,15}$/;
 const PINCODE_REGEX = /^[0-9]{6}$/;
 const VALID_GENDERS: Gender[] = ["MALE", "FEMALE", "OTHER"];
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 mb
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 20 mb
 
 function validationError(details: ValidationIssue[]) {
   return NextResponse.json(
@@ -290,14 +290,14 @@ export async function POST(req: NextRequest) {
   if (!Number.isFinite(latitude) || Math.abs(latitude) > 90) {
     issues.push({
       field: "latitude",
-      message: "Latitude must be between -90 and 90",
+      message: "Invalid latitude value",
     });
   }
 
   if (!Number.isFinite(longitude) || Math.abs(longitude) > 180) {
     issues.push({
       field: "longitude",
-      message: "Longitude must be between -180 and 180",
+      message: "Invalid longitude value",
     });
   }
 

@@ -229,6 +229,13 @@ model teacher_student_assignments {
   @@unique([teacher_id, student_id])
 }
 
+enum AssignmentStatus {
+  ASSIGNED
+  SUBMITTED
+  GRADED
+}
+
+
 model assignments {
   id              Int       @id @default(autoincrement())
   teacher_id      Int
@@ -241,7 +248,7 @@ model assignments {
   max_marks       Int       @default(100)
   instructions    String?
   grade           String?
-  status          String    @default("assigned")
+  status          AssignmentStatus @default(ASSIGNED)
   created_at      DateTime  @default(now())
   updated_at      DateTime  @default(now())
 
@@ -269,12 +276,21 @@ model assignment_submissions {
   id             Int       @id @default(autoincrement())
   assignment_id  Int
   student_id     Int
+  
   submission_text String?
   submitted_at   DateTime  @default(now())
   marks_obtained Int?
   grade          String?
   feedback       String?
-  graded_at      DateTime?
+
+
+// only appliend when recreating the databse from scratch
+  file_url       String?
+  file_name      String?
+  file_url_publicId String?
+  mime_type      String?
+
+  // graded_at      DateTime 
   graded_by      Int?
   is_late        Boolean   @default(false)
   created_at     DateTime  @default(now())
@@ -283,6 +299,14 @@ model assignment_submissions {
   assignment     assignments @relation(fields: [assignment_id], references: [id], onDelete: Cascade)
   student        students    @relation(fields: [student_id], references: [id], onDelete: Cascade)
   graded_by_teacher teachers? @relation(fields: [graded_by], references: [id])
+
+  @@unique([assignment_id, student_id])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
 }
 
 model attendance {
@@ -290,9 +314,9 @@ model attendance {
   student_id      Int
   teacher_id      Int
   date            DateTime
-  status          String    @default("present")
+  status          AttendanceStatus 
   notes           String?
-  marked_by       Int?
+  marked_by       Int
   marked_at       DateTime  @default(now())
   session_duration Int?
   subject         String?

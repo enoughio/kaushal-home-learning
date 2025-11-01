@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/app/api/_lib/auth";
-import { SalaryStatus } from "@/generated/prisma";
+import { AssignmentStatus, SalaryStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
     const pendingAssignments = await prisma.assignments.count({
       where: {
         teacher_id: teacher.id,
-        status: "assigned",
+        status: AssignmentStatus.ASSIGNED,
       },
     });
 

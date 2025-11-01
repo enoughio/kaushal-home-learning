@@ -1,40 +1,88 @@
-import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
-import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+// edit and delete an assignment 
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { assignmentId: string } }
-) {
+import { NextRequest } from "next/server";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
+import { prisma } from "@/lib/db";
+import { getAuthUser } from "@/app/api/_lib/auth";
+import { AssignmentStatus, UserRole } from "@/generated/prisma";
+import { z, ZodError } from "zod";
+
+const assinBodySchema = z
+  .object({
+    title: z.string(),
+    description: z.string(),
+    subject: z.string(),
+    dueDate: z.string(),
+  }).partial();
+
+const idSchema = z.string({ message: "Assignment ID required" }).transform((id) => {
+  const parsedId = Number(id);
+  if (isNaN(parsedId)) {
+    throw new Error("Invalid assignment ID");
+  }
+  return parsedId;
+});
+
+// edit assin
+export const PUT = async (req : NextRequest, 
+  { params } : { params : Promise<{ assignmentId : string }>   }
+) => {
   try {
-    const user = getAuthUser(req);
-    if (!user || user.role !== "teacher") {
+    
+
+    const user = getAuthUser(req)
+
+    if(!user || user.role != UserRole.teacher){
       return respondWithError({
-        error: "FORBIDDEN",
-        message: "Only teachers can access this endpoint",
-        status: 403,
-      });
+        error : "FORBIDDEN", 
+        message : "Only Teacher can edit an assignment",
+        status : 403
+      })
     }
 
-    const assignmentId = parseInt(params.assignmentId);
+    const data = await params;
+    const assignmentId  = idSchema.safeParse(data.assignmentId)
 
-    if (isNaN(assignmentId)) {
+    if(!assignmentId.success){
       return respondWithError({
-        error: "INVALID_REQUEST",
-        message: "Invalid assignment ID",
+        error : "INVALID_ACTION",
+        message : assignmentId.error.message,
+        status : 400
+      })
+    }
+
+    const body = await req.json()
+    const parsedBody = assinBodySchema.safeParse(body);
+
+    if (!parsedBody.success) {
+      return respondWithError({
+        error: "BAD_REQUEST",
+        message: "Invalid request body",
+        details: parsedBody.error.issues,
         status: 400,
       });
     }
 
-    const body = await req.json();
-    const { title, description, dueDate, attachments } = body;
+    const updateData = Object.fromEntries(
+      Object.entries(parsedBody.data).filter(([, value]) => value !== undefined)
+    );
 
-    const assignment = await prisma.assignments.findUnique({
-      where: { id: assignmentId },
+    if (Object.keys(updateData).length === 0) {
+      return respondWithError({
+        error: "BAD_REQUEST",
+        message: "No valid fields provided for update",
+        status: 400,
+      });
+    }
+
+    const oldData = await prisma.assignments.findUnique({
+      where: { id: assignmentId.data },
+      select : {
+        id : true
+      }
     });
 
-    if (!assignment) {
+    if (!oldData) {
       return respondWithError({
         error: "NOT_FOUND",
         message: "Assignment not found",
@@ -42,51 +90,70 @@ export async function PATCH(
       });
     }
 
-    // Update assignment
-    await prisma.assignments.update({
-      where: { id: assignmentId },
-      data: {
-        title: title || assignment.title,
-        description: description || assignment.description,
-        due_date: dueDate ? new Date(dueDate) : assignment.due_date,
-      },
+    const updatedAssignment = await prisma.assignments.update({
+      where: { id: assignmentId.data },
+      data: updateData,
     });
 
-    // Delete old attachments and add new ones if provided
-    if (attachments && attachments.length > 0) {
-      await prisma.assignment_attachments.deleteMany({
-        where: { assignment_id: assignmentId },
-      });
-
-      await Promise.all(
-        attachments.map((att: Record<string, unknown>) =>
-          prisma.assignment_attachments.create({
-            data: {
-              assignment_id: assignmentId,
-              file_name: att.fileName as string,
-              file_url: att.fileUrl as string,
-              mime_type: att.mimeType as string,
-              size: att.size as number,
-              is_submission: false,
-            },
-          })
-        )
-      );
-    }
-
     return respondWithSuccess({
-      data: {
-        message: "Assignment updated successfully",
-        assignmentId: assignment.id.toString(),
-      },
+      message: "Assignment updated successfully",
+      data: updatedAssignment,
       status: 200,
     });
   } catch (error) {
+    const errorMessage = error instanceof ZodError ? error.message : "An unexpected error occurred";
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
-      message: "Failed to update assignment",
+      message: errorMessage,
       status: 500,
-      details: error instanceof Error ? error.message : undefined,
     });
+  }
+}
+
+
+
+// delete assignment
+export const DELETE = async (req : NextRequest, {
+  params } : { params  : Promise<{ assignmentId : string }>}
+) => {
+  try {  
+    const user = getAuthUser(req)
+
+    if(!user || user.role != UserRole.teacher){
+      return respondWithError({
+        error : "FORBIDDEN", 
+        message : "Only Teacher can edit an assignment",
+        status : 403
+      })
+    }
+
+    const data = await params;
+    const assignmentId  = idSchema.safeParse(data.assignmentId)
+
+    if(!assignmentId.success){
+      return respondWithError({
+        error : "INVALID_ACTION",
+        message : assignmentId.error.message,
+        status : 400
+      })
+    }
+
+    const response = await prisma.assignments.delete({
+      where : { id :  assignmentId.data }
+    })
+
+    return respondWithSuccess({
+      data : response.id ,
+      message : "Assignment Deleted succesfully",
+      status : 400
+    })
+
+  } catch (error) {
+    
+    return respondWithError({
+      error : "INTERNAL_SERVER_ERROR",
+      message : "failed to delete the assignment",
+      status : 500
+    })
   }
 }

@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
+import { AssignmentStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -34,21 +35,21 @@ export async function GET(req: NextRequest) {
     const pendingAssignments = await prisma.assignments.count({
       where: {
         student_id: student.id,
-        status: "assigned",
+        status :  AssignmentStatus.ASSIGNED
       },
     });
 
     // Get active teachers
-    const activeTeachers = await prisma.teachers.count({
-      where: {
-        assigned_students: {
-          some: {
-            id: student.id,
-          },
-        },
-        is_active: true,
-      },
-    });
+    // const activeTeachers = await prisma.teachers.count({
+    //   where: {
+    //     assigned_students: {
+    //       some: {
+    //         id: student.id,
+    //       },
+    //     },
+    //     is_active: true,
+    //   },
+    // });
 
     // Get attendance rate for current month
     const totalClasses = await prisma.attendance.count({
@@ -64,7 +65,7 @@ export async function GET(req: NextRequest) {
     const presentClasses = await prisma.attendance.count({
       where: {
         student_id: student.id,
-        status: "present",
+        status : "PRESENT",
         date: {
           gte: new Date(currentYear, currentMonth - 1, 1),
           lt: new Date(currentYear, currentMonth, 1),
@@ -78,7 +79,7 @@ export async function GET(req: NextRequest) {
     return respondWithSuccess({
       data: {
         pendingAssignments,
-        activeTeachers,
+        activeTeachers : 1,
         attendanceRate,
       },
       status: 200,

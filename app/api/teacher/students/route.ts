@@ -3,6 +3,8 @@ import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/app/api/_lib/auth";
 
+
+// get all the students for a teacher 
 export async function GET(req: NextRequest) {
   try {
     const user = getAuthUser(req);
@@ -33,25 +35,10 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const formattedStudents = students.map((student) => ({
-      id: student.id.toString(),
-      name: `${student.user.first_name || ""} ${student.user.last_name || ""}`.trim(),
-      email: student.user.email,
-      profileImg: student.user.profile_image_url || "https://example.com/photo.jpg",
-      phone: student.user.phone || "",
-      parentName: student.parent_name || "",
-      mapLocation: student.user.home_latitude && student.user.home_longitude 
-        ? `https://maps.google.com/?q=${student.user.home_latitude},${student.user.home_longitude}`
-        : "https://maps.google.com",
-      location: student.user.location || "",
-      pincode: student.user.pincode || "",
-      status: student.is_active ? "active" : "inactive",
-      enrolledAt: student.enrollment_date.toISOString(),
-    }));
 
     return respondWithSuccess({
       data: {
-        students: formattedStudents,
+        students: students,
       },
       status: 200,
     });
