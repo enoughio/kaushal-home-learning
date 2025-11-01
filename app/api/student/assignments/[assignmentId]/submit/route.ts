@@ -55,16 +55,12 @@ export async function POST(
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const text  = formData.get("json") as File;
+    const textData = JSON.parse(text as any);
 
 
 
-    if (!file) {
-      return respondWithError({
-        error: "BAD_REQUEST",
-        message: "File is required for submission",
-        status: 400,
-      });
-    }
+    if (file) {
+    
 
     const parsedFile = fileSchema.safeParse({
       name: file.name,
@@ -79,6 +75,8 @@ export async function POST(
         details: parsedFile.error.issues,
         status: 400,
       });
+    } 
+
     }
 
     const assignment = await prisma.assignments.findUnique({
@@ -108,42 +106,31 @@ export async function POST(
       });
     }
 
-    // Upload file to storage
     let uploadResult: any = null;
-    try {
-      uploadResult = await uploadFile(file, "assignments");
-    } catch (error) {
+    if(file ){
+      // Upload file to storage
+      try {
+        uploadResult = await uploadFile(file, "assignments");
+      } catch (error) {
       return respondWithError({
         error: "UPLOAD_FAILED",
         message: "File upload failed. Please try again later",
         status: 500,
       });
     }
+  }
 
-    // Create or update submission
-    await prisma.assignment_submissions.upsert({
-      where: {
-        assignment_id_student_id: {
-          assignment_id: assignmentId,
-          student_id: student.id,
-        },
-      },
-      update: {
-        
-        submitted_at: new Date(),
-        file_name: file.name,
-        file_url: uploadResult.url,
-        file_url_publicId: uploadResult.public_id,
-        mime_type: file.type,
-      },
-      create: {
+    // Create submission
+    const subbmitionResponse = await prisma.assignment_submissions.create({
+      data: {
         assignment_id: assignmentId,
         student_id: student.id,
-        // submission_text : text ,
+        submission_text : textData || "",
         submitted_at: new Date(),
-        file_name: file.name,
-        file_url: uploadResult.url,
-        file_url_publicId: uploadResult.public_id,
+        file_name: file ? file.name : null,
+        // file_name: file.name || null,
+        file_url: uploadResult.url || null,
+        file_url_publicId: uploadResult.public_id || null,
         mime_type: file.type,
       },
     });
