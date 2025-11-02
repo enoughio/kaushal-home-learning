@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { AttendanceStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
               gte: monthStart,
               lt: monthEnd,
             },
-            status: "present",
+            status: AttendanceStatus.PRESENT,
           },
         });
 

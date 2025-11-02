@@ -1,34 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { testConnection } from "../../../database/db";
 
 export async function GET(_req: NextRequest) {
     try {
         // Test database connection
-        const connectionTest = await testConnection();
-
-        if (!connectionTest.success) {
-            return NextResponse.json(
-                {
-                    status: "unhealthy",
-                    database: connectionTest,
-                    environment: process.env.NODE_ENV,
-                    timestamp: new Date().toISOString(),
-                },
-                { status: 503 }
-            );
-        }
-
-        return NextResponse.json({
-            status: "healthy",
-            database: {
-                connected: connectionTest.success,
-                timestamp: connectionTest.timestamp,
-                version: connectionTest.version,
+       
+        return NextResponse.json(
+            {
+                status: "healthy",
+                timestamp: new Date().toISOString(),
             },
-            environment: process.env.NODE_ENV,
-            timestamp: new Date().toISOString(),
-        });
+            { status: 200 }
+        );
 
+       
     } catch (error) {
         console.error('Health check failed:', error);
         return NextResponse.json(

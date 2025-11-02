@@ -64,6 +64,8 @@ export async function POST(
           role: UserRole.teacher, 
           is_active: true,
           is_verified: true,
+          home_latitude: 22.233,
+          home_longitude: 78.546,
           date_of_birth: tempTeacher.temp_user.date_of_birth,
           gender: tempTeacher.temp_user.gender,
           created_at: tempTeacher.temp_user.created_at,

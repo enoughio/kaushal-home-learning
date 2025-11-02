@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
+import { SalaryStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,50 +28,33 @@ export async function GET(req: NextRequest) {
     }
 
     // Get total earnings
-    const earningsResult = await prisma.salary_payments.aggregate({
+    const earningsResult = await prisma.salaryPayment.aggregate({
       _sum: { total_amount: true },
       where: {
-        teacher_id: teacher.id,
-        payment_status: "completed",
+        teacherId: teacher.id,
+        status: SalaryStatus.PAID,
       },
     });
 
-    // Get pending salaries
-    const pendingResult = await prisma.salary_payments.aggregate({
-      _sum: { total_amount: true },
-      where: {
-        teacher_id: teacher.id,
-        payment_status: "pending",
-      },
-    });
 
-    const lastPaidSalary = await prisma.salary_payments.findFirst({
+    const totalSalaryCnt = await prisma.salaryPayment.aggregate({
       where: {
-        teacher_id: teacher.id,
-        payment_status: "completed",
+        teacherId: teacher.id,
+        status: SalaryStatus.PAID,
       },
-      orderBy: { payment_date: "desc" },
+      _count: { id: true },
     });
 
     return respondWithSuccess({
       data: {
         totalEarnings: Math.round(earningsResult._sum?.total_amount || 0),
-        pendingSalaries: Math.round(pendingResult._sum?.total_amount || 0),
-        salaryDetails: {
-          baseSalary: teacher.monthly_salary,
-          bonus: 0,
-          totalSalary: teacher.monthly_salary,
-          lastPaidMonth: lastPaidSalary
-            ? new Date(lastPaidSalary.created_at).toLocaleString("default", {
-                month: "short",
-              })
-            : "N/A",
-          lastPaidDate: lastPaidSalary?.payment_date?.toISOString() || "",
+        totalPays: totalSalaryCnt._count.id || "",
         },
-      },
       status: 200,
     });
+  
   } catch (error) {
+
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
       message: "Failed to fetch salary statistics",

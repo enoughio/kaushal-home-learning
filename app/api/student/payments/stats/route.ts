@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
+import { FeeStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,24 +28,24 @@ export async function GET(req: NextRequest) {
     }
 
     // Get total fees
-    const totalFeesResult = await prisma.student_fees.aggregate({
-      _sum: { amount: true },
-      where: { student_id: student.id },
+    const totalFeesResult = await prisma.feePayment.aggregate({
+      _sum: { total_amount: true },
+      where: { studentId: student.id },
     });
 
     // Get due fees
-    const dueFeeResult = await prisma.student_fees.aggregate({
-      _sum: { amount: true },
+    const dueFeeResult = await prisma.feePayment.aggregate({
+      _sum: { total_amount: true },
       where: {
-        student_id: student.id,
-        status: "due",
+        studentId: student.id,
+        status : FeeStatus.PAID
       },
     });
 
     return respondWithSuccess({
       data: {
-        totalFees: Math.round(totalFeesResult._sum?.amount || 0),
-        dueFees: Math.round(dueFeeResult._sum?.amount || 0),
+        totalFees: Math.round(totalFeesResult._sum?.total_amount || 0),
+        dueFees: Math.round(dueFeeResult._sum?.total_amount || 0),
       },
       status: 200,
     });

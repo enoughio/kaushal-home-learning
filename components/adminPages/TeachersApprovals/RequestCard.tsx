@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import ApproveAction from "./ApproveAction";
 import RejectAction from "./RejectAction";
-import { Teacher } from "@/app/(dashboards)/admin/approvals/page";
+import { Teacher } from "@/(dashboards)/admin/approvals/page";
 
 export default function RequestCard({ teacher }: { teacher: Teacher }) {
   return (

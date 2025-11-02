@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
+import { PaymentStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
               gte: new Date(year, 0, 1),
               lt: new Date(year + 1, 0, 1),
             },
-            payment_status: "completed",
+            status: PaymentStatus.SUCCESS,
           },
         });
         return {

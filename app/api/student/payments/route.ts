@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
@@ -32,24 +32,45 @@ export async function GET(req: NextRequest) {
     }
 
     const [payments, totalPayments] = await Promise.all([
-      prisma.payments.findMany({
-        where: { student_id: student.id },
+      prisma.feePayment.findMany({
+        where: { studentId: student.id },
         skip,
         take: limit,
+        
+        select : {
+          
+          id: true,
+          total_amount: true,
+          status: true,
+          due_date: true,
+
+          payment : {
+            select : {
+              transactionId : true,
+              payment_method : true,
+              notes : true,
+              payment_date : true,
+
+            }
+          }
+
+        },
+        
         orderBy: { created_at: "desc" },
       }),
-      prisma.payments.count({ where: { student_id: student.id } }),
+
+      prisma.feePayment.count({ where: { studentId: student.id } }),
     ]);
 
     const formattedPayments = payments.map((payment) => ({
       id: payment.id.toString(),
-      type: payment.payment_type,
-      amount: payment.amount,
-      status: payment.payment_status,
-      date: payment.payment_date?.toISOString() || new Date().toISOString(),
+      type: "Fee Payment",
+      amount: payment.total_amount,
+      status: payment.status,
+      date: payment.payment?.payment_date?.toISOString() || new Date().toISOString(),
       dueDate: payment.due_date?.toISOString() || new Date().toISOString(),
-      method: payment.payment_method || "cash",
-      transactionId: payment.transaction_id || "",
+      method: payment.payment?.payment_method || "cash",
+      transactionId: payment.payment?.transactionId || "",
     }));
 
     const totalPages = Math.ceil(totalPayments / limit);

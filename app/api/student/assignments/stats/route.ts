@@ -1,10 +1,12 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
+import { AssignmentStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
+    
     const user = getAuthUser(req);
     if (!user || user.role !== "student") {
       return respondWithError({
@@ -30,19 +32,19 @@ export async function GET(req: NextRequest) {
       prisma.assignments.count({
         where: {
           student_id: student.id,
-          status: "assigned",
+          status: AssignmentStatus.ASSIGNED,
         },
       }),
-      prisma.assignment_submissions.count({
+      prisma.assignments.count({
         where: {
           student_id: student.id,
-          grade: null,
+          status: AssignmentStatus.SUBMITTED,
         },
       }),
-      prisma.assignment_submissions.count({
+      prisma.assignments.count({
         where: {
           student_id: student.id,
-          grade: { not: null },
+          status: AssignmentStatus.GRADED,
         },
       }),
     ]);
@@ -55,6 +57,7 @@ export async function GET(req: NextRequest) {
       },
       status: 200,
     });
+
   } catch (error) {
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",

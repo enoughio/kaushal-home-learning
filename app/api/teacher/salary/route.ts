@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
@@ -33,24 +33,30 @@ export async function GET(req: NextRequest) {
     }
 
     const [salaries, totalRecords] = await Promise.all([
-      prisma.salary_payments.findMany({
-        where: { teacher_id: teacher.id },
+      
+      prisma.salaryPayment.findMany({
+        where: { teacherId: teacher.id },        
+        select : {
+          created_at: true,
+          total_amount: true,
+          date: true,
+          status: true,
+        },
         skip,
         take: limit,
         orderBy: { created_at: "desc" },
       }),
-      prisma.salary_payments.count({ where: { teacher_id: teacher.id } }),
+
+      prisma.salaryPayment.count({ where: { teacherId: teacher.id } }),
     ]);
 
     const salaryHistory = salaries.map((salary) => ({
       month: new Date(salary.created_at).toLocaleString("default", {
         month: "short",
       }),
-      baseSalary: salary.base_salary,
-      bonus: salary.bonus,
       totalSalary: salary.total_amount,
-      paidDate: salary.payment_date?.toISOString() || "",
-      status: salary.payment_status,
+      paidDate: salary.date?.toISOString() || "",
+      status: salary.status,
     }));
 
     const totalPages = Math.ceil(totalRecords / limit);

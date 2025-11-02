@@ -27,6 +27,7 @@ export async function GET(
       });
     }
 
+    // only store last 6 months of attendance data
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = 20;
