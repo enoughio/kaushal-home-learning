@@ -42,19 +42,15 @@ function getCurrentPositionAsync(options?: PositionOptions) {
   });
 }
 
-const MarkAttendance = (
-  {
-    student,
-  }: {
-    student: { id: string; name: string };
-  },
-  isMarkedToday: boolean
-) => {
+const MarkAttendance = ({
+  student,
+}: {
+  student: { id: string; name: string; isMarkedToday: boolean };
+}) => {
   const today = new Date().toISOString().split("T")[0];
   const [notes, setNotes] = useState("");
   const [date, setDate] = useState(today);
   const [checked, setChecked] = useState(false);
-  const [marked, setMarked] = useState(isMarkedToday);
   const [position, setPosition] = useState<{ lat: number; lon: number } | null>(
     null
   );
@@ -105,7 +101,10 @@ const MarkAttendance = (
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-lg border bg-background p-4 space-y-3"
+      className={`rounded-lg border bg-background p-4 space-y-3 ${ student.isMarkedToday
+            ? "border-green-500 border-4 text-foreground"
+            : "border-yellow-500 border-2 "
+        }`}
     >
       <div className="text-sm font-medium">Mark Attendance</div>
       <div className="text-xs text-muted-foreground mb-2">
@@ -132,26 +131,40 @@ const MarkAttendance = (
           I confirm I am physically at the student’s home for this session
         </span>
       </label>
-
       <label className="block">
         <div className="mb-1 text-sm text-muted-foreground">
           Notes (optional)
         </div>
         <textarea
           rows={3}
+          disabled={student.isMarkedToday}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          placeholder="Lesson topic, duration, or other remarks"
+          className={`w-full rounded-md border px-3 py-2 text-sm ${
+            student.isMarkedToday
+              ? "bg-green text-muted-foreground"
+              : "border-yellow-500 border-4  bg-gray-500 text-primary-foreground"
+          }`}
+          placeholder={
+            student.isMarkedToday
+              ? "Today's topics are already submitted"
+              : "Lesson topic, duration, or other remarks"
+          }
+          aria-disabled={student.isMarkedToday}
         />
       </label>
 
       <button
         type="submit"
-        disabled={marked}
-        className="w-full rounded-md border bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={student.isMarkedToday}
+        className={`w-full rounded-md border px-3 py-2 text-sm font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+          student.isMarkedToday
+            ? "bg-green-400 text-foreground"
+            : "border-yellow-500 border-4  bg-gray-500 text-primary-foreground"
+        }`}
+        aria-disabled={student.isMarkedToday}
       >
-        Mark Present
+        {student.isMarkedToday ? "Already Marked" : "Mark Present"}
       </button>
 
       <p className="text-xs text-muted-foreground">

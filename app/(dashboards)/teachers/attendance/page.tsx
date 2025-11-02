@@ -156,7 +156,7 @@ const AttendancePage = async ({
             </Suspense>
           </div>
           <Suspense fallback={<AttendanceFormSkeleton />}>
-            <MarkAttendence student={{ id: "1", name : "jhon sena" }}  isMarked={true} />
+            <MarkAttendence student={{ id: "1", name : "jhon sena",  isMarkedToday : true }}  />
           </Suspense>
         </div>
       </section>
