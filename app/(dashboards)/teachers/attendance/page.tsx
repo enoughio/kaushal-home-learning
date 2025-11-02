@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { MonthCalendar } from "@/components/teachersPages/attendence/MonthCalendar";
 import MarkAttendence from "@/components/teachersPages/attendence/MarkAttendence";
 import AttendanceStats from "@/components/teachersPages/attendence/AttendanceStats";
-import { DayAttendance } from "@/lib/types";
+// import { DayAttendance } from "@/lib/types";
 
 // Placeholder students data
 const students = [
@@ -13,10 +13,13 @@ const students = [
 
 // Placeholder selected student (could be set via search params or default)
 const selectedStudentId = students[0].id;
-const selectedStudent = students.find((s) => s.id === selectedStudentId);
+// const selectedStudent = students.find((s) => s.id === selectedStudentId);
+const studentData = [ { id: "1", name: "John Doe" },
+{ id: "2", name: "Sarah Wilson" },
+{ id: "3", name: "Raj Patel" },];
 
 // Placeholder attendance records
-const monthRecords: DayAttendance[] = [
+const monthRecords = [
   { date: "2025-10-01", status: "present" },
   { date: "2025-10-02", status: "absent" },
   { date: "2025-10-03", status: "present" },
@@ -153,7 +156,7 @@ const AttendancePage = async ({
             </Suspense>
           </div>
           <Suspense fallback={<AttendanceFormSkeleton />}>
-            <MarkAttendence student={selectedStudent} />
+            <MarkAttendence student={{ id: "1", name : "jhon sena" }}  isMarked={true} />
           </Suspense>
         </div>
       </section>

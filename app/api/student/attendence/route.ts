@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
+import z from "zod";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,9 +14,11 @@ export async function GET(req: NextRequest) {
         status: 403,
       });
     }
+    const pagesSchema = z.coerce.number().int({ message: "Page must be an integer" }).min(1, {message : "page must be positive"}).default(1);
 
     const searchParams = req.nextUrl.searchParams;
-    const page = parseInt(searchParams.get("page") || "1");
+    const page = pagesSchema.parse(searchParams.get("page"));
+
     const limit = 20;
     const month = searchParams.get("month");
     const year = searchParams.get("year");

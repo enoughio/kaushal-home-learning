@@ -1,11 +1,12 @@
 import { NextRequest } from "next/server";
-import { respondWithError, respondWithSuccess } from "@/app/_api/_lib/http";
+import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
+import { getDistanceFromLatLonInKm } from "@/app/api/_lib/helper";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { studentId: string } }
+  { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
     const user = getAuthUser(req);
@@ -17,7 +18,8 @@ export async function POST(
       });
     }
 
-    const studentId = parseInt(params.studentId);
+    const data = await params;
+    const studentId = parseInt(data.studentId);
 
     if (isNaN(studentId)) {
       return respondWithError({
@@ -43,44 +45,53 @@ export async function POST(
     }
 
     const student = await prisma.students.findUnique({
-      where: { id: studentId },
+      where: { id: studentId, assigned_teacher_id: teacher.id },
       include: { user: true },
     });
 
     if (!student) {
       return respondWithError({
         error: "NOT_FOUND",
-        message: "Student not found",
+        message: "Student not found or not assigned to this teacher",
         status: 404,
       });
     }
+    // Validate teacher location against student home location using Haversine formula
+    try {
+      const distance = getDistanceFromLatLonInKm(
+        location.latitude,
+        location.longitude,
+        student.user.home_latitude,
+        student.user.home_longitude
+      );
 
-    // TODO: Validate teacher location against student home location using geolocation API
+      if (distance <= 0.1) {
+        console.log("✅ Valid location");
+      } else {
+        throw new Error(
+          "Teacher is not within the valid location range of the student's home."
+        );
+      }
+    } catch (error) {
+      console.error("Location validation error:", error);
+      return respondWithError({
+        error: "INVALID_LOCATION",
+        message:
+          "Teacher is not within the valid location range of the student's home.",
+        status: 400,
+        details: error instanceof Error ? error.message : undefined,
+      });
+    }
 
     // Create or update attendance record
-    const attendanceRecord = await prisma.attendance.upsert({
-      where: {
-        student_id_teacher_id_date_subject: {
-          student_id: studentId,
-          teacher_id: teacher.id,
-          date: new Date(date),
-          subject: "", // Default empty subject
-        },
-      },
-      create: {
+    const attendanceRecord = await prisma.attendance.create({
+      data: {
         student_id: studentId,
         teacher_id: teacher.id,
         date: new Date(date),
         status,
         latitude: location?.latitude,
         longitude: location?.longitude,
-        marked_by: user.id,
-      },
-      update: {
-        status,
-        latitude: location?.latitude,
-        longitude: location?.longitude,
-        marked_at: new Date(),
         marked_by: user.id,
       },
     });
