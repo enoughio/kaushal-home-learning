@@ -9,9 +9,8 @@ export async function POST(
   { params }: { params: Promise<{ teacherId: string }> }
 ) {
   try {
-    
-    let id =  (await params).teacherId;
-    let teacherId = parseInt(id);
+    const id = (await params).teacherId;
+    const teacherId = parseInt(id);
 
     if (isNaN(teacherId)) {
       return respondWithError({
@@ -40,7 +39,7 @@ export async function POST(
       await sendApprovalEmail(tempTeacher.temp_user.email, {
         name: `${tempTeacher.temp_user.first_name || ""} ${tempTeacher.temp_user.last_name || ""}`.trim() || "Teacher",
         approvalDate: new Date().toLocaleDateString(),});
-    } catch (error) {
+    } catch {
       return respondWithError({
         error: "EMAIL_SENDING_FAILED",
         message: "Failed to send approval email to the teacher",
@@ -99,9 +98,6 @@ export async function POST(
 
       return { newUser, newTeacher };
     });
-
-
-
 
     return respondWithSuccess({
       data: {

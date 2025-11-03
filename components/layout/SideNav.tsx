@@ -19,7 +19,7 @@ export default async function SideNav() {
 
     if (token) {
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
         role = decoded.role || "guest";
       } catch (error) {
         // Invalid token, treat as guest

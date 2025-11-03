@@ -21,7 +21,7 @@ interface LoginResponse {
   };
   error?: {
     code: string;
-    details?: any;
+    details?: unknown;
   };
 }
 
@@ -29,7 +29,7 @@ interface ApiError {
   code: string;
   message: string;
   status: number;
-  details?: any;
+  details?: unknown;
 }
 
 // Helper function to create standardized error responses
@@ -62,7 +62,7 @@ function createSuccessResponse(
 }
 
 // Input validation helper
-function validateLoginInput(data: any): { isValid: boolean; errors: string[] } {
+function validateLoginInput(data: unknown): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (!data || typeof data !== 'object') {
@@ -70,7 +70,7 @@ function validateLoginInput(data: any): { isValid: boolean; errors: string[] } {
     return { isValid: false, errors };
   }
 
-  const { email, password } = data;
+  const { email, password } = data as Record<string, unknown>;
 
   // Email validation
   if (!email || typeof email !== 'string') {
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<LoginResponse
     let requestData: LoginRequest;
     try {
       requestData = await req.json();
-    } catch (error) {
+    } catch {
       return createErrorResponse({
         code: 'INVALID_JSON',
         message: 'Invalid JSON in request body',
@@ -213,11 +213,11 @@ export async function POST(req: NextRequest): Promise<NextResponse<LoginResponse
 
     return response;
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Login error:', error);
 
     // Handle specific database errors
-    if (error?.code === 'P1001') {
+    if ((error as { code?: string })?.code === 'P1001') {
       return createErrorResponse({
         code: 'DATABASE_ERROR',
         message: 'Database connection failed',

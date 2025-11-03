@@ -33,7 +33,7 @@ function createSuccessResponse(message: string): NextResponse<ApiResponse> {
 }
 
 // Input validation helper
-function validateForgotPasswordInput(data: any): { isValid: boolean; errors: string[] } {
+function validateForgotPasswordInput(data: unknown): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (!data || typeof data !== 'object') {
@@ -41,7 +41,7 @@ function validateForgotPasswordInput(data: any): { isValid: boolean; errors: str
     return { isValid: false, errors };
   }
 
-  const { email } = data;
+  const { email } = data as Record<string, unknown>;
 
   if (!email || typeof email !== 'string') {
     errors.push('Email is required');
@@ -149,11 +149,11 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
       'If an account with this email exists, we have sent you a password reset link.-'
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Forgot password error:', error);
 
     // Handle specific database errors
-    if (error?.code === 'P1001') {
+    if ((error as { code?: string })?.code === 'P1001') {
       return createErrorResponse({
         code: 'DATABASE_ERROR',
         message: 'Service temporarily unavailable. Please try again later.',

@@ -7,7 +7,6 @@ import { FileText } from "lucide-react";
 // Server component: fetches assignments (placeholder) and passes data to children
 export default async function AssignmentList() {
   // Placeholder student id for now — replace with real user id later
-  const studentId = "2";
 
   // Placeholder assignments (will be replaced with API response later)
   const assignments: Assignment[] = [

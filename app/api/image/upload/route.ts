@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { uploadImage } from '@/helper/cloudinaryActions';
+import { uploadFile } from '@/helper/cloudinaryActions';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,18 +10,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Optional: dynamic folder based on form field
     const folderField = data.get('folder');
     const folder = typeof folderField === 'string' ? folderField : 'uploads';
 
-    const uploadResult = await uploadImage(buffer, folder);
+    const uploadResult = await uploadFile(file, folder);
 
     return NextResponse.json(uploadResult);
-  } catch (error: any) {
+  } catch (error : unknown) {
     console.error('Upload route error:', error);
-    return NextResponse.json({ error: error?.message ?? String(error) }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

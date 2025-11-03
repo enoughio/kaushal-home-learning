@@ -27,19 +27,22 @@ export async function authenticateAndValidateAdmin(
     };
   }
 
-    try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-      const { payload } = await jwtVerify(token, secret);
-      if (payload.role !== "admin") {
-        return {
-          error: respondWithError({
-            error: "UNAUTHORIZED",
-            message: "Admin access required",
-            status: 403,
-          }),
-        };
-      }
-      return { payload: { userId: payload.userId as number, role: payload.role as string } };  } catch (error) {
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+    const { payload } = await jwtVerify(token, secret);
+    if (payload.role !== "admin") {
+      return {
+        error: respondWithError({
+          error: "UNAUTHORIZED",
+          message: "Admin access required",
+          status: 403,
+        }),
+      };
+    }
+    return {
+      payload: { userId: payload.userId as number, role: payload.role as string },
+    };
+  } catch {
     return {
       error: respondWithError({
         error: "UNAUTHENTICATED",

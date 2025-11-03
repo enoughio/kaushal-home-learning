@@ -5,7 +5,7 @@ import { getAuthUser } from "@/app/api/_lib/auth";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { studentId: string } }
+  { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
     const user = getAuthUser(req);
@@ -17,7 +17,8 @@ export async function GET(
       });
     }
 
-    const studentId = parseInt(params.studentId);
+    const data = await params;
+    const studentId = parseInt(data.studentId);
 
     if (isNaN(studentId)) {
       return respondWithError({

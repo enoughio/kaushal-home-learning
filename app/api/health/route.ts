@@ -1,9 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
     try {
-        // Test database connection
-       
         return NextResponse.json(
             {
                 status: "healthy",
@@ -11,8 +9,6 @@ export async function GET(_req: NextRequest) {
             },
             { status: 200 }
         );
-
-       
     } catch (error) {
         console.error('Health check failed:', error);
         return NextResponse.json(

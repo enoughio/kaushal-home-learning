@@ -48,7 +48,7 @@ const VerifyEmailPage = () => {
       } else {
         setMessage({ type: 'error', text: data.message || 'Verification failed' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Network error. Please try again.' });
     } finally {
       setIsLoading(false);

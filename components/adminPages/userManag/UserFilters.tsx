@@ -51,7 +51,7 @@ export default function UserFilters() {
   // 🔄 When role or status changes, apply filters immediately
   useEffect(() => {
     applyFilters();
-  }, [role, status]); // only trigger when dropdowns change
+  }, [role,applyFilters, status]); // only trigger when dropdowns change
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

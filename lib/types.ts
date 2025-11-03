@@ -1,11 +1,11 @@
 // API Response Types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown | null> {
   success?: boolean;
   message?: string;
   data?: T;
   error?: {
     code: string;
-    details?: any;
+    details?: unknown | null;
   };
   status?: number;
   code?: number;
@@ -226,7 +226,7 @@ export interface CreatePasswordRequest {
 export interface ApiError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown | null;
 }
 
 export interface PaymentStatsProps {

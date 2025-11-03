@@ -3,10 +3,9 @@ import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/app/api/_lib/auth";
 import { AssignmentStatus, UserRole } from "@/generated/prisma";
-import { uploadFile } from "@/helper/cloudinaryActions";
+import { uploadFile, UploadResult } from "@/helper/cloudinaryActions";
 import { sendNotificationEmail } from "@/helper/mail/emailHelpers";
 import { z } from "zod";
-
 
 // get all the assignment by a teacher
 export const GET = async (req: NextRequest) => {
@@ -34,14 +33,13 @@ export const GET = async (req: NextRequest) => {
       });
     }
 
-
     const assignments = await prisma.assignments.findMany({
       where: {
         teacher_id: teacher.id,
       },
 
       select: {
-        id : true,
+        id: true,
         student_id: true,
         title: true,
         description: true,
@@ -96,7 +94,6 @@ export const GET = async (req: NextRequest) => {
       },
     });
 
-
     return respondWithSuccess({
       data: assignments,
       message: "assignment fetched succesfully",
@@ -111,8 +108,6 @@ export const GET = async (req: NextRequest) => {
     });
   }
 };
-
-
 
 // add an assignment
 export const POST = async (req: NextRequest) => {
@@ -139,24 +134,14 @@ export const POST = async (req: NextRequest) => {
       });
     }
 
-    let formData: FormData;
-
-    try {
-      formData = await req.formData();
-    } catch (error) {
-      return respondWithError({
-        error: "BAD_REQUEST",
-        message: "Invalid form data",
-        status: 400,
-      });
-    }
+    const formData = await req.formData();
 
     const jsonData = formData.get("json");
     const fileData = formData.get("file");
 
     if (!jsonData || typeof jsonData !== "string") {
       return respondWithError({
-        error: "BAD_REQUEST", 
+        error: "BAD_REQUEST",
         message: "Missing or invalid JSON data",
         status: 400,
       });
@@ -172,39 +157,19 @@ export const POST = async (req: NextRequest) => {
       description: z.string().optional(),
     });
 
-    let data;
-    try {
-      data = schema.parse(JSON.parse(jsonData));
+    const data = schema.parse(JSON.parse(jsonData));
 
-      // check if student belongs to teacher
-      const student = await prisma.teacher_student_assignments.findFirst({
-        where: {
-          student_id: data.studentId,
-          teacher_id : teacher.id,
-        }
-      })
+    const student = await prisma.teacher_student_assignments.findFirst({
+      where: {
+        student_id: data.studentId,
+        teacher_id: teacher.id,
+      },
+    });
 
-      if(!student){
-        return respondWithError({
-          error: "BAD_REQUEST",
-          message: "The specified student is not assigned to you",
-          status: 400,
-        });
-      }
-
-
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return respondWithError({
-          error: "BAD_REQUEST",
-          message: "Validation error",
-          details: error.issues, // Use 'issues' instead of 'errors'
-          status: 400,
-        });
-      }
+    if (!student) {
       return respondWithError({
         error: "BAD_REQUEST",
-        message: "Unknown validation error",
+        message: "The specified student is not assigned to you",
         status: 400,
       });
     }
@@ -225,19 +190,9 @@ export const POST = async (req: NextRequest) => {
       });
     }
 
-    let uploadResult: any = null;
-
-    if (fileData instanceof File) {
-      try {
-        uploadResult = await uploadFile(fileData, "assignments");
-      } catch (error) {
-        return respondWithError({
-          error: "UPLOAD_FAILED",
-          message: "File upload failed. Please try again later",
-          status: 500,
-        });
-      }
-    }
+    const uploadResult: UploadResult | null = fileData instanceof File
+      ? await uploadFile(fileData, "assignments")
+      : null;
 
     const assignmentData = await prisma.assignments.create({
       data: {
@@ -245,9 +200,8 @@ export const POST = async (req: NextRequest) => {
         student_id: data.studentId,
         title: data.title,
         description: data.description || null,
-        status : AssignmentStatus.ASSIGNED,
+        status: AssignmentStatus.ASSIGNED,
         due_date: new Date(data.dueDate),
-
         assignment_attachments: uploadResult
           ? {
               create: {
@@ -266,7 +220,6 @@ export const POST = async (req: NextRequest) => {
         description: true,
         teacher_id: true,
         student_id: true,
-
         student: {
           select: {
             user: {
@@ -278,7 +231,6 @@ export const POST = async (req: NextRequest) => {
             },
           },
         },
-
         assignment_attachments: {
           select: {
             file_name: true,
@@ -289,22 +241,16 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
-    // Ensure due_date is not null before calling toDateString
     const dueDateString = assignmentData.due_date
       ? assignmentData.due_date.toDateString()
       : "(no due date provided)";
 
-    // Send email to the student about the new assignment
-    try {
-      await sendNotificationEmail(assignmentData.student.user.email, {
-        name: `${assignmentData.student.user.first_name} ${assignmentData.student.user.last_name}`,
-        title: "New Assignment Assigned",
-        message: `A new assignment titled "${assignmentData.title}" has been assigned to you by your teacher. Please check the portal for more details and submit it by the due date: ${dueDateString}.`,
-        actionUrl: `${process.env.NEXT_PUBLIC_APP_URL}/student/assignments`,
-      });
-    } catch (error) {
-      console.error("Error in sending notification email:", error);
-    }
+    await sendNotificationEmail(assignmentData.student.user.email, {
+      name: `${assignmentData.student.user.first_name} ${assignmentData.student.user.last_name}`,
+      title: "New Assignment Assigned",
+      message: `A new assignment titled "${assignmentData.title}" has been assigned to you by your teacher. Please check the portal for more details and submit it by the due date: ${dueDateString}.`,
+      actionUrl: `${process.env.NEXT_PUBLIC_APP_URL}/student/assignments`,
+    });
 
     return respondWithSuccess({
       data: {

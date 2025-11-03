@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/app/api/_lib/auth";
-import { uploadFile } from "@/helper/cloudinaryActions";
+import { uploadFile, UploadResult } from "@/helper/cloudinaryActions";
 import { AssignmentStatus } from "@/generated/prisma";
 import { sendNotificationEmail } from "@/helper/mail/emailHelpers";
 import { z } from "zod";
@@ -55,7 +55,7 @@ export async function POST(
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const text  = formData.get("json") as File;
-    const textData = JSON.parse(text as any);
+    const textData = JSON.parse(text as unknown as string); // Replaced `any` with `unknown` for better type safety
 
 
 
@@ -106,9 +106,8 @@ export async function POST(
       });
     }
 
-    let uploadResult: any = null;
+    let uploadResult: unknown;
     if(file ){
-      // Upload file to storage
       try {
         uploadResult = await uploadFile(file, "assignments");
       } catch (error) {
@@ -121,7 +120,7 @@ export async function POST(
   }
 
     // Create submission
-    const subbmitionResponse = await prisma.assignment_submissions.create({
+     await prisma.assignment_submissions.create({
       data: {
         assignment_id: assignmentId,
         student_id: student.id,

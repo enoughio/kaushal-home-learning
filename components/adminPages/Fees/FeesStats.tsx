@@ -20,7 +20,7 @@ async function fetchFeesStats() {
 export default async function FeesStats() {
   const { totalCollected, totalPending, overdueCount, fees } = await fetchFeesStats()
 
-  const collectionRate = Math.round((fees.filter((f: any) => f.status === "paid").length / Math.max(1, fees.length)) * 100)
+  const collectionRate = Math.round((fees.filter((f: { status: string }) => f.status === "paid").length / Math.max(1, fees.length)) * 100)
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

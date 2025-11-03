@@ -9,8 +9,8 @@ export async function POST(
 ) {
   try {
     
-    let id =  (await params).teacherId;
-    let teacherId = parseInt(id);
+    const id =  (await params).teacherId;
+    const teacherId = parseInt(id);
 
     if (isNaN(teacherId)) {
       return respondWithError({

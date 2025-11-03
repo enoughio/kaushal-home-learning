@@ -1,16 +1,18 @@
 import cloudinary from '@/lib/cloudinary';
 
-interface UploadResult {
+// Updated the UploadResult interface to include original_filename and resource_type
+export interface UploadResult {
   url: string;
   public_id: string;
+  original_filename: string;
+  resource_type: string;
 }
 
 // Upload Image
 export const uploadFile = async (file: File, folder = 'uploads'): Promise<UploadResult> => {
-  
-   const arrayBuffer = await file.arrayBuffer();
+  const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  
+
   try {
     const result: any = await new Promise((resolve, reject) => {
       cloudinary.uploader
@@ -24,6 +26,8 @@ export const uploadFile = async (file: File, folder = 'uploads'): Promise<Upload
     return {
       url: result.secure_url,
       public_id: result.public_id, // useful for deleting later
+      original_filename: result.original_filename,
+      resource_type: result.resource_type,
     };
   } catch (error: any) {
     console.error('Cloudinary Upload Error:', error);

@@ -9,7 +9,7 @@ function createErrorResponse(error: {
   code: string;
   message: string;
   status: number;
-  details?: any;
+  // details?: unknown;
 }): NextResponse<ApiResponse> {
   return NextResponse.json(
     {
@@ -17,7 +17,7 @@ function createErrorResponse(error: {
       message: error.message,
       error: {
         code: error.code,
-        details: error.details,
+        // details: error.details,
       },
     },
     { status: error.status }
@@ -33,15 +33,15 @@ function createSuccessResponse(message: string): NextResponse<ApiResponse> {
 }
 
 // Input validation helper
-function validateCreatePasswordInput(data: any): { isValid: boolean; errors: string[] } {
-  let errors: string[] = [];
+function validateCreatePasswordInput(data: unknown): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
 
   if (!data || typeof data !== 'object') {
     errors.push('Request body must be a valid JSON object');
     return { isValid: false, errors };
   }
 
-  const { token, password, confirmPassword } = data;
+  const { token, password, confirmPassword } = data as Record<string, unknown>;
 
   if (!token || typeof token !== 'string') {
     errors.push('Reset token is required');
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
     let requestData: CreatePasswordRequest;
     try {
       requestData = await req.json();
-    } catch (error) {
+    } catch {
       return createErrorResponse({
         code: 'INVALID_JSON',
         message: 'Invalid JSON in request body',
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
         code: 'VALIDATION_ERROR',
         message: 'Validation failed',
         status: 400,
-        details: { errors: validation.errors },
+        // details: { errors: validation.errors },
       });
     }
 
@@ -156,11 +156,11 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
       'Password updated successfully! You can now log in with your new password.'
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create password error:', error);
 
     // Handle specific database errors
-    if (error?.code === 'P1001') {
+    if ((error as { code?: string })?.code === 'P1001') {
       return createErrorResponse({
         code: 'DATABASE_ERROR',
         message: 'Service temporarily unavailable. Please try again later.',

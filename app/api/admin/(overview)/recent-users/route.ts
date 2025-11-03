@@ -1,9 +1,8 @@
-import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { RecentUserResponse } from "@/lib/types";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Fetch recent users with only required fields
     const recentUsers = await prisma.users.findMany({

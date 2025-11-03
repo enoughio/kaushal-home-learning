@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { getAuthUser } from "@/app/_api/_lib/auth";
+import { getAuthUser } from "@/app/api/_lib/auth";
 
 export async function GET(req: NextRequest) {
   try {

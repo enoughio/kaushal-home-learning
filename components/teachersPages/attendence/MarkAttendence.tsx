@@ -75,7 +75,7 @@ const MarkAttendance = ({
         setPosition({ lat, lon });
 
         // alert(`Your location:\nLatitude: ${lat}\nLongitude: ${lon}`);
-      } catch (error: any) {
+      } catch (error: InstanceType<typeof Error> | any) {
         alert("Unable to fetch location: " + error.message);
       }
     } else {

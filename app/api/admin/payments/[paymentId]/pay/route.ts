@@ -151,9 +151,10 @@ export async function POST(
           data: { last_salary_payment_date: paymentDate },
         });
       } else {
+
         const feePayment = await tx.feePayment.create({
           data: {
-            date: paymentDate,
+            due_date: new Date(),
             total_amount : amount,
             studentId: entityId,
             status: "PAID",

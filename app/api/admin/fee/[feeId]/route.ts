@@ -2,9 +2,9 @@
 import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { generateTransactionId } from "@/app/api/_lib/helper";
 import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 import { FeeStatus, PaymentStatus } from "@/generated/prisma";
+import { generateTransactionId } from "@/app/api/_lib/helper";
 
 export async function POST(
   req: NextRequest,
@@ -25,7 +25,7 @@ export async function POST(
       amount,
     } = body;
 
-    let transactionId = transactionIdRaw || generateTransactionId();
+    const transactionId = transactionIdRaw || generateTransactionId();
     const fee = await prisma.feePayment.findUnique({
       where: { id: entityId },
       include: {
@@ -71,7 +71,7 @@ export async function POST(
     }
 
     // updte fee table entry
-    const feeData = await prisma.feePayment.update({
+     await prisma.feePayment.update({
       where: { id: fee.id },
       data: {
         status: "PAID",
@@ -91,10 +91,10 @@ export async function POST(
           },
         },
       },
-      select : {
+      select: {
         id: true,
         studentId: true,
-      }
+      },
     });
 
     return respondWithSuccess({

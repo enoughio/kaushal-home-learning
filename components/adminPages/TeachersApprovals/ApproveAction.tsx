@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog'
 import { useRouter } from 'next/navigation'
-import { UserCheck } from 'lucide-react'
+// import { UserCheck } from 'lucide-react'
 
 type Props = { teacherId: string }
 

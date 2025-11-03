@@ -5,54 +5,56 @@ import { Gender, UserRole } from "@/generated/prisma";
 
 // create a admin user for the application
 export async function GET() {
+  const data = {
+    email: "aniketjatav376@gmail.com",
+    first_name: "Aniket",
+    last_name: "Jatav",
+    password_hash: "Aniket@1234",
+    gender: Gender.MALE,
+    role: UserRole.admin,
+    is_verified: true,
+    is_active: true,
+         home_latitude: 0,
+        home_longitude: 0,
+  };
 
-    let data = {
-        email: "aniketjatav376@gmail.com",
-        first_name: "Aniket",
-        last_name: "Jatav",
-        password_hash: "Aniket@1234",
-        gender: Gender.MALE,
-        role: UserRole.admin,
-        is_verified : true,
-        is_active : true,
-    };
-
-    
-    try {
-    const hash =  await bcrypt.hash(data.password_hash, 10);
+  try {
+    const hash = await bcrypt.hash(data.password_hash, 10);
     data.password_hash = hash;
 
     const user = await prisma.users.create({
-        data: data
+      data: data,
     });
 
     if (!user) {
-        return NextResponse.json({
-            error : "ADMIN_CREATION_FAILED",
-            message: "Admin user creation failed",
-            code : 500,
-        }, {
-            status: 500,
-        })
+      return NextResponse.json(
+        {
+          error: "ADMIN_CREATION_FAILED",
+          message: "Admin user creation failed",
+          code: 500,
+        },
+        {
+          status: 500,
+        }
+      );
     }
-
 
     return NextResponse.json({
-        message: "Admin user created successfully",
-        userId: user.id,
-        code: 201,
+      message: "Admin user created successfully",
+      userId: user.id,
+      code: 201,
     });
-
-    } catch (error) {
-
-        console.error("Error creating admin user:", error);
-        return NextResponse.json({
-            error : "ADMIN_CREATION_FAILED",
-            message: "Admin user creation failed",
-            code : 500,
-        }, {
-            status: 500,
-        })
-    }
-
+  } catch (error) {
+    console.error("Error creating admin user:", error);
+    return NextResponse.json(
+      {
+        error: "ADMIN_CREATION_FAILED",
+        message: "Admin user creation failed",
+        code: 500,
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }

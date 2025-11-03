@@ -46,7 +46,7 @@ async function fetchSalaries(page = 1, pageSize = 10): Promise<{ items: Salary[]
   return { items: paged, total: items.length }
 }
 
-export default async function SalaryTable({ searchParams }: { searchParams?: Record<string, string> | any }) {
+export default async function SalaryTable({ searchParams }: { searchParams?: Record<string, string> | undefined | null}) {
   const page = Number(searchParams?.page ?? 1)
   const pageSize = Number(searchParams?.pageSize ?? 10)
 

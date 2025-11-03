@@ -8,9 +8,8 @@ export async function GET(req: NextRequest) {
     const authResult = await authenticateAndValidateAdmin(req);
     if ("error" in authResult) return authResult.error;
 
-    // get current month
-    const now = new Date()
-    const month = now.getMonth()
+    // get current date
+
 
     const totalPaymentDone = await prisma.payments.aggregate({
       _sum: { amount: true },

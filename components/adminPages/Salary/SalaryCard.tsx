@@ -45,7 +45,7 @@ export default function SalaryCard({ salary }: { salary: Salary }) {
   const router = useRouter()
 
   async function handleSave() {
-    // placeholder POST - replace with real API call
+    // Simulate saving salary details via an API call
     await fetch(`/api/admin/salaries/${salary.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -68,7 +68,9 @@ export default function SalaryCard({ salary }: { salary: Salary }) {
             <Input
               type="number"
               value={form.baseSalary}
-              onChange={(e: any) => setForm((p) => ({ ...p, baseSalary: Number(e.target.value) }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setForm((p) => ({ ...p, baseSalary: Number(e.target.value) }))
+              }
             />
           </div>
           <div>
@@ -76,7 +78,9 @@ export default function SalaryCard({ salary }: { salary: Salary }) {
             <Input
               type="number"
               value={form.bonuses}
-              onChange={(e: any) => setForm((p) => ({ ...p, bonuses: Number(e.target.value) }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setForm((p) => ({ ...p, bonuses: Number(e.target.value) }))
+              }
             />
           </div>
           <div>
@@ -84,7 +88,9 @@ export default function SalaryCard({ salary }: { salary: Salary }) {
             <Input
               type="number"
               value={form.deductions}
-              onChange={(e: any) => setForm((p) => ({ ...p, deductions: Number(e.target.value) }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setForm((p) => ({ ...p, deductions: Number(e.target.value) }))
+              }
             />
           </div>
           <div>

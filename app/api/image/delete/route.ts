@@ -1,19 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { deleteImage } from '@/helper/cloudinaryActions';
+import { deleteFile } from '@/helper/cloudinaryActions';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const public_id = body?.public_id as string | undefined;
 
-    if (!public_id || typeof public_id !== 'string') {
+    if (!public_id) {
       return NextResponse.json({ error: 'public_id required' }, { status: 400 });
     }
 
-    const deleteResult = await deleteImage(public_id);
+    const deleteResult = await deleteFile(public_id);
     return NextResponse.json(deleteResult);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Delete route error:', error);
-    return NextResponse.json({ error: error?.message ?? String(error) }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

@@ -338,19 +338,18 @@ export async function POST(req: NextRequest) {
       await studentWelcomeEmail(parentEmail, {
         name: firstName,
       });
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           error: "ERROR_SENDING_MAIL",
           message: "Registration failed try again",
-          details: { error },
           code: "500",
         },
         { status: 500 }
       );
     }
 
-    const data = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       const createdUser = await tx.users.create({
         data: {
           email: parentEmail,
@@ -374,7 +373,7 @@ export async function POST(req: NextRequest) {
         select: { id: true },
       });
 
-      const createStudent = await tx.students.create({
+      await tx.students.create({
         data: {
           user_id: createdUser.id,
           grade,
@@ -392,7 +391,6 @@ export async function POST(req: NextRequest) {
           id: true,
         },
       });
-      return { user: createdUser, student: createStudent };
     });
 
     return NextResponse.json(

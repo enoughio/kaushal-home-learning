@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useState } from "react";
 
 export default function ClientRegistrationForm() {
@@ -167,9 +168,10 @@ export default function ClientRegistrationForm() {
         <input type="file" accept="image/*" onChange={handleFileUpload} className="w-full border p-2 rounded" />
         {uploading && <p className="text-sm text-gray-500 mt-1">Uploading image...</p>}
         {formData.profile_image && (
-          <img
+          <Image
             src={formData.profile_image}
             alt="Preview"
+            fill
             className="mt-2 w-24 h-24 object-cover rounded-full border"
           />
         )}

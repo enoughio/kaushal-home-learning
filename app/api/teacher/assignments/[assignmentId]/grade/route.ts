@@ -32,7 +32,7 @@ const gradeBodySchema = z.object({
 // grad an assignment add and update
 export async function POST(
   req: NextRequest,
-  { params }: { params: { assignmentId: string } }
+  { params }: { params: Promise<{ assignmentId: string }> }
 ) {
   try {
     const user = getAuthUser(req);
@@ -44,7 +44,8 @@ export async function POST(
       });
     }
 
-    const assignmentId = idSchema.parse(params.assignmentId);
+    const data = await params;
+    const assignmentId = idSchema.parse(data.assignmentId);
 
     const body = await req.json();
     const parsedBody = gradeBodySchema.safeParse(body);

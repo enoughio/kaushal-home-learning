@@ -1,9 +1,8 @@
-import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { PaymentStatus } from "@/generated/prisma";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Get current year and past 4 years
     const currentYear = new Date().getFullYear();

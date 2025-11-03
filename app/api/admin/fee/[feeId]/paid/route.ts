@@ -21,7 +21,7 @@ export async function POST(
     const body = await req.json();
     const { paymentMethod, transactionId: transactionIdRaw, date, amount } = body;
 
-    let transactionId = transactionIdRaw || generateTransactionId();
+    const transactionId = transactionIdRaw || generateTransactionId();
 
     const fee = await prisma.feePayment.findUnique({
       where: { id: entityId },
@@ -73,37 +73,33 @@ export async function POST(
       });
     }
 
-    const { feeResult, paymentResult } = await prisma.$transaction(async (prisma) => {
-      const feeResult = await prisma.feePayment.update({
-        where: { id: fee.id },
-        data: {
-          status: FeeStatus.PAID, // Fixed: use enum
-          paidAt: new Date(date),
-          total_amount: amount,
-        },
-      });
+    await prisma.feePayment.update({
+      where: { id: fee.id },
+      data: {
+        status: FeeStatus.PAID, // Fixed: use enum
+        paidAt: new Date(date),
+        total_amount: amount,
+      },
+    });
 
-      const paymentResult = await prisma.payments.create({
-        data: {
-          feePayment: {
-            connect: {
-              id: fee.id,
-            },
-          },
-          amount: amount,
-          payment_type: PaymentType.FEE,
-          payment_method: paymentMethod,
-          transactionId: transactionId,
-          payment_date: new Date(date),
-          status: PaymentStatus.SUCCESS,
-          notes: "Manual Entry",
-          processedBy: {
-            connect: { id: authResult.payload.userId }, // Fixed: use relation connect
+    await prisma.payments.create({
+      data: {
+        feePayment: {
+          connect: {
+            id: fee.id,
           },
         },
-      });
-
-      return { feeResult, paymentResult };
+        amount: amount,
+        payment_type: PaymentType.FEE,
+        payment_method: paymentMethod,
+        transactionId: transactionId,
+        payment_date: new Date(date),
+        status: PaymentStatus.SUCCESS,
+        notes: "Manual Entry",
+        processedBy: {
+          connect: { id: authResult.payload.userId }, // Fixed: use relation connect
+        },
+      },
     });
 
     return respondWithSuccess({

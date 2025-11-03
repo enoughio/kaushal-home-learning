@@ -16,7 +16,7 @@ export default function AddRecord() {
   const router = useRouter()
 
   useEffect(() => {
-    // placeholder fetch of teachers without salary
+    // Simulate fetching teachers without salary records from an API
     setTeachers([
       { id: "t1", name: "Teacher 1" },
       { id: "t2", name: "Teacher 2" },
@@ -61,7 +61,7 @@ export default function AddRecord() {
 
             <div>
               <Label>Amount</Label>
-              <Input type="number" value={amount} onChange={(e: any) => setAmount(Number(e.target.value))} />
+              <Input type="number" value={amount} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmount(Number(e.target.value))} />
             </div>
 
             <div className="flex gap-2 pt-2">

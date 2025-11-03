@@ -3,9 +3,9 @@ import { CheckCircle, XCircle, Clock } from "lucide-react";
 import type { AttendanceRecord } from "@/lib/types";
 import { MockDataService } from "@/lib/mock-data";
 
-type Props = {
-  attendance?: AttendanceRecord[];
-};
+// type Props = {
+//   attendance?: AttendanceRecord[];
+// };
 
 export default async function AttendanceStats() {
   // fetch own data (server-side)
@@ -13,7 +13,7 @@ export default async function AttendanceStats() {
     try {
       // placeholder student id
       records = await MockDataService.getAttendanceRecords("2");
-    } catch (e) {
+    } catch {
       records = [];
     }
   

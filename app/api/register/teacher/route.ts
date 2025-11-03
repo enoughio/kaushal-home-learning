@@ -1,7 +1,6 @@
-import { Gender, Prisma, UserRole } from "@/generated/prisma";
+import {  Prisma, UserRole } from "@/generated/prisma";
 import { prisma } from "@/lib/db";
 
-import { EmailFormate } from "@/helper/mail/formateVelidator";
 import { NextResponse, NextRequest } from "next/server";
 import {
   FieldLimits,
@@ -23,7 +22,6 @@ const teacherRequiredFields = [
   "lastName",
   "email",
   "phone",
-  "gender",
   "dateOfBirth",
   "houseNumber",
   "street",
@@ -38,12 +36,12 @@ const teacherRequiredFields = [
 ];
 
 // Define max lengths for TeacherRegistrationData fields
-export const registrationFieldLimits: FieldLimits = {
+// Keep this constant module-scoped so this route file only exports route handlers
+const registrationFieldLimits: FieldLimits = {
   firstName: 100,
   lastName: 100,
   email: 255,
   phone: 20,
-  gender: 20,
   dateOfBirth: 10,
   houseNumber: 50,
   street: 2000,
@@ -86,7 +84,7 @@ export async function POST(req: NextRequest) {
 
     try {
       formData = await req.formData();
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           error: "INVALID_FORM_DATA",
@@ -112,7 +110,7 @@ export async function POST(req: NextRequest) {
     let payload;
     try {
       payload = JSON.parse(rawJson);
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           error: "INVALID_JSON",
@@ -183,7 +181,6 @@ export async function POST(req: NextRequest) {
       lastName,
       email,
       phone,
-      gender,
       dateOfBirth,
       houseNumber,
       street,
@@ -343,7 +340,6 @@ export async function POST(req: NextRequest) {
           first_name: firstName,
           last_name: lastName,
           date_of_birth: new Date(dateOfBirth),
-          gender :  Gender.MALE,
           phone,
           house_number: houseNumber,
           street,

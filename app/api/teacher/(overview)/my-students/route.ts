@@ -16,45 +16,38 @@ export const GET = async (req : NextRequest) => {
     }
 
     const students = await prisma.students.findMany({
-        where : { assigned_teacher: {
-            user : {
-                id : user.id
-            }
-        }  },
-        select : {
+      where: {
+        assigned_teacher: {
+          user: {
+            id: user.id,
+          },
+        },
+      },
+      select: {
+        id: true,
+        user: {
+          select: {
             id: true,
-            user : {
-                select : {
-                    id : true,
-                    first_name: true,
-                    last_name: true,
-                    email: true,
-                    gender: true
-                }
-            }
-
-            
-        }
-    })
-
-    // const formattedStudents = students.map((student) => ({
-
+            first_name: true,
+            last_name: true,
+            email: true,
+            gender: true,
+          },
+        },
+      },
+    });
 
     return respondWithSuccess({
-        data: {
-           students : students
-        },
-        status: 200,
-    })
-
-
-  } catch (error) {
-
+      data: {
+        students: students,
+      },
+      status: 200,
+    });
+  } catch {
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
       message: "An unexpected error occurred",
       status: 500,
     });
-
   }
 };

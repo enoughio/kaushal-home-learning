@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/app/api/_lib/auth";
-import { AssignmentStatus, UserRole } from "@/generated/prisma";
+import { UserRole } from "@/generated/prisma";
 import { z, ZodError } from "zod";
 
 const assinBodySchema = z
@@ -145,11 +145,10 @@ export const DELETE = async (req : NextRequest, {
     return respondWithSuccess({
       data : response.id ,
       message : "Assignment Deleted succesfully",
-      status : 400
+      status : 200
     })
 
-  } catch (error) {
-    
+  } catch  {
     return respondWithError({
       error : "INTERNAL_SERVER_ERROR",
       message : "failed to delete the assignment",

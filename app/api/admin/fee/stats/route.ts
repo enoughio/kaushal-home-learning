@@ -1,8 +1,7 @@
-import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const currentDate = new Date();
 
@@ -25,9 +24,6 @@ export async function GET(req: NextRequest) {
     });
 
     // Pending fees = fees due this month but not crossed due date
-    const currentMonth = currentDate.getMonth() + 1;
-    const currentYear = currentDate.getFullYear();
-
     const pendingFees = await prisma.feePayment.aggregate({
       _sum: { total_amount: true },
       where: {

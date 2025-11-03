@@ -42,17 +42,21 @@ function getStatusIcon(status: Payment['status']) {
   }
 }
 
-export default async function PaymentsList({ searchParams }: { searchParams?: Record<string, string> | any }) {
-  const params = searchParams ?? {}
-  const searchTerm = (params?.search ?? '').toString()
-  const statusFilter = (params?.status ?? 'all').toString()
-  const page = Number(params?.page ?? 1)
-  const pageSize = Number(params?.pageSize ?? 10)
+export default async function PaymentsList({ searchParams }: { searchParams?: Promise<{ search?: string; status?: string; page?: string; pageSize?: string }> }) {
+  const params =  await searchParams ?? {}
+  const searchTerm = params.search?.toString() ?? ""
+  const statusFilter = params.status?.toString() ?? "all"
+  const page = Math.max(1, Number(params.page ?? 1))
+  const pageSize = Math.max(1, Number(params.pageSize ?? 10))
 
   const all = await fetchPayments()
   let filtered = all
-  if (searchTerm) filtered = filtered.filter(p => [p.studentName, p.teacherName, p.subject].some(s => s.toLowerCase().includes(searchTerm.toLowerCase())))
-  if (statusFilter !== 'all') filtered = filtered.filter(p => p.status === statusFilter as any)
+  if (searchTerm) {
+    filtered = filtered.filter(p => [p.studentName, p.teacherName, p.subject].some(s => s.toLowerCase().includes(searchTerm.toLowerCase())))
+  }
+  if (statusFilter !== "all") {
+    filtered = filtered.filter(p => p.status === statusFilter)
+  }
 
   const totalItems = filtered.length
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
@@ -74,7 +78,7 @@ export default async function PaymentsList({ searchParams }: { searchParams?: Re
           {totalItems === 0 ? (
             <div className="text-center py-8">
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">{searchTerm || statusFilter !== 'all' ? 'No payments found matching your criteria' : 'No payment records found'}</p>
+              <p className="text-muted-foreground">{searchTerm || statusFilter !== "all" ? 'No payments found matching your criteria' : 'No payment records found'}</p>
             </div>
           ) : (
             <div className="space-y-3">

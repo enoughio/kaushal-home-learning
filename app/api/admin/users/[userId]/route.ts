@@ -9,8 +9,8 @@ export async function GET(
 ) {
   try {
 
-    let id  = (await params).userId;
-    let userId = parseInt(id);
+    const id  = (await params).userId;
+    const userId = parseInt(id);
 
     
 
@@ -95,8 +95,8 @@ export async function PUT(
 ) {
   try {
 
-    let param = await params
-    let userId =  parseInt(param.userId); 
+    const param = await params
+    const userId =  parseInt(param.userId); 
 
     if (isNaN(userId)) {
       return respondWithError({
@@ -123,7 +123,7 @@ export async function PUT(
       const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
       const { payload: verifiedPayload } = await jwtVerify(token, secret);
       payload = verifiedPayload;
-    } catch (error) {
+    } catch {
       return respondWithError({
         error: "UNAUTHENTICATED",
         message: "Invalid or expired token",
@@ -201,8 +201,8 @@ export async function DELETE(
 ) {
   try {
 
-    let param = await params
-    let userId =  parseInt(param.userId); 
+    const param = await params
+    const userId =  parseInt(param.userId); 
 
     if (isNaN(userId)) {
       return respondWithError({
@@ -228,7 +228,7 @@ export async function DELETE(
       const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
       const { payload: verifiedPayload } = await jwtVerify(token, secret);
       payload = verifiedPayload;
-    } catch (error) {
+    } catch {
       return respondWithError({
         error: "UNAUTHENTICATED",
         message: "Invalid or expired token",

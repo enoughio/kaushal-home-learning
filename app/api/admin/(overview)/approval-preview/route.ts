@@ -1,4 +1,3 @@
-import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 
@@ -13,13 +12,13 @@ interface ApprovalPreviewResponse {
   }[];
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Fetch pending teachers (verified: false) from temp_teachers with related temp_users data
     const pendingTeachers = await prisma.temp_teachers.findMany({
       where: {
         temp_user: {
-          verified: true, // Filter for pending (unverified) teachers
+          is_verified: true, // Filter for pending (unverified) teachers
         },
       },
       take: 5, // Limit to 5 for preview, as per your current code

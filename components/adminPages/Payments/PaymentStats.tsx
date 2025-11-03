@@ -13,7 +13,7 @@ async function fetchPayments(): Promise<Payment[]> {
   ]
 }
 
-export default async function PaymentStats({ searchParams }: { searchParams?: Record<string, string> | any }) {
+export default async function PaymentStats() {
   const payments = await fetchPayments()
   const totalAmount = payments.reduce((s, p) => s + p.amount, 0)
   const paidAmount = payments.filter(p => p.status === 'paid').reduce((s, p) => s + p.amount, 0)

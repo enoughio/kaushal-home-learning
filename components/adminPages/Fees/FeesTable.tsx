@@ -6,19 +6,20 @@ import MarkPaid from "./MarkPaid";
 import SendReminder from "./SendReminder";
 import FeesTablePagination from "./FeesTablePagination";
 
-// Server component: fetches its own data (placeholder for now) and renders
-type Fee = {
+// Define the Fee type directly in this file
+interface Fee {
   id: string;
   studentName: string;
   studentId: string;
   monthlyFee: number;
   dueDate: string;
-  gracePeriodEnd?: string | null;
+  gracePeriodEnd: string | null;
   status: "paid" | "due" | "overdue" | "grace_period";
-  paidDate?: string | null;
-  remindersSent?: number;
-};
+  paidDate: string | null;
+  remindersSent: number;
+}
 
+// Server component: fetches its own data (placeholder for now) and renders
 async function fetchFees(): Promise<Fee[]> {
   // Placeholder data — replace with API fetch to `/api/admin/fees` later
   return [
@@ -89,14 +90,14 @@ function getStatusIcon(status: Fee["status"]) {
 }
 
 export default async function FeesTable({ searchParams }: { searchParams?: { page?: string; pageSize?: string } }) {
-  const fees = await fetchFees();
+  const fees: Fee[] = await fetchFees();
 
   // simple pagination using query params (page, pageSize)
   const page = Math.max(1, Number(searchParams?.page ?? 1));
   const pageSize = Math.max(1, Number(searchParams?.pageSize ?? 10));
 
   const totalItems = fees.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  // const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const startIndex = (page - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
   const pagedFees = fees.slice(startIndex, endIndex);
@@ -142,19 +143,13 @@ export default async function FeesTable({ searchParams }: { searchParams?: { pag
               </div>
               <div className="flex gap-2">
                 {fee.status !== "paid" && (
-                  // MarkPaid is a client component; pass feeId prop
-                  // @ts-ignore Server -> Client
                   <MarkPaid feeId={fee.id} />
                 )}
-                {/* SendReminder is also client-side */}
-                {/* @ts-ignore Server -> Client */}
                 <SendReminder feeId={fee.id} />
               </div>
             </div>
           ))}
 
-          {/* Pagination Controls - client component will update URL params */}
-          {/* @ts-ignore Server -> Client */}
           <FeesTablePagination page={page} pageSize={pageSize} totalItems={totalItems} />
         </div>
       </CardContent>

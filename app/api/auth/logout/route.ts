@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 function buildLogoutResponse() {
 	// Always return a JSON response and clear the auth cookie
@@ -17,10 +17,10 @@ function buildLogoutResponse() {
 }
 
 // Support POST (preferred) and GET (convenience)
-export async function POST(req: NextRequest) {
+export async function POST() {
 	return buildLogoutResponse();
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
 	return buildLogoutResponse();
 }

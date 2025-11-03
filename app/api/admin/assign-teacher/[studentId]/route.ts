@@ -102,7 +102,7 @@ export async function POST(
 
     try {
       body = await req.json();
-    } catch (error) {
+    } catch {
       return respondWithError({
         error: "INVALID_REQUEST",
         message: "Invalid request body",
@@ -213,7 +213,7 @@ export async function PUT(
     let body: AssignTeacherRequest;
     try {
       body = await req.json();
-    } catch (error) {
+    } catch {
       return respondWithError({
         error: "INVALID_REQUEST",
         message: "Invalid request body",

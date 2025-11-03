@@ -18,7 +18,6 @@ export async function GET(req: NextRequest) {
       user: {
         is_active: true,
       },
-      // fee_assigned: true,
     };
 
     if (search) {
@@ -89,9 +88,6 @@ export async function GET(req: NextRequest) {
 
     const studentsIds = studentsFeeData.map((fee) => fee.student.id);
     // for liner time search
-    const idSet = new Set(studentsIds);
-
-    // you will be need a cron job for this
     const feeRecordMap = new Map(
       studentsFeeData.map((fee) => [fee.student.id, fee])
     );

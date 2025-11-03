@@ -61,8 +61,8 @@ export default function SignupPage() {
 
       // Success - show verification sent message
       setIsVerificationSent(true)
-    } catch (err: any) {
-      setError(err.message || 'Failed to create account. Please try again.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create account. Please try again.')
     } finally {
       setIsLoading(false)
     }

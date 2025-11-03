@@ -3,7 +3,6 @@ import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/app/api/_lib/auth";
 import { AssignmentStatus, UserRole } from "@/generated/prisma";
-import { title } from "process";
 
 export const GET = async (req: NextRequest) => {
   try {
@@ -37,7 +36,7 @@ export const GET = async (req: NextRequest) => {
 
       select: {
         student_id: true,
-        title :   true,
+        title: true,
         due_date: true,
         status: true,
         student: {
@@ -71,7 +70,6 @@ export const GET = async (req: NextRequest) => {
       message: "assignment fetched succesfully",
       status: 200,
     });
-
   } catch (error) {
     console.error("error in fetching assingments preview", error);
     return respondWithError({
@@ -82,17 +80,6 @@ export const GET = async (req: NextRequest) => {
   }
 };
 
-
-
-
-// grade an assignment route
-
 export const PUT = async (req: NextRequest) => {
-
-   
-
-
-
-
-
-}
+  // Implementation for PUT request
+};

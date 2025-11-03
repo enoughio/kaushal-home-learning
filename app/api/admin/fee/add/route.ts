@@ -1,14 +1,11 @@
 import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
+// import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   // get all the students who do not have a fee assigned yet
   try {
-    const authResult = await authenticateAndValidateAdmin(req);
-    if ("error" in authResult) return authResult.error;
-
     const students = await prisma.students.findMany({
       where: {
         last_fee_payment_date: null,
@@ -43,7 +40,7 @@ export async function GET(req: NextRequest) {
       },
       status: 200,
     });
-  } catch (error) {
+  } catch {
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
       message: "Failed to fetch students without fee",

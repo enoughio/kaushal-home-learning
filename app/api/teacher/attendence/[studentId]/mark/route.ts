@@ -56,7 +56,7 @@ export async function POST(
         status: 404,
       });
     }
-    // Validate teacher location against student home location using Haversine formula
+
     try {
       const distance = getDistanceFromLatLonInKm(
         location.latitude,
@@ -83,8 +83,7 @@ export async function POST(
       });
     }
 
-    // Create or update attendance record
-    const attendanceRecord = await prisma.attendance.create({
+    await prisma.attendance.create({
       data: {
         student_id: studentId,
         teacher_id: teacher.id,

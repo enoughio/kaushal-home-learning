@@ -1,8 +1,7 @@
-import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const totalUsers = await prisma.users.count();
     const activeTeachers = await prisma.teachers.count({
