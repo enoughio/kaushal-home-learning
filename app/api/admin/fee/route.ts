@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const limit = 20;
 
     const skip = (page - 1) * limit;
-    const where: any = {
+    const where: { user: { is_active: boolean; OR?: Array<{ id?: { contains: string; mode: string }; first_name?: { contains: string; mode: string }; last_name?: { contains: string; mode: string }; email?: { contains: string; mode: string }; location?: { contains: string; mode: string } }> } } = {
       user: {
         is_active: true,
       },
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
           { last_name: { contains: search, mode: "insensitive" } },
           { email: { contains: search, mode: "insensitive" } },
           { location: { contains: search, mode: "insensitive" } },
-        ],
+        ]
       };
     }
 
@@ -86,7 +86,6 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
-    const studentsIds = studentsFeeData.map((fee) => fee.student.id);
     // for liner time search
     const feeRecordMap = new Map(
       studentsFeeData.map((fee) => [fee.student.id, fee])

@@ -56,9 +56,9 @@ export async function GET(
     // if current month salary entry exist then check if it is paid or not, if not exist then mark it as unpaid
     const now = new Date();
 
-    let latestPayment = teacher.last_salary_payment_date;
+    const latestPayment = teacher.last_salary_payment_date;
 
-    let isCurrentMonthPaid =
+    const isCurrentMonthPaid =
       latestPayment &&
       latestPayment.getMonth() == now.getMonth() &&
       latestPayment.getFullYear() == now.getFullYear();

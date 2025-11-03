@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/app/api/_lib/auth";
-import { uploadFile, UploadResult } from "@/helper/cloudinaryActions";
+import { uploadFile } from "@/helper/cloudinaryActions";
 import { AssignmentStatus } from "@/generated/prisma";
 import { sendNotificationEmail } from "@/helper/mail/emailHelpers";
 import { z } from "zod";
@@ -110,7 +110,7 @@ export async function POST(
     if(file ){
       try {
         uploadResult = await uploadFile(file, "assignments");
-      } catch (error) {
+      } catch  {
       return respondWithError({
         error: "UPLOAD_FAILED",
         message: "File upload failed. Please try again later",

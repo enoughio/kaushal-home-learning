@@ -21,7 +21,7 @@ async function fetchSalaryData() {
 export default async function SalaryStats() {
   const { totalPaid, totalPending, salaries } = await fetchSalaryData()
 
-  const activeTeachers = new Set(salaries.map((s: any) => s.teacherId)).size
+  const activeTeachers = new Set(salaries.map((s: { teacherId: string }) => s.teacherId)).size
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

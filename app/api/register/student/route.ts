@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   try {
     formData = await req.formData();
-  } catch (error) {
+  } catch  {
     return NextResponse.json(
       {
         error: "INVALID_FORM_DATA",
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   let payload: Record<string, unknown>;
   try {
     payload = JSON.parse(rawJson);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         error: "INVALID_JSON",

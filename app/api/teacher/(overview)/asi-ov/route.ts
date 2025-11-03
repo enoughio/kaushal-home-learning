@@ -80,6 +80,11 @@ export const GET = async (req: NextRequest) => {
   }
 };
 
-export const PUT = async (req: NextRequest) => {
+export const PUT = async () => {
   // Implementation for PUT request
+  return respondWithError({
+    error: "NOT_IMPLEMENTED",
+    message: "PUT method is not implemented yet",
+    status: 501,
+  });
 };

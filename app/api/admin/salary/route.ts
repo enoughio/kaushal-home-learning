@@ -152,18 +152,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         ? false
         : true;
 
-    type WhereInput = {
-      is_active: boolean;
-      salary_assigned: boolean;
-      user?: {
-        OR:[ {
-          first_name?: { contains: string; mode: "insensitive" };
-        },
-        { last_name?: { contains: string; mode: "insensitive" } },
-        { email?: { contains: string; mode: "insensitive" } }
-      ]
-      };
-    };
     const where = {
       is_active: true,
       salary_assigned: assignedStatusFilter,

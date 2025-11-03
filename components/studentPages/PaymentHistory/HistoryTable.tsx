@@ -3,11 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import type { StudentPayment } from "@/lib/types";
 import PaginationControll from "./PaginationControll";
 
-type Props = {
-  searchParams?: { [key: string]: string | string[] | undefined };
-  page?: number;
-  pageSize?: number;
-};
 
 export default async function HistoryTable({ searchParams, }: { searchParams?: Promise<{ Page : string}>}) {
 

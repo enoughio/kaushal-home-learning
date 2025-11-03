@@ -104,9 +104,6 @@ export async function GET(
       whereClause.payment_date = dateFilter;
     }
 
-    // Determine if entity is teacher (SALARY) or student (FEE)
-    let isSalaryPayment = false;
-
     if (paymentType === "SALARY") {
       // Check if teacher exists
       const teacher = await prisma.teachers.findUnique({
@@ -122,7 +119,6 @@ export async function GET(
       }
 
       whereClause.salaryPaymentId = { not: null };
-      // isSalaryPayment = true;
     } else if (paymentType === "FEE") {
       // Check if student exists
       const student = await prisma.students.findUnique({
@@ -138,7 +134,6 @@ export async function GET(
       }
 
       whereClause.feePaymentId = { not: null };
-      // isSalaryPayment = false;
     } else {
       // No payment type specified, check if entity is teacher or student
       const teacher = await prisma.teachers.findUnique({

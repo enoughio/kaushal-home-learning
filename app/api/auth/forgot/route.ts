@@ -9,7 +9,7 @@ function createErrorResponse(error: {
   code: string;
   message: string;
   status: number;
-  details?: any;
+  details?: unknown | null;
 }): NextResponse<ApiResponse> {
   return NextResponse.json(
     {

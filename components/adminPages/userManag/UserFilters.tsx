@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -32,8 +32,8 @@ export default function UserFilters() {
     router.replace(`${pathName}?${params.toString()}`);
   }, 500);
 
-  // Unified function to apply filters (for Apply button or dropdowns)
-  const applyFilters = () => {
+  // ✅ Memoized filter function so it doesn’t re-create on every render
+  const applyFilters = useCallback(() => {
     const params = new URLSearchParams(searchParams);
 
     if (search.trim()) params.set("search", search.trim());
@@ -46,12 +46,12 @@ export default function UserFilters() {
     else params.delete("status");
 
     router.replace(`${pathName}?${params.toString()}`);
-  };
+  }, [searchParams, search, role, status, router, pathName]);
 
   // 🔄 When role or status changes, apply filters immediately
   useEffect(() => {
     applyFilters();
-  }, [role,applyFilters, status]); // only trigger when dropdowns change
+  }, [role, status, applyFilters]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -68,7 +68,7 @@ export default function UserFilters() {
         />
       </div>
 
-      <Select value={role} onValueChange={(v) => setRole(v)}>
+      <Select value={role} onValueChange={setRole}>
         <SelectTrigger className="bg-input">
           <SelectValue placeholder="Filter by role" />
         </SelectTrigger>
@@ -80,7 +80,7 @@ export default function UserFilters() {
         </SelectContent>
       </Select>
 
-      <Select value={status} onValueChange={(v) => setStatus(v)}>
+      <Select value={status} onValueChange={setStatus}>
         <SelectTrigger className="bg-input">
           <SelectValue placeholder="Filter by status" />
         </SelectTrigger>
