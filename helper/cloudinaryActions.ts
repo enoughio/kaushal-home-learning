@@ -1,0 +1,47 @@
+import cloudinary from '@/lib/cloudinary';
+
+// Updated the UploadResult interface to include original_filename and resource_type
+export interface UploadResult {
+  url: string;
+  public_id: string;
+  original_filename: string;
+  resource_type: string;
+}
+
+// Upload Image
+export const uploadFile = async (file: File, folder = 'uploads'): Promise<UploadResult> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  try {
+    const result: any = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream({ folder }, (error: any, result: any) => {
+          if (error) reject(error);
+          else resolve(result);
+        })
+        .end(buffer);
+    });
+
+    return {
+      url: result.secure_url,
+      public_id: result.public_id, // useful for deleting later
+      original_filename: result.original_filename,
+      resource_type: result.resource_type,
+    };
+  } catch (error: any) {
+    console.error('Cloudinary Upload Error:', error);
+    throw new Error('Upload failed');
+  }
+};
+
+// Delete Image
+export const deleteFile = async (publicId: string): Promise<any> => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId);
+    return result;
+  } catch (error: any) {
+    console.error('Cloudinary Delete Error:', error);
+    throw new Error('Delete failed');
+  }
+};
