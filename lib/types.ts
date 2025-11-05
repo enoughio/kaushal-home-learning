@@ -1,3 +1,5 @@
+import { AttendanceStatus } from "@/generated/prisma";
+
 // API Response Types
 export interface ApiResponse<T = unknown | null> {
   success?: boolean;
@@ -323,6 +325,21 @@ export interface UserManagement {
   profileComplete: boolean;
 }
 
+
+export type Teacher = {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  location?: string
+  experience?: number
+  idProof?: string
+  subjects?: string[]
+  aadharUrl?: string
+  appliedAt: string;
+}
+
+
 export interface TeacherApproval {
   id: string;
   name: string;
@@ -477,7 +494,6 @@ export interface StudentPayment {
 }
 
 // Teacher-specific mock data and services
-
 export interface PaymentRecord {
   id: string;
   studentId: string;
@@ -517,3 +533,10 @@ export interface AttendanceRecord {
   atHome?: boolean;
   notes?: string;
 }
+
+
+export type DayAttendance = {
+  date: string // ISO date string YYYY-MM-DD
+  status: AttendanceStatus
+}
+

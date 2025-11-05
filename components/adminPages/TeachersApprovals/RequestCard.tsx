@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import ApproveAction from "./ApproveAction";
 import RejectAction from "./RejectAction";
-import { Teacher } from "@/(dashboards)/admin/approvals/page";
+import type { Teacher } from "@/lib/types";
 
 export default function RequestCard({ teacher }: { teacher: Teacher }) {
   return (
@@ -50,7 +50,7 @@ export default function RequestCard({ teacher }: { teacher: Teacher }) {
             <div className="flex items-center text-sm">
               <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
               <span>
-                Applied: {new Date(teacher.appliedAt).toLocaleDateString()}
+                Applied: {new Date(teacher?.appliedAt).toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function RequestCard({ teacher }: { teacher: Teacher }) {
             <span className="font-medium">Teaching Subjects:</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {teacher.subjects?.length > 0
+            { teacher.subjects && teacher.subjects?.length > 0
               ? teacher.subjects?.map((skill) => (
                   <Badge key={skill} variant="outline">
                     {skill}

@@ -61,7 +61,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
     let requestData: ForgotPasswordRequest;
     try {
       requestData = await req.json();
-    } catch (error) {
+    } catch {
       return createErrorResponse({
         code: 'INVALID_JSON',
         message: 'Invalid JSON in request body',

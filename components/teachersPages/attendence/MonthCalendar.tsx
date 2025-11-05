@@ -1,8 +1,14 @@
 "use client"
 
-import { DayAttendance, AttendanceStatus } from '@/lib/types'
-import { cn } from "@/lib/utils"
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+
+import { cn } from "@/lib/utils"
+
+import { DayAttendance } from '@/lib/types'
+import { AttendanceStatus } from '@/generated/prisma'
+
+
+
 
 export function MonthCalendar({
   year,
@@ -37,7 +43,7 @@ export function MonthCalendar({
     cells.push({
       day: d,
       date: iso,
-      status: map.get(iso) ?? "none",
+      status: map.get(iso) ?? 'EXCUSED',
     })
   }
 
@@ -71,13 +77,14 @@ export function MonthCalendar({
   const monthName = firstDay.toLocaleString(undefined, { month: "long", year: "numeric" })
 
   const Dot = ({ status }: { status?: AttendanceStatus }) => {
-    const bg = status === "present" ? "bg-emerald-500" : status === "absent" ? "bg-destructive" : "bg-muted-foreground/30"
+    const bg = status === AttendanceStatus.PRESENT ? "bg-emerald-500" : status === AttendanceStatus.ABSENT ? "bg-destructive" : "bg-muted-foreground/30"
     return <span aria-hidden className={cn("inline-block h-2 w-2 rounded-full", bg)} />
   }
 
   return (
     <section className="rounded-lg border bg-card text-card-foreground">
       <header className="flex items-center justify-between p-4">
+
         <div className="flex items-center gap-3">
           <h2 className="text-base font-semibold text-pretty">{title}</h2>
           <div className="hidden md:flex items-center gap-3 text-xs text-muted-foreground">
@@ -95,6 +102,7 @@ export function MonthCalendar({
             </div>
           </div>
         </div>
+
         <div className="flex items-center gap-2">
           <button
             type="button"

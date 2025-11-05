@@ -118,6 +118,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { authenticateAndValidateAdmin } from "../../_lib/verify";
+import { Prisma } from "@/generated/prisma";
 
 type TeacherSalaryResponse = {
   id: string;
@@ -152,7 +153,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         ? false
         : true;
 
-    const where = {
+    const where : Prisma.teachersWhereInput = {
       is_active: true,
       salary_assigned: assignedStatusFilter,
     };

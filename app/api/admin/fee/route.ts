@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { authenticateAndValidateAdmin } from "../../_lib/verify";
+import { Prisma } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,16 +15,14 @@ export async function GET(req: NextRequest) {
     const limit = 20;
 
     const skip = (page - 1) * limit;
-    const where: { user: { is_active: boolean; OR?: Array<{ id?: { contains: string; mode: string }; first_name?: { contains: string; mode: string }; last_name?: { contains: string; mode: string }; email?: { contains: string; mode: string }; location?: { contains: string; mode: string } }> } } = {
-      user: {
-        is_active: true,
-      },
-    };
+
+    
+    const where : Prisma.studentsWhereInput = {  };
+    where.is_active = true;
 
     if (search) {
       where.user = {
         OR: [
-          { id: { contains: search, mode: "insensitive" } },
           { first_name: { contains: search, mode: "insensitive" } },
           { last_name: { contains: search, mode: "insensitive" } },
           { email: { contains: search, mode: "insensitive" } },
