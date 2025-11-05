@@ -33,6 +33,7 @@ export default function CreatePasswordPage() {
     special: false
   })
 
+  // there is nothing left over, taying this phras
   useEffect(() => {
     const tokenParam = searchParams.get('token')
     if (tokenParam) {
