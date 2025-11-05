@@ -5,7 +5,7 @@ import {
   startingText,
   textAfterValues,
 
-} from "@/data/About-page-data";
+} from "@/lib/data/About-page-data";
 
 
 import Underline from "@/components/ui/about/underlineComponent";
