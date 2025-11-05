@@ -67,18 +67,18 @@ export async function middleware(req: NextRequest) {
   console.log("Middleware invoked for:", req.url);
 
   try {
-		const { pathname } = req.nextUrl;
 		
+		const { pathname } = req.nextUrl;
 		
 		// Allow public paths immediately
 		if (isPublicPath(pathname)) return NextResponse.next();
 		const isApiRoute = pathname.startsWith('/api/');
 		
-		// if(isApiRoute) return NextResponse.next();
 		// Read token
 		const token = req.cookies.get("auth-token")?.value || req.headers.get("authorization")?.replace("Bearer ", "");
 		if (!token) {
 			// No token -> redirect to login for pages, return 401 for API routes
+			console.log("Invalid payload in auth token for route:"," >>>>>>>>>>>>>>>>");
 			if (isApiRoute) {
 				return NextResponse.json(
 					{ success: false, message: "Authentication required", error: { code: "UNAUTHENTICATED" } },

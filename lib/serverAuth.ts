@@ -1,5 +1,5 @@
 // This would be used in a real Next.js app with server-side authentication
-// For demonstration purposes - in production, you'd use next-auth, auth0, or similar
+
 
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"

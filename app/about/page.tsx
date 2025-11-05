@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-// import NumberedCard from "@/components/numberCard";
+
 import {
   startingText,
   textAfterValues,

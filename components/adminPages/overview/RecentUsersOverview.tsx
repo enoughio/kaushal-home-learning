@@ -4,13 +4,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RecentUser } from "@/lib/types";
+import myFetch from "@/lib/requestHelper";
 
 async function fetchRecentUsers(): Promise<RecentUser[]> {
   try {
-
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const response = await fetch(`${baseUrl}/api/admin/recent-users`);
-
+ 
+    const response = await myFetch('/api/admin/recent-users');
     const result = await response.json();
 
     if (!response.ok) {

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
+    
     const totalUsers = await prisma.users.count();
     const activeTeachers = await prisma.teachers.count({
       where: { is_active: true },

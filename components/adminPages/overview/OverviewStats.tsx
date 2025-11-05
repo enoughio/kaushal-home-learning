@@ -1,6 +1,8 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, UserCheck, DollarSign, TrendingUp } from "lucide-react";
+import { createRequestHeader } from "@/lib/requestHelper";
+
 
 type PlatformStats = {
   totalUsers: number;
@@ -16,8 +18,11 @@ type PlatformStats = {
 async function fetchPlatformStats(): Promise<PlatformStats> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    // createRequestHeader is async now and must be awaited so cookies() is
+    // resolved before using its value (required by Next).
+    const fetchOptions = await createRequestHeader();
 
-    const response = await fetch(`${baseUrl}/api/admin/stats`);
+    const response = await fetch(`${baseUrl}/api/admin/stats`, fetchOptions);
 
     const result = await response.json();
 
