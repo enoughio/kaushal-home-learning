@@ -88,7 +88,7 @@ export async function GET(
 }
 
 
-
+// update user data
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
@@ -106,38 +106,6 @@ export async function PUT(
       });
     }
 
-
-        // Verify JWT and check admin role
-    const token = req.cookies.get("auth-token")?.value;
-
-    if (!token) {
-      return respondWithError({
-        error: "UNAUTHENTICATED",
-        message: "Authentication required",
-        status: 401,
-      });
-    }
-
-    let payload;
-    try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-      const { payload: verifiedPayload } = await jwtVerify(token, secret);
-      payload = verifiedPayload;
-    } catch {
-      return respondWithError({
-        error: "UNAUTHENTICATED",
-        message: "Invalid or expired token",
-        status: 401,
-      });
-    }
-
-    if (payload.role !== "admin") {
-      return respondWithError({
-        error: "UNAUTHORIZED",
-        message: "Admin access required",
-        status: 403,
-      });
-    }
 
     const body = await req.json();
     const { firstName, lastName, email, status, phone, location, pincode, additionalInfo } =

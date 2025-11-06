@@ -19,13 +19,53 @@ export const createRequestHeader = async (): Promise<RequestInit> => {
 };
 
 // A small server-side fetch wrapper that forwards cookies and returns the Response.
-export const myFetch = async (route: string): Promise<Response> => {
-  const fetchOptions = await createRequestHeader();
+/**
+ * Server-side fetch wrapper that forwards cookies and accepts any RequestInit.
+ * - route: path or full URL relative to NEXT_PUBLIC_BASE_URL
+ * - init: optional RequestInit, same shape as window.fetch
+ *
+ * Behavior:
+ * - merges server defaults from createRequestHeader() with provided init
+ * - headers are merged (cookie header from createRequestHeader is preserved
+ *   unless init.headers overrides it)
+ */
+export const myFetch = async (route: string, init?: RequestInit): Promise<Response> => {
+  // Get base defaults (includes forwarded cookie header)
+  const baseOptions = await createRequestHeader();
+
   const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   // Build the URL safely (handles leading slashes)
   const url = new URL(route, base).toString();
-  console.log("Fetch Options:", url);
-  const response = await fetch(url, fetchOptions);
+
+  // Helper to normalize HeadersInit into a plain object
+  const normalizeHeaders = (h?: HeadersInit): Record<string, string> => {
+    const out: Record<string, string> = {};
+    if (!h) return out;
+    if (h instanceof Headers) {
+      h.forEach((v, k) => (out[k] = v));
+    } else if (Array.isArray(h)) {
+      h.forEach(([k, v]) => (out[k] = v));
+    } else {
+      // h is Record<string, string>
+      Object.assign(out, h);
+    }
+    return out;
+  };
+
+  const mergedHeaders = {
+    ...normalizeHeaders(baseOptions.headers as HeadersInit | undefined),
+    ...normalizeHeaders(init?.headers as HeadersInit | undefined),
+  };
+
+  // Merge options: baseOptions provide defaults (e.g. cache no-store), init overrides
+  const mergedInit: RequestInit = {
+    ...baseOptions,
+    ...init,
+    // ensure headers becomes the merged plain-object headers
+    headers: mergedHeaders,
+  };
+
+  const response = await fetch(url, mergedInit);
   return response;
 };
 

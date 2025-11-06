@@ -3,10 +3,12 @@ import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { UserResponse } from "@/lib/types";
+import { Prisma } from "@/generated/prisma";
 
 // Define schema for query parameters
 const querySchema = z.object({
   page: z.string().optional().default("1").transform(Number),
+  search : z.string().optional(),
   limit: z.string().optional().default("20").transform(Number),
   role: z.enum(["admin", "teacher", "student", "all"]).optional(),
   status: z.string().optional(),
@@ -16,14 +18,23 @@ export async function GET(req: NextRequest) {
   try {
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(req.nextUrl.searchParams.entries());
-    const { page, limit, role, status } = querySchema.parse(searchParams);
+    const { search, page, limit, role, status } = querySchema.parse(searchParams);
 
     const skip = (page - 1) * limit;
 
-    const whereClause: Record<string, unknown> = {};
+    const whereClause: Prisma.usersWhereInput = {};
     if (role && role !== "all") whereClause.role = role; // Handle "all" as no filtering
     if (status === "active") whereClause.is_active = true;
     else if (status === "inactive") whereClause.is_active = false;
+
+    // Apply search filter to first_name, last_name, or email
+    if (search) {
+      whereClause.OR = [
+        { first_name: { contains: search, mode: "insensitive" } },
+        { last_name: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+      ];
+    }
 
     // Fetch users and total count in parallel
     const [users, totalUsers] = await Promise.all([

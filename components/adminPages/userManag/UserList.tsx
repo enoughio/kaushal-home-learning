@@ -6,6 +6,7 @@ import ViewDets from "./ViewDets";
 import ToggelUserStatus from "./ToggelUserStatus";
 import DeleteUser from "./DeleteUser";
 import Pagination from "./Pagination";
+import myFetch from "@/lib/requestHelper";
 
 type User = {
   id: string;
@@ -51,43 +52,42 @@ function getRoleColor(role: string) {
   }
 }
 
-export default async function UserList({
-  searchParams,
-}: {
-  searchParams?: Promise<{
-    page?: string;
-    pageSize?: string;
-    search?: string;
-    role?: string;
-    status?: string;
-  }>;
-}) {
-  const params = (await searchParams) ?? {};
-  const page = Number(params?.page ?? 1);
-  const pageSize = Number(params?.pageSize ?? 10);
-  const searchTerm = (params?.search ?? "").toString();
-  const roleFilter = (params?.role ?? "all").toString();
-  const statusFilter = (params?.status ?? "all").toString();
+export default async function UserList(
+  props: {
+    // In the app router the page receives `searchParams` and should pass it
+    // down to this server component. It is an object (not a Promise) in most
+    // Next.js versions — don't await it here. Make the prop optional so the
+    // component can still render when not provided.
+    searchParams?: {
+      role?: string;
+      status?: string;
+      search?: string;
+      page?: string;
+    };
+  }
+) {
 
-  console.log(searchTerm);
+  // Use the provided searchParams object (or an empty object) — do NOT await.
+  const searchParams = props.searchParams ?? {};
+  const query = searchParams?.search || "" ;
+  const page = Number(searchParams.page) || 1;
+  const roleFilter = searchParams.role ?? "";
+  const statusFilter = searchParams.status ?? "";
+
+  // console.log(searchTerm);
 
   async function fetchUsers() {
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+      // Build URL with search and filter parameters
+      const params = new URLSearchParams();
+      if (query) params.append("search", query);
+      if (roleFilter && roleFilter !== "all") params.append("role", roleFilter);
+      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
+      params.append("page", String(page));
+      params.append("limit", "20");
 
-      const res = await fetch(`${baseUrl}/api/admin/users`);
-      // const res = await fetch(
-      //   `${baseUrl}/api/admin/users-management?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(
-      //     searchTerm
-      //   )}&role=${roleFilter}&status=${statusFilter}`,
-      //   {
-      //     cache: "no-store",
-      //     headers: {
-      //       Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_ADMIN_TOKEN}`,
-      //     },
-      //   }
-      // );
+      const url = `/api/admin/users?${params.toString()}`;
+      const res = await myFetch(url);
       const result = await res.json();
 
       if (!res.ok) {
@@ -99,23 +99,17 @@ export default async function UserList({
       }
 
       const userData = result.data as UsersManagement;
+      const pageSize = 20;
+      const users = userData.users as User[];
 
-      let filtered = userData.users as User[];
-
-      // Filter on the server side as well, in case API doesn't support it
-
-      if (roleFilter !== "all")
-        filtered = filtered.filter((u) => u.role === roleFilter);
-      if (statusFilter !== "all")
-        filtered = filtered.filter((u) => u.status === statusFilter);
-
-      const totalItems = filtered.length;
-      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+      // API already handles filtering and pagination
+      const totalItems = userData.totalUsers;
+      const totalPages = userData.totalPages;
       const startIndex = (page - 1) * pageSize;
       const endIndex = Math.min(startIndex + pageSize, totalItems);
-      const users = filtered.slice(startIndex, endIndex);
 
       return { users, totalItems, totalPages, startIndex, endIndex, page };
+      
     } catch (error) {
       console.error("Error fetching users:", error);
       // Fallback to placeholder data
@@ -163,7 +157,9 @@ export default async function UserList({
                       <Users className="h-6 w-6 text-chart-1" />
                     </div>
                     <div>
-                      <p className="font-medium">{user.firstName + " " + user.lastName}</p>
+                      <p className="font-medium">
+                        {user.firstName + " " + user.lastName}
+                      </p>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Mail className="h-4 w-4" />
@@ -174,9 +170,7 @@ export default async function UserList({
                           Joined: {new Date(user.joinedAt).toLocaleDateString()}
                         </div>
                       </div>
-                      {/* <p className="text-xs text-muted-foreground">
-                        Last active: {user.lastActive}
-                      </p> */}
+           
                     </div>
                   </div>
 

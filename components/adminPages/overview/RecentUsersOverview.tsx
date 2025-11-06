@@ -9,7 +9,9 @@ import myFetch from "@/lib/requestHelper";
 async function fetchRecentUsers(): Promise<RecentUser[]> {
   try {
  
-    const response = await myFetch('/api/admin/recent-users');
+    const response = await myFetch('/api/admin/recent-users',{
+      method: 'GET',
+    });
     const result = await response.json();
 
     if (!response.ok) {

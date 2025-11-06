@@ -75,7 +75,14 @@ function ListFallback() {
   );
 }
 
-export default async function UserManagementPage() {
+export default async function UserManagementPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{[key: string]: string | string[] | undefined;}>;
+}) {
+
+   const params = await searchParams;
+
   return (
     <div className="space-y-6">
       <div>
@@ -91,12 +98,12 @@ export default async function UserManagementPage() {
       </Suspense>
 
       <Suspense fallback={<FiltersFallback />}>
-        {/* <UserFilters /> */}
+        <UserFilters />
       </Suspense>
 
       <Suspense fallback={<ListFallback />}>
-        {/* server component: fetches based on searchParams */}
-        {/* <UserList /> */}
+        {/* server component: fetches based on searchParams - pass the page's searchParams */}
+        <UserList searchParams={params} />
       </Suspense>
     </div>
   );

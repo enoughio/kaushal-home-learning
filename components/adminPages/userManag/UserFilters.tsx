@@ -32,11 +32,11 @@ export default function UserFilters() {
     router.replace(`${pathName}?${params.toString()}`);
   }, 500);
 
-  // ✅ Memoized filter function so it doesn’t re-create on every render
+  // Memoized filter function so it doesn’t re-create on every render
   const applyFilters = useCallback(() => {
     const params = new URLSearchParams(searchParams);
 
-    if (search.trim()) params.set("search", search.trim());
+    if (search) params.set("search", search);
     else params.delete("search");
 
     if (role !== "all") params.set("role", role);
