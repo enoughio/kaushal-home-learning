@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import myFetch from "@/lib/requestHelper";
 
 type StatsShape = {
   totalUsers: number;
@@ -8,23 +9,17 @@ type StatsShape = {
   students: number;
   teachers: number;
 };
-// Currently using the same API as recent users for demo purposes but this will be changed later after its particular API is ready
+
 async function fetchStats(): Promise<StatsShape> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "localhost:3000";
 
-    const response = await fetch(`${baseUrl}/api/admin/users/stats`);// Intentionaly misspelled URL to return empty data from catch block for now, later the actual stats API will be used
-
+    const response = await myFetch('/api/admin/users/stats');
     const result = await response.json();
 
     if (!response.ok) {
       throw new Error(result.message);
     }
-    if (result.data?.recentUsers) {
-      return result.data?.recentUsers;
-    } else {
-      throw new Error(result.message || "No recent users data found");
-    }
+    return result;
   } catch (error) {
     console.error("Error fetching recent users:", error);
     // Fallback to empty array
@@ -39,6 +34,7 @@ async function fetchStats(): Promise<StatsShape> {
 }
 
 export default async function UserManagmentStats() {
+  
   const stats = await fetchStats();
   const { totalUsers, activeUsers, pendingUsers, students, teachers } = stats;
 

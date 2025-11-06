@@ -6,6 +6,9 @@ export const GET = async () => {
             totalUsers: 1500,
             activeUsers: 1234,
             newUsersThisMonth: 45,
+            pendingUsers : 67,
+            students: 900,
+            teachers: 600,
         }),
         { status: 200 }
     );
