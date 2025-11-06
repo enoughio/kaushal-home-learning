@@ -3,17 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma";
-
-type TeacherSalaryResponse = {
-  id: string;
-  name: string;
-  email: string;
-  payDate: string;
-  base: string;
-  thisMonthStatus: "paid" | "due";
-  thisMonthPaidDate: string;
-};
-
+import { TeacherSalaryResponse } from "@/lib/types";
 
 // get teacher salary information with pagination and filtering
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -53,12 +43,19 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         where,
         skip,
         take: limit,
+
         select: {
           id: true,
           last_salary_payment_date: true,
           monthly_salary: true,
           salary_pay_day: true,
           salary_assigned: true,
+          // salary_payments : { // get latest salary payment
+          //   orderBy: { created_at: "desc" }, take: 1,
+          //   select : {
+          //     created_at : true,
+          //   }
+          // },
           user: {
             select: {
               id: true,
@@ -70,6 +67,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         },
       }),
       prisma.teachers.count({ where }),
+
     ]);
 
     const teacherSalary: TeacherSalaryResponse[] = teachers.map((t) => {
@@ -81,15 +79,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         latestPayment.getFullYear() === now.getFullYear() &&
         latestPayment.getMonth() === now.getMonth();
 
+
       return {
-        id: t.id.toString(),
+        teacherId: t.id.toString(),
         name:
           `${t.user.first_name || ""} ${t.user.last_name || ""}`.trim() ||
           "Unknown",
         email: t.user.email || "",
         payDate: t.salary_pay_day?.toString() || "",
         base: t.salary_assigned ? t.monthly_salary.toString() : "0",
-        thisMonthStatus: isPaidThisMonth ? "paid" : "due",
+        thisMonthStatus: isPaidThisMonth ? "paid" : "due",  
+        lastPayDate : latestPayment,
         thisMonthPaidDate: isPaidThisMonth ? latestPayment.toISOString() : "",
       };
     });

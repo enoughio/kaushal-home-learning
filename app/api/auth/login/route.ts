@@ -188,7 +188,6 @@ export async function POST(req: NextRequest): Promise<NextResponse<LoginResponse
     };
 
 
-
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET!, {
       expiresIn: '15d',
     });

@@ -345,6 +345,17 @@ export type Teacher = {
   }
 
 
+  export type TeacherSalaryResponse = {
+    teacherId: string;
+    name: string;
+    email: string;
+    payDate: string;
+    base: string;
+    thisMonthStatus: "paid" | "due";
+    thisMonthPaidDate: string;
+  };
+  
+
 export interface TeacherApproval {
   id: string;
   name: string;

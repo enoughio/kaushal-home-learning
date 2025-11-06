@@ -2,7 +2,6 @@
 import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
 export async function GET(
   req: NextRequest,
@@ -12,9 +11,6 @@ export async function GET(
 
     const data = await params
     const teacherId = parseInt(data.teacherId);
-
-    const authResult = await authenticateAndValidateAdmin(req);
-    if ("error" in authResult) return authResult.error;
 
 
     // Validate teacherId

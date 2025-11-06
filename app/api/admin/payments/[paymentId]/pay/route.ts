@@ -14,7 +14,7 @@ interface AddPaymentRequestBody {
 }
 
 
-
+// we can pay teacher salary or student fee based on paymentType
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ paymentId: string }> }
@@ -138,7 +138,7 @@ export async function POST(
         const salaryPayment = await tx.salaryPayment.create({
           data: {
             date: paymentDate,
-            total_amount: amount,
+            total_amount: Number(amount),
             teacherId: entityId,
             status: "PAID",
           },
@@ -155,7 +155,7 @@ export async function POST(
         const feePayment = await tx.feePayment.create({
           data: {
             due_date: new Date(),
-            total_amount : amount,
+            total_amount : Number(amount),
             studentId: entityId,
             status: "PAID",
           },
@@ -172,7 +172,7 @@ export async function POST(
       // Create payment record
       const payment = await tx.payments.create({
         data: {
-          amount,
+          amount: Number(amount),
           transactionId,
           payment_date: paymentDate,
           payment_type: paymentType,

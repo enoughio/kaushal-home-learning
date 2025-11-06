@@ -3,20 +3,22 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Copy, Check } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
 interface SalaryCardProps {
   salary: {
     id: string
+    teacherId: number
     name: string
     email: string
     payDate: string
-    base: string
+    base: number
     thisMonthStatus: 'paid' | 'due'
     thisMonthPaidDate: string
   }
+  processedBy: number
 }
 
 function getStatusColor(status: 'paid' | 'due') {
@@ -27,33 +29,41 @@ function getStatusLabel(status: 'paid' | 'due') {
   return status === 'paid' ? 'Paid' : 'Due'
 }
 
-export default function SalaryCard({ salary }: SalaryCardProps) {
-  const [copying, setCopying] = useState(false)
+export default function SalaryCard({ salary, processedBy }: SalaryCardProps) {
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  async function handleMarkPaid() {
-    setCopying(true)
+  async function handlePaySalary() {
+    setIsLoading(true)
     try {
-      const response = await fetch(`/api/admin/salary/${salary.id}`, {
-        method: 'PUT',
+      // Call the pay salary API endpoint
+      const response = await fetch(`/api/admin/payments/${salary.teacherId}/pay`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'paid' }),
+        body: JSON.stringify({
+          amount: salary.base,
+          paymentDate: new Date().toISOString(),
+          paymentType: 'SALARY',
+          paymentMethod: 'BANK_TRANSFER',
+          processedBy: processedBy,
+          notes: `Salary payment for ${salary.name}`,
+        }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || `Failed to mark as paid (${response.status})`)
+        throw new Error(data.message || `Failed to process salary payment (${response.status})`)
       }
 
-      toast.success('Salary marked as paid')
+      toast.success('Salary payment processed successfully')
       router.refresh()
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update salary'
+      const message = error instanceof Error ? error.message : 'Failed to process salary payment'
       console.error('Error:', error)
       toast.error(message)
     } finally {
-      setCopying(false)
+      setIsLoading(false)
     }
   }
 
@@ -102,17 +112,14 @@ export default function SalaryCard({ salary }: SalaryCardProps) {
       {/* Actions */}
       <div className="flex gap-2">
         {salary.thisMonthStatus === 'due' && (
-          <Button size="sm" onClick={handleMarkPaid} disabled={copying} variant="outline">
-            {copying ? (
+          <Button size="sm" onClick={handlePaySalary} disabled={isLoading} variant="default">
+            {isLoading ? (
               <>
-                <Check className="h-4 w-4 mr-1" />
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                 Processing
               </>
             ) : (
-              <>
-                <Copy className="h-4 w-4 mr-1" />
-                Mark Paid
-              </>
+              'Pay Salary'
             )}
           </Button>
         )}

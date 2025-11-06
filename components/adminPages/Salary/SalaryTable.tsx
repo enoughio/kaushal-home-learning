@@ -6,12 +6,14 @@ import SalaryCard from './SalaryCard'
 import SalaryTablePagination from './SalaryTablePagination'
 import myFetch from '@/lib/requestHelper'
 
+
 interface Salary {
   id: string
+  teacherId: number
   name: string
   email: string
   payDate: string
-  base: string
+  base: number
   thisMonthStatus: 'paid' | 'due'
   thisMonthPaidDate: string
 }
@@ -24,6 +26,7 @@ interface SalaryResponse {
     total: number
   }
 }
+
 
 async function fetchSalaries(page: number = 1): Promise<SalaryResponse | null> {
   try {
@@ -45,7 +48,13 @@ async function fetchSalaries(page: number = 1): Promise<SalaryResponse | null> {
   }
 }
 
-export default async function SalaryTable({ searchParams }: { searchParams?: Promise<{ page?: string }> }) {
+export default async function SalaryTable({ 
+  searchParams,
+  adminId,
+}: { 
+  searchParams?: Promise<{ page?: string }>
+  adminId: number
+}) {
   const params = (await searchParams) ?? {}
   const page = Math.max(1, Number(params.page ?? 1))
 
@@ -89,7 +98,7 @@ export default async function SalaryTable({ searchParams }: { searchParams?: Pro
             <>
               {teacherSalary.map((salary) => (
                 <div key={salary.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <SalaryCard salary={salary} />
+                  <SalaryCard salary={salary} processedBy={adminId} />
                 </div>
               ))}
 

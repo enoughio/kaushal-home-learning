@@ -2,8 +2,12 @@ import SalaryStats from "@/components/adminPages/Salary/SalaryStats";
 import SalaryTable from "@/components/adminPages/Salary/SalaryTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { Suspense } from "react";
+import { headers } from "next/headers";
 
 export default async function TeacherSalariesPage() {
+  // Get admin ID from headers (set by middleware)
+  const headersList = await headers()
+  const adminId = Number(headersList.get('x-user-id') || 0)
   const SalaryStatsFallback = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
@@ -96,7 +100,7 @@ export default async function TeacherSalariesPage() {
       {/* Salaries Table */}
 
       <Suspense fallback={<SalaryTableSkeleton rows = {4}/>}>
-        <SalaryTable />
+        <SalaryTable adminId={adminId} />
       </Suspense>
     </div>
   );
