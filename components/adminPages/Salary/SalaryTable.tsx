@@ -1,75 +1,101 @@
-"use server"
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { AlertTriangle } from 'lucide-react'
+import AddRecord from './AddRecord'
+import SalaryCard from './SalaryCard'
+import SalaryTablePagination from './SalaryTablePagination'
+import myFetch from '@/lib/requestHelper'
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import AddRecord from "./AddRecord"
-import SalaryCard from "./SalaryCard"
-import SalaryTablePagination from "./SalaryTablePagination"
-
-type Salary = {
+interface Salary {
   id: string
-  teacherId: string
-  teacherName: string
-  month: string
-  year: number
-  baseSalary: number
-  bonuses: number
-  deductions: number
-  totalSalary: number
-  status: string
-  paymentDate?: string
+  name: string
+  email: string
+  payDate: string
+  base: string
+  thisMonthStatus: 'paid' | 'due'
+  thisMonthPaidDate: string
 }
 
-async function fetchSalaries(page = 1, pageSize = 10): Promise<{ items: Salary[]; total: number }> {
-  // placeholder data
-  const items: Salary[] = Array.from({ length: 23 }).map((_, i) => {
-    const base = 20000 + (i % 5) * 1000
-    const bonuses = (i % 3) * 500
-    const deductions = (i % 2) * 200
-    return {
-      id: String(i + 1),
-      teacherId: `t${(i % 6) + 1}`,
-      teacherName: `Teacher ${(i % 6) + 1}`,
-      month: "Sep",
-      year: 2025,
-      baseSalary: base,
-      bonuses,
-      deductions,
-      totalSalary: base + bonuses - deductions,
-      status: i % 3 === 0 ? "paid" : i % 3 === 1 ? "processing" : "pending",
-      paymentDate: i % 3 === 0 ? `2025-09-${(i % 28) + 1}` : undefined,
+interface SalaryResponse {
+  teacherSalary: Salary[]
+  pagination: {
+    page: number
+    totalPages: number
+    total: number
+  }
+}
+
+async function fetchSalaries(page: number = 1): Promise<SalaryResponse | null> {
+  try {
+    const params = new URLSearchParams()
+    params.set('page', String(page))
+
+    const response = await myFetch(`/api/admin/salary?${params.toString()}`)
+
+    if (!response.ok) {
+      console.error('Failed to fetch salaries:', response.status)
+      return null
     }
-  })
 
-  const start = (page - 1) * pageSize
-  const paged = items.slice(start, start + pageSize)
-  return { items: paged, total: items.length }
+    const data = await response.json()
+    return data.data || null
+  } catch (error) {
+    console.error('Error fetching salaries:', error)
+    return null
+  }
 }
 
-export default async function SalaryTable({ searchParams }: { searchParams?: Record<string, string> | undefined | null}) {
-  const page = Number(searchParams?.page ?? 1)
-  const pageSize = Number(searchParams?.pageSize ?? 10)
+export default async function SalaryTable({ searchParams }: { searchParams?: Promise<{ page?: string }> }) {
+  const params = (await searchParams) ?? {}
+  const page = Math.max(1, Number(params.page ?? 1))
 
-  const { items, total } = await fetchSalaries(page, pageSize)
+  const salaryData = await fetchSalaries(page)
+
+  if (!salaryData) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Monthly Salaries</CardTitle>
+          <AddRecord />
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              Failed to load salary records. Please try again later.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const { teacherSalary, pagination } = salaryData
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Monthly Salaries</CardTitle>
-
-        {/* client component */}
+        <CardTitle>Monthly Salaries ({pagination.total})</CardTitle>
         <AddRecord />
       </CardHeader>
 
       <CardContent>
         <div className="space-y-4">
-          {items.map((salary) => (
-            <div key={salary.id} className="p-4 border rounded-lg">
-              <SalaryCard salary={salary} />
+          {teacherSalary.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No salary records found</p>
             </div>
-          ))}
+          ) : (
+            <>
+              {teacherSalary.map((salary) => (
+                <div key={salary.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <SalaryCard salary={salary} />
+                </div>
+              ))}
 
-          <SalaryTablePagination page={page} totalPages={Math.max(1, Math.ceil(total / pageSize))} />
+              <SalaryTablePagination page={pagination.page} totalPages={pagination.totalPages} />
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

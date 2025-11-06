@@ -1,24 +1,55 @@
 import { Card, CardContent } from '@/components/ui/card'
+import myFetch from '@/lib/requestHelper'
 import { DollarSign, AlertTriangle, Clock } from 'lucide-react'
 
-type Payment = { id: string; amount: number; status: 'paid' | 'due' | 'overdue' }
+interface PaymentStats {
+  totalPayments: number
+  feeRecived: number
+  dueAmount: number
+  SalaryPaid: number
+}
 
-async function fetchPayments(): Promise<Payment[]> {
-  // placeholder payments
-  return [
-    { id: 'p1', amount: 5000, status: 'paid' },
-    { id: 'p2', amount: 2500, status: 'due' },
-    { id: 'p3', amount: 3000, status: 'overdue' },
-    { id: 'p4', amount: 1500, status: 'due' },
-  ]
+async function fetchPaymentStats(): Promise<PaymentStats | null> {
+  try {
+    const response = await myFetch('/api/admin/payments/stats')
+
+    if (!response.ok) {
+      console.error('Failed to fetch payment stats:', response.status)
+      return null
+    }
+
+    const data = await response.json()
+    return data.data || null
+  } catch (error) {
+    console.error('Error fetching payment stats:', error)
+    return null
+  }
 }
 
 export default async function PaymentStats() {
-  const payments = await fetchPayments()
-  const totalAmount = payments.reduce((s, p) => s + p.amount, 0)
-  const paidAmount = payments.filter(p => p.status === 'paid').reduce((s, p) => s + p.amount, 0)
-  const dueAmount = payments.filter(p => p.status === 'due').reduce((s, p) => s + p.amount, 0)
-  const overdueAmount = payments.filter(p => p.status === 'overdue').reduce((s, p) => s + p.amount, 0)
+  const stats = await fetchPaymentStats()
+
+  if (!stats) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="h-3 w-24 bg-neutral-200 rounded mb-2" />
+                  <div className="h-6 w-20 bg-neutral-300 rounded" />
+                </div>
+                <div className="h-8 w-8 bg-neutral-200 rounded-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  const { totalPayments, feeRecived, dueAmount, SalaryPaid } = stats
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -27,7 +58,7 @@ export default async function PaymentStats() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
-              <p className="text-2xl font-bold">₹{totalAmount.toLocaleString()}</p>
+              <p className="text-2xl font-bold">₹{totalPayments.toLocaleString('en-IN')}</p>
             </div>
             <DollarSign className="h-8 w-8 text-chart-1" />
           </div>
@@ -38,8 +69,8 @@ export default async function PaymentStats() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Paid</p>
-              <p className="text-2xl font-bold text-chart-2">₹{paidAmount.toLocaleString()}</p>
+              <p className="text-sm font-medium text-muted-foreground">Fees Received</p>
+              <p className="text-2xl font-bold text-chart-2">₹{feeRecived.toLocaleString('en-IN')}</p>
             </div>
             <DollarSign className="h-8 w-8 text-chart-2" />
           </div>
@@ -51,7 +82,7 @@ export default async function PaymentStats() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Due</p>
-              <p className="text-2xl font-bold text-chart-3">₹{dueAmount.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-chart-3">₹{dueAmount.toLocaleString('en-IN')}</p>
             </div>
             <Clock className="h-8 w-8 text-chart-3" />
           </div>
@@ -62,8 +93,8 @@ export default async function PaymentStats() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Overdue</p>
-              <p className="text-2xl font-bold text-destructive">₹{overdueAmount.toLocaleString()}</p>
+              <p className="text-sm font-medium text-muted-foreground">Salary Paid</p>
+              <p className="text-2xl font-bold text-destructive">₹{SalaryPaid.toLocaleString('en-IN')}</p>
             </div>
             <AlertTriangle className="h-8 w-8 text-destructive" />
           </div>

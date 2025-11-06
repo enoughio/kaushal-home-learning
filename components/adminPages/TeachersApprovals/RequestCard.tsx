@@ -6,7 +6,6 @@ import {
   MapPin,
   Calendar,
   BookOpen,
-  Award,
   UserCheck,
   FileText,
   GraduationCap,

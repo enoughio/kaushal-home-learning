@@ -24,7 +24,6 @@ interface DeletePairProps {
 }
 
 export default function DeletePair({
-  pairId,
   studentId,
   studentName,
   teacherName,

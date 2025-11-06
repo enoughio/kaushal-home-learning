@@ -1,27 +1,55 @@
-"use server"
+import React from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { DollarSign, AlertTriangle } from 'lucide-react'
+import myFetch from '@/lib/requestHelper'
 
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { DollarSign } from "lucide-react"
+interface SalaryStats {
+  totalSalaries: number
+  dueSalaries: number
+  activeTeachers: number
+}
 
-// Placeholder fetch: replace with real API call
-async function fetchSalaryData() {
-  // simulate fetching
-  return {
-    totalPaid: 125000,
-    totalPending: 45000,
-    salaries: [
-      { id: "1", teacherId: "t1" },
-      { id: "2", teacherId: "t2" },
-      { id: "3", teacherId: "t1" },
-    ],
+async function fetchSalaryStats(): Promise<SalaryStats | null> {
+  try {
+    const response = await myFetch('/api/admin/salary/stats')
+
+    if (!response.ok) {
+      console.error('Failed to fetch salary stats:', response.status)
+      return null
+    }
+
+    const data = await response.json()
+    return data.data || null
+  } catch (error) {
+    console.error('Error fetching salary stats:', error)
+    return null
   }
 }
 
 export default async function SalaryStats() {
-  const { totalPaid, totalPending, salaries } = await fetchSalaryData()
+  const stats = await fetchSalaryStats()
 
-  const activeTeachers = new Set(salaries.map((s: { teacherId: string }) => s.teacherId)).size
+  if (!stats) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[...Array(3)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="h-3 w-24 bg-neutral-200 rounded mb-2" />
+                  <div className="h-6 w-20 bg-neutral-300 rounded" />
+                </div>
+                <div className="h-8 w-8 bg-neutral-200 rounded-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  const { totalSalaries, dueSalaries, activeTeachers } = stats
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -29,8 +57,8 @@ export default async function SalaryStats() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Paid</p>
-              <p className="text-2xl font-bold">₹{totalPaid.toLocaleString()}</p>
+              <p className="text-sm font-medium text-muted-foreground">Total Salaries</p>
+              <p className="text-2xl font-bold">₹{totalSalaries.toLocaleString('en-IN')}</p>
             </div>
             <DollarSign className="h-8 w-8 text-chart-1" />
           </div>
@@ -41,10 +69,12 @@ export default async function SalaryStats() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Pending Payments</p>
-              <p className="text-2xl font-bold">₹{totalPending.toLocaleString()}</p>
+              <p className="text-sm font-medium text-muted-foreground">Due Salaries</p>
+              <p className="text-2xl font-bold text-destructive">
+                ₹{dueSalaries.toLocaleString('en-IN')}
+              </p>
             </div>
-            <DollarSign className="h-8 w-8 text-chart-2" />
+            <AlertTriangle className="h-8 w-8 text-destructive" />
           </div>
         </CardContent>
       </Card>

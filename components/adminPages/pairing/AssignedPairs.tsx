@@ -46,7 +46,6 @@ export default function AssignedPairs({
   totalPairs,
   loading = false,
 }: AssignedPairsProps) {
-  const [currentPage, setCurrentPage] = useState(1)
 
   const getPairDateFormatted = (dateString: string) => {
     try {

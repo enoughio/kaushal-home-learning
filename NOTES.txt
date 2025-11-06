@@ -1,11 +1,11 @@
 TODO : complete payament history page for student 
-TODO : add a assign teacher to student functionality in admin dashboard 
+done - TODO : add a assign teacher to student functionality in admin dashboard 
 TODO :  add a cron job to create new fee entries each month with due status
 TODO :  add a cron job to create new fee reminder to student
 
 TODO : check assingment subbmition but the student, currently they are not able to upload images for their assignment
-TODO : Add aadharUrl field as well in the api/admin/approvals api response inside pendingTeachers to show as idProof in fontend.
+done - TODO : Add aadharUrl field as well in the api/admin/approvals api response inside pendingTeachers to show as idProof in fontend.
 TODO : there are many routes that are fining due fee in wrong way fix them
 
 in mark attandance route
-// TODO: Validate teacher location against student home location using geolocation API
+done/2 -// TODO: Validate teacher location against student home location using geolocation API

@@ -1,8 +1,6 @@
 // app/api/admin/salary-stats/route.ts
-import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
 /**
  * Returns:
@@ -10,13 +8,10 @@ import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
  *   dueSalaries     – sum of salaries that have **no payment** for the current month
  *   activeTeachers  – count of teachers with is_active = true
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    // ---- 1. Admin authentication ------------------------------------------------
-    const authResult = await authenticateAndValidateAdmin(req);
-    if ("error" in authResult) return authResult.error;
 
-    // ---- 2. Current month / year ------------------------------------------------
+    // ----  Current month / year ------------------------------------------------
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth(); // 0-11

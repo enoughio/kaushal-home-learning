@@ -48,7 +48,31 @@ export async function GET(req: NextRequest) {
     // Get total count
     const totalPairs = await prisma.teacher_student_assignments.count();
 
-    const formattedPairs = pairs.map((pair: any) => ({
+    type Pair = {
+      id: number;
+      student_id: number;
+      teacher_id: number;
+      assigned_date: Date | null;
+      student: {
+        user: {
+          first_name: string | null;
+          last_name: string | null;
+          email: string;
+          location: string | null;
+        };
+
+      };
+      teacher: {
+        user: {
+          first_name: string | null;
+          last_name: string | null;
+          email: string;
+          location: string | null;
+        };
+      };
+    };
+
+    const formattedPairs = pairs.map((pair: Pair) => ({
       id: pair.id,
       pairId: pair.id,
       studentId: pair.student_id.toString(),

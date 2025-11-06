@@ -3,6 +3,8 @@ import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { authenticateAndValidateAdmin } from "@/app/api/_lib/verify";
 
+
+// add salary record for a teacher
 export async function POST(req: NextRequest) {
   try {
     

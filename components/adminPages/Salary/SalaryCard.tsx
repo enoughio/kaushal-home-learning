@@ -1,151 +1,123 @@
-"use client"
+'use client'
 
-import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Edit, Check, X } from "lucide-react"
-import { useRouter } from "next/navigation"
+import React, { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Copy, Check } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
-type Salary = {
-  id: string
-  teacherId: string
-  teacherName: string
-  month: string
-  year: number
-  baseSalary: number
-  bonuses: number
-  deductions: number
-  totalSalary: number
-  status: string
-  paymentDate?: string
-}
-
-function getStatusColor(status: string) {
-  switch (status) {
-    case "paid":
-      return "default"
-    case "processing":
-      return "secondary"
-    case "pending":
-      return "destructive"
-    default:
-      return "outline"
+interface SalaryCardProps {
+  salary: {
+    id: string
+    name: string
+    email: string
+    payDate: string
+    base: string
+    thisMonthStatus: 'paid' | 'due'
+    thisMonthPaidDate: string
   }
 }
 
-export default function SalaryCard({ salary }: { salary: Salary }) {
-  const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState({
-    baseSalary: salary.baseSalary,
-    bonuses: salary.bonuses,
-    deductions: salary.deductions,
-  })
+function getStatusColor(status: 'paid' | 'due') {
+  return status === 'paid' ? 'default' : 'destructive'
+}
+
+function getStatusLabel(status: 'paid' | 'due') {
+  return status === 'paid' ? 'Paid' : 'Due'
+}
+
+export default function SalaryCard({ salary }: SalaryCardProps) {
+  const [copying, setCopying] = useState(false)
   const router = useRouter()
 
-  async function handleSave() {
-    // Simulate saving salary details via an API call
-    await fetch(`/api/admin/salaries/${salary.id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    })
-    setEditing(false)
-    router.refresh()
+  async function handleMarkPaid() {
+    setCopying(true)
+    try {
+      const response = await fetch(`/api/admin/salary/${salary.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'paid' }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || `Failed to mark as paid (${response.status})`)
+      }
+
+      toast.success('Salary marked as paid')
+      router.refresh()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update salary'
+      console.error('Error:', error)
+      toast.error(message)
+    } finally {
+      setCopying(false)
+    }
   }
 
   return (
-    <div className="flex items-center justify-between">
-      {editing ? (
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 w-full">
-          <div>
-            <Label>Teacher</Label>
-            <p className="text-sm font-medium">{salary.teacherName}</p>
-          </div>
-          <div>
-            <Label>Base Salary</Label>
-            <Input
-              type="number"
-              value={form.baseSalary}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setForm((p) => ({ ...p, baseSalary: Number(e.target.value) }))
-              }
-            />
-          </div>
-          <div>
-            <Label>Bonuses</Label>
-            <Input
-              type="number"
-              value={form.bonuses}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setForm((p) => ({ ...p, bonuses: Number(e.target.value) }))
-              }
-            />
-          </div>
-          <div>
-            <Label>Deductions</Label>
-            <Input
-              type="number"
-              value={form.deductions}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setForm((p) => ({ ...p, deductions: Number(e.target.value) }))
-              }
-            />
-          </div>
-          <div>
-            <Label>Total</Label>
-            <p className="text-sm font-medium">₹{(form.baseSalary + form.bonuses - form.deductions).toLocaleString()}</p>
-          </div>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleSave}>
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setEditing(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 flex-1">
-            <div>
-              <p className="font-medium">{salary.teacherName}</p>
-              <p className="text-sm text-muted-foreground">{salary.month} {salary.year}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Base</p>
-              <p className="font-medium">₹{salary.baseSalary.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Bonuses</p>
-              <p className="font-medium text-chart-1">+₹{salary.bonuses.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Deductions</p>
-              <p className="font-medium text-chart-2">-₹{salary.deductions.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="font-bold">₹{salary.totalSalary.toLocaleString()}</p>
-            </div>
-            <div>
-              <Badge variant={getStatusColor(salary.status)}>{salary.status}</Badge>
-              {salary.paymentDate && <p className="text-xs text-muted-foreground mt-1">Paid: {salary.paymentDate}</p>}
-            </div>
-          </div>
-          <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-        </>
-      )}
-    </div>
-  )
-}
+    <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-center">
+      {/* Teacher Info */}
+      <div>
+        <p className="font-medium">{salary.name}</p>
+        <p className="text-sm text-muted-foreground">{salary.email}</p>
+      </div>
 
-export function SalaryCardSkeleton() {
-  return (
-    <div className="h-16 bg-muted rounded" />
+      {/* Pay Date */}
+      <div>
+        <p className="text-sm text-muted-foreground">Pay Date</p>
+        <p className="font-medium">{salary.payDate || '-'}</p>
+      </div>
+
+      {/* Base Salary */}
+      <div>
+        <p className="text-sm text-muted-foreground">Base Salary</p>
+        <p className="font-medium">₹{Number(salary.base).toLocaleString('en-IN')}</p>
+      </div>
+
+      {/* Status */}
+      <div>
+        <p className="text-sm text-muted-foreground">Status</p>
+        <Badge variant={getStatusColor(salary.thisMonthStatus)}>
+          {getStatusLabel(salary.thisMonthStatus)}
+        </Badge>
+      </div>
+
+      {/* Paid Date */}
+      <div>
+        <p className="text-sm text-muted-foreground">Paid Date</p>
+        <p className="text-sm">
+          {salary.thisMonthPaidDate
+            ? new Date(salary.thisMonthPaidDate).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })
+            : '-'}
+        </p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2">
+        {salary.thisMonthStatus === 'due' && (
+          <Button size="sm" onClick={handleMarkPaid} disabled={copying} variant="outline">
+            {copying ? (
+              <>
+                <Check className="h-4 w-4 mr-1" />
+                Processing
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4 mr-1" />
+                Mark Paid
+              </>
+            )}
+          </Button>
+        )}
+      </div>
+    </div>
   )
 }
 

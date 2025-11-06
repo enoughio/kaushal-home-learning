@@ -44,7 +44,6 @@ interface ChangePairTeacherProps {
 }
 
 export default function ChangePairTeacher({
-  pairId,
   studentId,
   currentTeacherId,
   currentTeacherName,
