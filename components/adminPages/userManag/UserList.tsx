@@ -13,10 +13,9 @@ type User = {
   firstName: string;
   lastName: string;
   email: string;
-  joinedAt: string;
-  lastActive: string;
+  createdAt: string;
   role: string;
-  status: string;
+  isActive: boolean;
 };
 
 type UsersManagement = {
@@ -26,14 +25,12 @@ type UsersManagement = {
   totalUsers: number;
 };
 
-function getStatusColor(status: string) {
+function getStatusColor(status: boolean) {
   switch (status) {
-    case "active":
+    case true:
       return "default";
-    case "inactive":
+    case false:
       return "secondary";
-    case "pending":
-      return "destructive";
     default:
       return "secondary";
   }
@@ -167,7 +164,7 @@ export default async function UserList(
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          Joined: {new Date(user.joinedAt).toLocaleDateString()}
+                          Joined: {new Date(user.createdAt).toLocaleDateString()}
                         </div>
                       </div>
            
@@ -180,8 +177,8 @@ export default async function UserList(
                         {user.role}
                       </Badge>
                       <br />
-                      <Badge variant={getStatusColor(user.status)}>
-                        {user.status}
+                      <Badge variant={getStatusColor(user.isActive)}>
+                        {user.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2">
@@ -190,7 +187,7 @@ export default async function UserList(
                         <>
                           <ToggelUserStatus
                             userId={user.id}
-                            currentStatus={user.status}
+                            currentStatus={user.isActive}
                           />
                           <DeleteUser userId={user.id} />
                         </>
