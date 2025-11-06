@@ -14,7 +14,7 @@ export default function RejectAction({ teacherId }: Props) {
 
   async function handleReject() {
     setProcessing(true)
-    await fetch(`/api/admin/teachers/${teacherId}/reject`, { method: 'POST' })
+    await fetch(`/api/admin/approvals/${teacherId}/reject`, { method: 'POST' })
     setProcessing(false)
     router.refresh()
   }
@@ -24,7 +24,7 @@ export default function RejectAction({ teacherId }: Props) {
       <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm" className="bg-transparent text-destructive">Reject</Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className='bg-gray-100'>
         <AlertDialogHeader>
           <AlertDialogTitle>Reject Teacher</AlertDialogTitle>
           <AlertDialogDescription>Are you sure you want to reject this teacher application? This action can be reverted manually.</AlertDialogDescription>

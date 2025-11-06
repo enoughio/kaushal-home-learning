@@ -12,10 +12,10 @@ interface TeacherManagementResponse {
     phone: string;
     location: string;
     pincode: string;
-    Subjects: string[];
+    subjects: string[];
     highestQualification: string;
-    "10thPercentage": number;
-    "12thPercentage": number;
+    tenthPercentage: number;
+     twelfthPercentage: number;
     appliedAt: string;
     marksheetUrl10: string;
     marksheetUrl12: string;
@@ -102,10 +102,10 @@ export async function GET(req: NextRequest) {
             phone: user.phone || "N/A",
             location,
             pincode: user.pincode || "N/A",
-            Subjects: teacher.subjects_taught || [],
+            subjects: teacher.subjects_taught || [],
             highestQualification: teacher.qualification || "N/A",
-            "10thPercentage": teacher.tenth_percentage || 0,
-            "12thPercentage": teacher.twelfth_percentage || 0,
+            tenthPercentage : teacher.tenth_percentage || 0,
+            twelfthPercentage : teacher.twelfth_percentage || 0,
             appliedAt: teacher.created_at.toISOString(),
             marksheetUrl10: teacher.marksheet_url_tenth || "N/A",
             marksheetUrl12: teacher.marksheet_url_twelfth || "N/A",

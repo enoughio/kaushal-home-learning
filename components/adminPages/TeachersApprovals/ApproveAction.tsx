@@ -14,17 +14,17 @@ export default function ApproveAction({ teacherId }: Props) {
 
   async function handleApprove() {
     setProcessing(true)
-    await fetch(`/api/admin/teachers/${teacherId}/approve`, { method: 'POST' })
+    await fetch(`/api/admin/approvals/${teacherId}/approve`, { method: 'POST' })
     setProcessing(false)
     router.refresh()
   }
 
   return (
-    <AlertDialog>
+    <AlertDialog >
       <AlertDialogTrigger asChild>
         <Button variant="default" size="sm">Approve</Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className='bg-gray-100'>
         <AlertDialogHeader>
           <AlertDialogTitle>Approve Teacher</AlertDialogTitle>
           <AlertDialogDescription>Are you sure you want to approve this teacher?</AlertDialogDescription>

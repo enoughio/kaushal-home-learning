@@ -327,17 +327,22 @@ export interface UserManagement {
 
 
 export type Teacher = {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  location?: string
-  experience?: number
-  idProof?: string
-  subjects?: string[]
-  aadharUrl?: string
-  appliedAt: string;
-}
+    id: string;
+    name: string;
+    email: string;
+    aadharURL: string;
+    phone: string;
+    location: string;
+    pincode: string;
+    subjects: string[];
+    highestQualification: string;
+    tenthPercentage: number;
+    twelfthPercentage: number;
+    appliedAt: string;
+    marksheetUrl10: string;
+    marksheetUrl12: string;
+    resume: string;
+  }
 
 
 export interface TeacherApproval {
