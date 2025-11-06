@@ -1,185 +1,227 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {  type UserManagement } from "@/lib/types"
-import { Users, UserPlus, Check } from "lucide-react"
+import { AlertCircle } from "lucide-react"
+import AssignmentForm from "@/components/adminPages/pairing/AssignmentForm"
+import StudentsWithoutTeachers from "@/components/adminPages/pairing/StudentsWithoutTeachers"
+import AssignedPairs from "@/components/adminPages/pairing/AssignedPairs"
+import { myFetch } from "@/lib/requestHelper"
 
-export default function TeacherAssignmentsPage() {
-  const [studentsWithoutTeachers, setStudentsWithoutTeachers] = useState<UserManagement[]>([])
-  const [teachers, setTeachers] = useState<UserManagement[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedStudent, setSelectedStudent] = useState<string>("")
-  const [selectedTeacher, setSelectedTeacher] = useState<string>("")
-  const [assigning, setAssigning] = useState(false)
-  const [successMessage, setSuccessMessage] = useState("")
+interface Student {
+  id: string
+  name: string
+  email: string
+  parentPhone: string
+  location: string
+  pincode: string
+  status: string
+  enrolledAt: string
+}
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const allUsers = await getAllUsers()
-        const studentsNoTeacher = allUsers.filter((u) => u.role === "student" && u.status === "active")
-        const activeTeachers = allUsers.filter((u) => u.role === "teacher" && u.status === "active")
+interface Teacher {
+  id: number
+  firstName: string
+  lastName: string
+  email: string
+  location: string
+  qualification: string
+  subjectsTaught: string[]
+  currentStudents: number
+  maxStudents: number
+}
 
-        setStudentsWithoutTeachers(studentsNoTeacher)
-        setTeachers(activeTeachers)
-      } catch (error) {
-        console.error("Failed to load data:", error)
-      } finally {
-        setLoading(false)
-      }
+interface StudentResponse {
+  students: Student[]
+  page: number
+  totalPages: number
+  totalStudents: number
+}
+
+interface TeacherResponse {
+  message: string
+  teachers: Teacher[]
+}
+
+interface Pair {
+  id: number
+  pairId: number
+  studentId: string
+  teacherId: string
+  studentName: string
+  teacherName: string
+  studentEmail: string
+  teacherEmail: string
+  studentLocation: string
+  teacherLocation: string
+  assignedAt: string
+}
+
+interface PairsResponse {
+  pairs: Pair[]
+  page: number
+  totalPages: number
+  totalPairs: number
+}
+
+async function getUnassignedStudents(): Promise<Student[]> {
+  try {
+    const response = await myFetch("/api/admin/assign-teacher?page=1", {
+      method: "GET",
+    })
+
+    if (!response.ok) {
+      console.error("Failed to fetch students:", response.status)
+      return []
     }
 
-    loadData()
-  }, [])
-
-  const handleAssign = async () => {
-    if (!selectedStudent || !selectedTeacher) {
-      alert("Please select both a student and a teacher")
-      return
-    }
-
-    setAssigning(true)
-    try {
-      await assignTeacherToStudent(selectedTeacher, selectedStudent)
-      setSuccessMessage(`Teacher assigned successfully!`)
-      setTimeout(() => setSuccessMessage(""), 3000)
-
-      // Reload data
-      const allUsers = await getAllUsers()
-      const studentsNoTeacher = allUsers.filter((u) => u.role === "student" && u.status === "active")
-      setStudentsWithoutTeachers(studentsNoTeacher)
-      setSelectedStudent("")
-      setSelectedTeacher("")
-    } catch (error) {
-      console.error("Failed to assign teacher:", error)
-      alert("Failed to assign teacher")
-    } finally {
-      setAssigning(false)
-    }
+    const data: { data: StudentResponse } = await response.json()
+    return data.data?.students || []
+  } catch (error) {
+    console.error("Error fetching unassigned students:", error)
+    return []
   }
+}
 
-  if (loading) {
-    return (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-muted-foreground">Loading...</p>
-          </div>
-        </div>
-    )
+async function getAvailableTeachers(): Promise<Teacher[]> {
+  try {
+    const response = await myFetch("/api/admin/users/teacher", {
+      method: "GET",
+    })
+
+    if (!response.ok) {
+      console.error("Failed to fetch teachers:", response.status)
+      return []
+    }
+
+    const data: { data: TeacherResponse } = await response.json()
+    return data.data?.teachers || []
+  } catch (error) {
+    console.error("Error fetching teachers:", error)
+    return []
   }
+}
+
+async function getAssignedPairs(): Promise<{ pairs: Pair[]; totalPairs: number }> {
+  try {
+    const response = await myFetch("/api/admin/assign-teacher/all?page=1", {
+      method: "GET",
+    })
+
+    if (!response.ok) {
+      console.error("Failed to fetch pairs:", response.status)
+      return { pairs: [], totalPairs: 0 }
+    }
+
+    const data: { data: PairsResponse } = await response.json()
+    return {
+      pairs: data.data?.pairs || [],
+      totalPairs: data.data?.totalPairs || 0,
+    }
+  } catch (error) {
+    console.error("Error fetching assigned pairs:", error)
+    return { pairs: [], totalPairs: 0 }
+  }
+}
+
+export default async function TeacherAssignmentsPage() {
+  // Fetch data in parallel
+  const [students, teachers, { pairs, totalPairs }] = await Promise.all([
+    getUnassignedStudents(),
+    getAvailableTeachers(),
+    getAssignedPairs(),
+  ])
 
   return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Teacher Assignments</h1>
-          <p className="text-muted-foreground">Assign teachers to students without a teacher</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Teacher Assignments</h1>
+        <p className="text-muted-foreground">Manage teacher-student assignments</p>
+      </div>
 
-        {/* Assignment Form */}
+      {/* Assignment Form */}
+      <AssignmentForm students={students} teachers={teachers} />
+
+      {/* Students Without Teachers List */}
+      <StudentsWithoutTeachers students={students} loading={false} />
+
+      {/* Assigned Pairs List */}
+      <AssignedPairs pairs={pairs} teachers={teachers} totalPairs={totalPairs} loading={false} />
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
-              Assign Teacher to Student
-            </CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Students Without Teachers</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {successMessage && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                {successMessage}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Select Student</label>
-                <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a student" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {studentsWithoutTeachers.map((student) => (
-                      <SelectItem key={student.id} value={student.id}>
-                        {student.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">Select Teacher</label>
-                <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a teacher" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teachers.map((teacher) => (
-                      <SelectItem key={teacher.id} value={teacher.id}>
-                        {teacher.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-end">
-                <Button
-                  onClick={handleAssign}
-                  disabled={assigning || !selectedStudent || !selectedTeacher}
-                  className="w-full"
-                >
-                  {assigning ? "Assigning..." : "Assign Teacher"}
-                </Button>
-              </div>
-            </div>
+          <CardContent>
+            <div className="text-3xl font-bold">{students.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Awaiting assignment</p>
           </CardContent>
         </Card>
 
-        {/* Students Without Teachers */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Students Without Teachers ({studentsWithoutTeachers.length})
-            </CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Assigned Pairs</CardTitle>
           </CardHeader>
           <CardContent>
-            {studentsWithoutTeachers.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">All students have been assigned teachers!</p>
-            ) : (
-              <div className="space-y-2">
-                {studentsWithoutTeachers.map((student) => (
-                  <div key={student.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{student.name}</p>
-                      <p className="text-sm text-muted-foreground">{student.email}</p>
-                    </div>
-                    <Badge variant="secondary">Unassigned</Badge>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="text-3xl font-bold">{totalPairs}</div>
+            <p className="text-xs text-muted-foreground mt-1">Active assignments</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Available Teachers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{teachers.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Ready to assign</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Teachers at Capacity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {teachers.filter((t) => t.currentStudents >= t.maxStudents).length}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Cannot accept new</p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Info Cards */}
+      {teachers.length === 0 && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <span className="text-yellow-800">No Teachers Available</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-yellow-700">
+              There are no active teachers available to assign. Please wait for teachers to be approved or contact an administrator.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {students.length === 0 && totalPairs > 0 && (
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <AlertCircle className="h-4 w-4 text-green-600" />
+              <span className="text-green-800">All Students Assigned</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-green-700">
+              Great! All students have been successfully assigned to teachers.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   )
 }
-
-
-
-// import React from 'react'
-
-// const page = () => {
-//   return (
-//     <div>page</div>
-//   )
-// }
-
-// export default page
