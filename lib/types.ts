@@ -586,3 +586,20 @@ export interface FeesApiResponse {
   totalStudentFeeData: number
 }
 
+// Teacher Student Response
+export interface TeacherStudentUser {
+  id: number
+  first_name: string | null
+  last_name: string | null
+  email: string
+  gender: string | null
+}
+
+export interface TeacherStudentData {
+  id: number
+  user: TeacherStudentUser
+}
+
+export interface MyStudentsResponse {
+  students: TeacherStudentData[]
+}

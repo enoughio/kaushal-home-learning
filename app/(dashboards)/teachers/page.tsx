@@ -1,7 +1,7 @@
 import PendingReviewsOverview from "@/components/teachersPages/overview/PendingReviewsOverview";
 import QuickActions from "@/components/teachersPages/overview/QuickActions";
 import RecentPaymentOverview from "@/components/teachersPages/overview/RecentPaymentOverview";
-import RecentStudentOverview from "@/components/teachersPages/overview/RecentStudentOverview";
+import RecentStudentOverview from "@/components/teachersPages/overview/MyStudentsOverview";
 import Stats from "@/components/teachersPages/overview/Stats";
 import { Card, CardContent } from "@/components/ui/card";
 import React, { Suspense } from "react";

@@ -3,8 +3,9 @@ import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/app/api/_lib/auth";
 
-export const GET = async (req : NextRequest) => {
+export const GET = async (req: NextRequest) => {
   try {
+    // === 1. Authentication ===
     const user = getAuthUser(req);
 
     if (!user || user.role !== "teacher") {
@@ -15,13 +16,24 @@ export const GET = async (req : NextRequest) => {
       });
     }
 
+    // === 2. Get teacher profile ===
+    const teacher = await prisma.teachers.findFirst({
+      where: { user_id: user.id },
+      select: { id: true },
+    });
+
+    if (!teacher) {
+      return respondWithError({
+        error: "NOT_FOUND",
+        message: "Teacher profile not found",
+        status: 404,
+      });
+    }
+
+    // === 3. Fetch students assigned to teacher ===
     const students = await prisma.students.findMany({
       where: {
-        assigned_teacher: {
-          user: {
-            id: user.id,
-          },
-        },
+        assigned_teacher_id: teacher.id,
       },
       select: {
         id: true,
@@ -35,6 +47,9 @@ export const GET = async (req : NextRequest) => {
           },
         },
       },
+      orderBy: {
+        enrollment_date: "desc",
+      },
     });
 
     return respondWithSuccess({
@@ -43,11 +58,13 @@ export const GET = async (req : NextRequest) => {
       },
       status: 200,
     });
-  } catch {
+  } catch (error) {
+    console.error("Error fetching teacher students:", error);
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
       message: "An unexpected error occurred",
       status: 500,
+      details: error instanceof Error ? error.message : undefined,
     });
   }
 };
