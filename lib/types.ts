@@ -640,3 +640,66 @@ export interface TeacherStudentsResponse {
     students: TeacherStudentsList[]
   }
 }
+
+// Teacher Assignment Response Types
+export interface AssignmentAttachment {
+  id: number
+  fileName: string
+  fileUrl: string
+  mimeType: string
+}
+
+export interface AssignmentSubmission {
+  id: number
+  grade: string | null
+  marksObtained: number | null
+  feedback: string | null
+  submissionText: string | null
+}
+
+export interface TeacherAssignmentDetail {
+  id: number
+  studentId: number
+  title: string
+  description: string | null
+  subject: string | null
+  dueDate: string | null
+  status: "ASSIGNED" | "SUBMITTED" | "GRADED"
+  createdAt: string
+  studentName: string
+  studentEmail: string
+  attachments: AssignmentAttachment[]
+  submission: AssignmentSubmission | null
+}
+
+export interface TeacherAssignmentsResponse {
+  data: TeacherAssignmentDetail[]
+}
+
+export interface CreateAssignmentResponse {
+  assignmentId: number
+  title: string
+  dueDate: string | null
+  description: string | null
+  teacherId: number
+  studentId: number
+  fileAttachment: {
+    fileName: string
+    fileUrl: string
+    mimeType: string
+  } | null
+}
+
+export interface GradeSubmissionResponse {
+  data: {
+    message: string
+    assignmentId: string
+    studentId: number
+  }
+}
+
+export interface AssignmentStats {
+  assigned: number
+  submitted: number
+  graded: number
+}
