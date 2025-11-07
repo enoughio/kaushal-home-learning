@@ -6,18 +6,21 @@ import { AssignmentStatus, UserRole } from "@/generated/prisma";
 
 export const GET = async (req: NextRequest) => {
   try {
+    // === 1. Authentication ===
     const user = getAuthUser(req);
 
-    if (!user || user.role != UserRole.teacher) {
+    if (!user || user.role !== UserRole.teacher) {
       return respondWithError({
         error: "FORBIDDEN",
         message: "Only teachers can access this endpoint",
-        status: 405,
+        status: 403,
       });
     }
-    // check if teacher exists
+
+    // === 2. Get teacher profile ===
     const teacher = await prisma.teachers.findFirst({
       where: { user_id: user.id },
+      select: { id: true },
     });
 
     if (!teacher) {
@@ -28,12 +31,12 @@ export const GET = async (req: NextRequest) => {
       });
     }
 
+    // === 3. Fetch pending assignments (status = ASSIGNED) ===
     const assignments = await prisma.assignments.findMany({
       where: {
         teacher_id: teacher.id,
         status: AssignmentStatus.ASSIGNED,
       },
-
       select: {
         student_id: true,
         title: true,
@@ -42,7 +45,6 @@ export const GET = async (req: NextRequest) => {
         student: {
           select: {
             id: true,
-
             user: {
               select: {
                 first_name: true,
@@ -52,36 +54,38 @@ export const GET = async (req: NextRequest) => {
           },
         },
       },
+      orderBy: {
+        due_date: "asc",
+      },
     });
 
-    const data = assignments.map((asi) => {
-      return {
-        studentId: asi.student_id,
-        title: asi.title,
-        firstName: asi.student.user.first_name,
-        lastName: asi.student.user.last_name,
-        dueDate: asi.due_date,
-        status: asi.status,
-      };
-    });
+    // === 4. Transform data to match frontend expectations ===
+    const data = assignments.map((assignment) => ({
+      studentId: assignment.student_id,
+      title: assignment.title,
+      firstName: assignment.student.user.first_name,
+      lastName: assignment.student.user.last_name,
+      dueDate: assignment.due_date,
+      status: assignment.status,
+    }));
 
     return respondWithSuccess({
       data: data,
-      message: "assignment fetched succesfully",
+      message: "Pending assignments fetched successfully",
       status: 200,
     });
   } catch (error) {
-    console.error("error in fetching assingments preview", error);
+    console.error("Error fetching pending assignments:", error);
     return respondWithError({
       error: "INTERNAL_SERVER_ERROR",
-      message: "error in fetching preview data",
+      message: "Failed to fetch pending assignments",
       status: 500,
+      details: error instanceof Error ? error.message : undefined,
     });
   }
 };
 
 export const PUT = async () => {
-  // Implementation for PUT request
   return respondWithError({
     error: "NOT_IMPLEMENTED",
     message: "PUT method is not implemented yet",

@@ -603,3 +603,40 @@ export interface TeacherStudentData {
 export interface MyStudentsResponse {
   students: TeacherStudentData[]
 }
+
+// Teacher Pending Assignment Response
+export interface TeacherPendingAssignment {
+  studentId: number
+  title: string
+  firstName: string | null
+  lastName: string | null
+  dueDate: Date
+  status: string
+}
+
+export interface PendingReviewsResponse {
+  data: TeacherPendingAssignment[]
+}
+
+// Teacher Students List Response
+export interface TeacherStudentsList {
+  id: number
+  name: string
+  age: number | null
+  status: string
+  phone: string
+  location: string
+  joinedDate: string
+  parentName: string
+  parentPhone: string
+  parentEmail: string
+  skillsLearning: string[]
+  grade: string
+  schoolName: string
+}
+
+export interface TeacherStudentsResponse {
+  data: {
+    students: TeacherStudentsList[]
+  }
+}
