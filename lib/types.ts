@@ -350,8 +350,9 @@ export type Teacher = {
     name: string;
     email: string;
     payDate: string;
-    base: string;
+    base: number;
     thisMonthStatus: "paid" | "due";
+    lastPayDate: Date | null;
     thisMonthPaidDate: string;
   };
   
@@ -554,5 +555,34 @@ export interface AttendanceRecord {
 export type DayAttendance = {
   date: string // ISO date string YYYY-MM-DD
   status: AttendanceStatus
+}
+
+// Fees Statistics Response
+export interface FeesStatsResponse {
+  totalCollection: number
+  dueFees: number
+  pendingFees: number
+}
+
+// Student Fee Response (from /api/admin/fee)
+export interface StudentFeeResponse {
+  studentId: string
+  feeAssigned: boolean
+  studentName: string
+  parentEmail: string
+  parentPhone: string
+  fee: number
+  status: "PAID" | "DUE" | "OVERDUE"
+  paidOn: string
+  ReminderSent: number
+  dueDate: string
+}
+
+// Fees API Response
+export interface FeesApiResponse {
+  studentFees: StudentFeeResponse[]
+  page: number
+  totalPages: number
+  totalStudentFeeData: number
 }
 

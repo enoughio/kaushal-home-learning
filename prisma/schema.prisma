@@ -385,9 +385,6 @@ model SalaryPayment {
   id              Int       @id @default(autoincrement())
   date           DateTime
   
-  // base_salary     Float
-  // bonus           Float     @default(0)
-  // deductions      Float     @default(0)
   total_amount    Float
   status          SalaryStatus    @default(UNPAID) // or paid, processing, etc.
 

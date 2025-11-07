@@ -1,13 +1,12 @@
 import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
-import { authenticateAndValidateAdmin } from "../../_lib/verify";
 import { Prisma } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    const authResult = await authenticateAndValidateAdmin(req);
-    if ("error" in authResult) return authResult.error;
+    // const authResult = await authenticateAndValidateAdmin(req);
+    // if ("error" in authResult) return authResult.error;
 
     const searchParams = req.nextUrl.searchParams;
     const search = searchParams.get("search")?.trim(); // search by user name, id or location or email

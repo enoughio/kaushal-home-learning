@@ -2,36 +2,62 @@
 
 "use client"
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import React, { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
+import { Mail, Loader2 } from "lucide-react"
+import { toast } from "react-hot-toast"
 
 const SendReminder = ({ feeId }: { feeId: string }) => {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleSend = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const res = await fetch(`/api/admin/fees/${feeId}/send-reminder`, {
+      const res = await fetch(`/api/admin/fee/${feeId}/send-reminder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: "Please pay your pending fees" }),
-      });
-      if (!res.ok) throw new Error("Failed to send reminder");
-      router.refresh();
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data?.message || "Failed to send reminder")
+        return
+      }
+
+      toast.success("Reminder sent successfully")
+      router.refresh()
     } catch (err) {
-      console.error(err);
+      console.error("Error sending reminder:", err)
+      toast.error("Error sending reminder")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <Button size="sm" variant="outline" onClick={handleSend} disabled={loading}>
-      {loading ? "Sending..." : "Send Reminder"}
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={handleSend}
+      disabled={loading}
+      className="gap-2"
+    >
+      {loading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Sending...
+        </>
+      ) : (
+        <>
+          <Mail className="h-4 w-4" />
+          Send Reminder
+        </>
+      )}
     </Button>
-  );
-};
+  )
+}
 
-export default SendReminder;
+export default SendReminder
