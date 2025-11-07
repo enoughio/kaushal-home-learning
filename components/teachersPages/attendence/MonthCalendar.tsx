@@ -132,12 +132,12 @@ export function MonthCalendar({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-px bg-border">
+      <div className="grid grid-cols-7 gap-2 bg-border p-2">
         {cells.map((c, i) => (
-          <div key={i} className="min-h-16 bg-background p-2">
+          <div key={i} className="min-h-16  bg-white rounded-md  p-2">
             {c.day ? (
               <div className="flex items-start justify-between">
-                <span className="text-xs text-muted-foreground">{c.day}</span>
+                <span className="text-xs text-foreground">{c.day}</span>
                 <Dot status={c.status} />
               </div>
             ) : null}
