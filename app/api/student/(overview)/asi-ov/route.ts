@@ -5,7 +5,6 @@ import { getAuthUser } from "@/app/api/_lib/auth";
 
 
 // get pending assignments for a student
-
 export async function GET(req: NextRequest) {
     try {
 

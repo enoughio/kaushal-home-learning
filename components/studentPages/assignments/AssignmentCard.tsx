@@ -48,9 +48,26 @@ export default function AssignmentCard({ assignment }: Props) {
   const handleSubmit = async (assignmentId: string) => {
     setSubmitting(assignmentId);
     try {
-      // Simulate a submission delay. In future replace with API call.
-      await new Promise((resolve) => setTimeout(resolve, 700));
-      // Optionally we could persist form data in client storage here during dev.
+      const form = new FormData();
+      const file = files[assignmentId];
+      const text = submissions[assignmentId] || "";
+      if (file) form.append("file", file);
+      // server expects a field named `json` containing a JSON string
+      form.append("json", JSON.stringify({ text }));
+
+      const res = await fetch(`/api/student/assignments/${assignmentId}/submit`, {
+        method: "POST",
+        body: form,
+        // browser will set correct multipart headers; credentials included by default
+      });
+
+      if (!res.ok) {
+        const body = await res.text();
+        console.error("Submit failed", res.status, body);
+        throw new Error(`Submission failed: ${res.status}`);
+      }
+
+      // Successful submission — refresh server components to reflect new status
       router.refresh();
     } catch (err) {
       console.error("Failed to submit assignment", err);

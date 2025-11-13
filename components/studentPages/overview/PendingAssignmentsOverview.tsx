@@ -2,11 +2,12 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Assignment } from "@/lib/types";
+import type { Assignment, ApiResponse } from "@/lib/types";
+import myFetch from "@/lib/requestHelper";
 
 export default async function PendingAssignmentsOverview() {
-  // Placeholder assignments — replace with server fetch from API later
-  const pendingAssignments: Assignment[] = [
+  // Default placeholder — will be replaced by server API if available
+  let pendingAssignments: Assignment[] = [
     {
       id: "a1",
       title: "Algebra Worksheet",
@@ -17,17 +18,30 @@ export default async function PendingAssignmentsOverview() {
       dueDate: "2025-10-15",
       status: "pending",
     },
-    {
-      id: "a2",
-      title: "Science Lab Report",
-      description: "Write up experiment results",
-      subject: "Science",
-      teacherId: "t2",
-      teacherName: "Mr. Gomez",
-      dueDate: "2025-10-18",
-      status: "pending",
-    },
   ];
+
+  try {
+    const res = await myFetch("/api/student/(overview)/asi-ov");
+    if (res.ok) {
+      const json = (await res.json()) as ApiResponse<Array<any>>;
+      if (json && Array.isArray(json.data)) {
+        pendingAssignments = json.data.map((a) => ({
+          id: String(a.id),
+          title: a.title ?? "Untitled",
+          description: a.description ?? "",
+          subject: a.subject ?? "",
+          teacherId: a.teacherId ?? "",
+          teacherName: a.teacherName ?? "",
+          dueDate: a.dueDate ?? null,
+          status: (a.status && typeof a.status === "string") ? (a.status.toLowerCase() === "assigned" || a.status.toLowerCase() === "assigned" ? "pending" : a.status.toLowerCase()) : "pending",
+        } as Assignment));
+      }
+    } else {
+      console.error("PendingAssignmentsOverview: fetch failed", res.status);
+    }
+  } catch (err) {
+    console.error("PendingAssignmentsOverview: error fetching assignments", err);
+  }
 
   return (
     <Card>

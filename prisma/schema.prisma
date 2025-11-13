@@ -283,7 +283,6 @@ model assignment_submissions {
   grade          String?
   feedback       String?
 
-
 // only appliend when recreating the databse from scratch
   file_url       String?
   file_name      String?

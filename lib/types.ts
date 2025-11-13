@@ -720,3 +720,30 @@ export interface TeacherStudentAttendanceResponse {
   totalPages: number
   totalRecords: number
 }
+
+// Student assignments API shape (frontend typed)
+export interface StudentApiAssignment {
+  id: string;
+  // backend had a small typo in some places; presence of submission is reliable
+  teacherId: string;
+  title: string;
+  description: string;
+  dueDate: string | null;
+  createdAt: string;
+  status: string; // e.g. ASSIGNED, SUBMITTED, GRADED
+  attachments: Array<{
+    fileName: string;
+    fileUrl: string;
+    mimeType: string;
+    size: number;
+  }>;
+  submission?: {
+    submittedAt: string;
+    fileName?: string;
+    fileUrl?: string;
+    mimeType?: string;
+    size?: number;
+    grade?: number | null;
+    feedback?: string | null;
+  } | null;
+}

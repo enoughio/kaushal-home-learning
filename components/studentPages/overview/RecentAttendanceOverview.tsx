@@ -3,12 +3,13 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { AttendanceRecord } from "@/lib/types";
+import type { AttendanceRecord, ApiResponse } from "@/lib/types";
+import myFetch from "@/lib/requestHelper";
 
 // Server component: fetches or builds data on the server. Currently uses placeholder data.
 export default async function RecentAttendanceOverview() {
-  // Placeholder data — replace with server fetch from API later
-  const recentAttendance: AttendanceRecord[] = [
+  // Default placeholder while server fetch runs
+  let recentAttendance: AttendanceRecord[] = [
     {
       id: "r1",
       studentId: "s1",
@@ -19,17 +20,30 @@ export default async function RecentAttendanceOverview() {
       status: "present",
       duration: 45,
     },
-    {
-      id: "r2",
-      studentId: "s1",
-      teacherId: "t2",
-      teacherName: "Mr. Gomez",
-      subject: "Science",
-      date: "2025-10-09",
-      status: "absent",
-      duration: 50,
-    },
   ];
+
+  try {
+    const res = await myFetch("/api/student/(overview)/atten-ov");
+    if (res.ok) {
+      const json = (await res.json()) as ApiResponse<Array<any>>;
+      if (json && Array.isArray(json.data)) {
+        recentAttendance = json.data.map((r) => ({
+          id: String(r.id),
+          studentId: r.studentId ?? null,
+          teacherId: r.teacherId ?? null,
+          teacherName: r.teacherName ?? "",
+          subject: r.subject ?? "",
+          date: r.date ?? null,
+          status: (typeof r.status === "string" ? r.status.toLowerCase() : "absent"),
+          duration: r.duration ?? null,
+        } as AttendanceRecord));
+      }
+    } else {
+      console.error("RecentAttendanceOverview: fetch failed", res.status);
+    }
+  } catch (err) {
+    console.error("RecentAttendanceOverview: error fetching attendance", err);
+  }
 
   return (
     <Card>

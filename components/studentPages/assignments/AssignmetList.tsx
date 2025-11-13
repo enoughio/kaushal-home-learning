@@ -1,64 +1,78 @@
 import AssignmentCard from "./AssignmentCard";
 import AssignmentsStats from "./AssignmentsStats";
-import type { Assignment } from "@/lib/types";
+import type { Assignment, ApiResponse, StudentApiAssignment } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText } from "lucide-react";
+import myFetch from "@/lib/requestHelper";
 
-// Server component: fetches assignments (placeholder) and passes data to children
+// Server component: fetches assignments and stats from internal APIs and passes data to children
 export default async function AssignmentList() {
-  // Placeholder student id for now — replace with real user id later
+  // defaults
+  let assignments: Assignment[] = [];
+  let stats = { pending: 0, submitted: 0, graded: 0 };
 
-  // Placeholder assignments (will be replaced with API response later)
-  const assignments: Assignment[] = [
-    {
-      id: "a1",
-      title: "Math: Algebra Worksheet",
-      description: "Practice problems on linear equations",
-      subject: "Mathematics",
-      teacherId: "t1",
-      teacherName: "Ms. Rao",
-      dueDate: "2025-10-25",
-      status: "pending",
-      attachmentUrl: "https://example.com/assignments/a1.pdf",
-      attachmentName: "algebra-worksheet.pdf",
-    },
-    {
-      id: "a2",
-      title: "Science: Plant Cell Diagram",
-      description: "Label the parts of a plant cell and submit a scanned copy",
-      subject: "Science",
-      teacherId: "t2",
-      teacherName: "Mr. Singh",
-      dueDate: "2025-10-20",
-      status: "submitted",
-      submittedAt: "2025-10-10",
-      submissionFileUrl: "https://example.com/submissions/a2-student.pdf",
-      submissionFileName: "plant-cell-scan.pdf",
-    },
-    {
-      id: "a3",
-      title: "English: Reading Comprehension",
-      description: "Read the passage and answer the questions",
-      subject: "English",
-      teacherId: "t3",
-      teacherName: "Mrs. Patel",
-      dueDate: "2025-10-18",
-      status: "graded",
-      grade: 92,
-      submittedAt: "2025-10-12",
-    },
-  ];
+  try {
+    const [assignRes, statsRes] = await Promise.all([
+      myFetch("/api/student/assignments"),
+      myFetch("/api/student/assignments/stats"),
+    ]);
 
-  const pendingAssignments = assignments.filter((a) => a.status === "pending");
-  const submittedAssignments = assignments.filter((a) => a.status === "submitted");
-  const gradedAssignments = assignments.filter((a) => a.status === "graded");
+    if (assignRes.ok) {
+      const json = (await assignRes.json()) as ApiResponse<{ assignments: StudentApiAssignment[] }>;
+      const apiAssignments = json?.data?.assignments ?? [];
+      assignments = apiAssignments.map((a) => {
+        const mappedStatus =
+          a.status === "ASSIGNED" ? "pending" : a.status === "SUBMITTED" ? "submitted" : a.status === "GRADED" ? "graded" : a.status.toLowerCase();
+
+        const firstAttachment = a.attachments && a.attachments.length > 0 ? a.attachments[0] : null;
+
+        return {
+          id: String(a.id),
+          title: a.title,
+          description: a.description || "",
+          subject: "",
+          teacherId: a.teacherId ?? "",
+          teacherName: "",
+          dueDate: a.dueDate ?? "",
+          status: mappedStatus as Assignment["status"],
+          grade: a.submission?.grade ?? undefined,
+          submittedAt: a.submission?.submittedAt ?? undefined,
+          attachmentUrl: firstAttachment?.fileUrl ?? undefined,
+          attachmentName: firstAttachment?.fileName ?? undefined,
+          submissionFileUrl: a.submission?.fileUrl ?? undefined,
+          submissionFileName: a.submission?.fileName ?? undefined,
+        } as Assignment;
+      });
+    } else {
+      console.error("Failed to fetch assignments", assignRes.status);
+    }
+
+    if (statsRes.ok) {
+      const sjson = (await statsRes.json()) as ApiResponse<{ pending: number; submitted: number; graded: number }>;
+      if (sjson?.data) {
+        stats = {
+          pending: sjson.data.pending ?? 0,
+          submitted: sjson.data.submitted ?? 0,
+          graded: sjson.data.graded ?? 0,
+        };
+      }
+    } else {
+      console.error("Failed to fetch assignment stats", statsRes.status);
+    }
+  } catch (err) {
+    console.error("Error fetching assignments or stats", err);
+  }
+
+  const pendingAssignments = stats.pending ?? assignments.filter((a) => a.status === "pending").length;
+  const submittedAssignments = stats.submitted ?? assignments.filter((a) => a.status === "submitted").length;
+  const gradedAssignments = stats.graded ?? assignments.filter((a) => a.status === "graded").length;
 
   return (
     <div className="space-y-6">
       <AssignmentsStats
-        pendingCount={pendingAssignments.length}
-        submittedCount={submittedAssignments.length}
-        gradedCount={gradedAssignments.length}
+        pendingCount={pendingAssignments}
+        submittedCount={submittedAssignments}
+        gradedCount={gradedAssignments}
       />
 
       <div className="space-y-4">

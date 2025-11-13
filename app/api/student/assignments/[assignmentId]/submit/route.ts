@@ -53,9 +53,58 @@ export async function POST(
     }
 
     const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const text = formData.get("json") as File;
-    const textData = JSON.parse(text as unknown as string); // Replaced `any` with `unknown` for better type safety
+    const file = (formData.get("file") as File) ?? null;
+    const jsonField = formData.get("json");
+
+    // Parse JSON payload that may be provided as a string field or a small File
+    let parsedJson: unknown = {};
+    if (typeof jsonField === "string") {
+      try {
+        parsedJson = JSON.parse(jsonField);
+      } catch (err) {
+        return respondWithError({
+          error: "BAD_REQUEST",
+          message: "Invalid JSON payload in 'json' field",
+          status: 400,
+        });
+      }
+    } else if (jsonField instanceof File) {
+      try {
+        const txt = await jsonField.text();
+        parsedJson = JSON.parse(txt);
+      } catch (err) {
+        return respondWithError({
+          error: "BAD_REQUEST",
+          message: "Invalid JSON file in 'json' field",
+          status: 400,
+        });
+      }
+    }
+
+    const payloadSchema = z.object({
+      text: z.string().max(20000).optional(),
+    });
+
+    const payload = payloadSchema.safeParse(parsedJson ?? {});
+    if (!payload.success) {
+      return respondWithError({
+        error: "BAD_REQUEST",
+        message: "Invalid submission payload",
+        details: payload.error.issues,
+        status: 400,
+      });
+    }
+
+    // Ensure at least one of text or file is present
+    const hasText = typeof payload.data.text === "string" && payload.data.text.trim().length > 0;
+    const hasFile = !!file;
+    if (!hasText && !hasFile) {
+      return respondWithError({
+        error: "BAD_REQUEST",
+        message: "Either a file or submission text is required",
+        status: 400,
+      });
+    }
 
     if (file) {
       const parsedFile = fileSchema.safeParse({
@@ -106,7 +155,8 @@ export async function POST(
     if (file) {
       try {
         uploadResult = await uploadFile(file, "assignments");
-      } catch {
+      } catch (err) {
+        console.error("Upload error:", err);
         return respondWithError({
           error: "UPLOAD_FAILED",
           message: "File upload failed. Please try again later",
@@ -115,12 +165,12 @@ export async function POST(
       }
     }
 
-    // Create submission
+    // Create submission using validated payload
     await prisma.assignment_submissions.create({
       data: {
         assignment_id: assignmentId,
         student_id: student.id,
-        submission_text: textData || "",
+        submission_text: payload.data.text ?? "",
         submitted_at: new Date(),
         file_name: file ? file.name : null,
         file_url: uploadResult?.url || null,

@@ -1,7 +1,8 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText, TrendingUp, Calendar, Users } from "lucide-react";
-import type { AttendanceRecord, Assignment } from "@/lib/types";
+import type { AttendanceRecord, Assignment, ApiResponse } from "@/lib/types";
+import myFetch from "@/lib/requestHelper";
 
 type Props = {
   // Accept optional data from parent in future. Currently uses placeholder server-side data.
@@ -37,6 +38,29 @@ export default async function OverVieewStats({
     ? Math.round((placeholderAttendance.filter((a) => a.status === "present").length / placeholderAttendance.length) * 100)
     : 0;
 
+  // fetch server-side stats from API; use myFetch to forward cookies
+  let serverPending = null as number | null;
+  let serverAttendanceRate = null as number | null;
+  let serverActiveTeachers = null as number | null;
+
+  try {
+    const res = await myFetch("/api/student/(overview)/stats");
+    if (res.ok) {
+      const json = (await res.json()) as ApiResponse<{ pendingAssignments: number; activeTeachers: number; attendanceRate: number }>;
+      if (json && json.data) {
+        serverPending = json.data.pendingAssignments ?? null;
+        serverAttendanceRate = json.data.attendanceRate ?? null;
+        serverActiveTeachers = json.data.activeTeachers ?? null;
+      }
+    } else {
+      // non-OK response - log for server-side debugging
+      const text = await res.text();
+      console.error("OverVieewStats: stats fetch failed:", res.status, text);
+    }
+  } catch (err) {
+    console.error("OverVieewStats: error fetching stats", err);
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card>
@@ -44,7 +68,7 @@ export default async function OverVieewStats({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Pending Assignments</p>
-              <p className="text-2xl font-bold">{pendingCount}</p>
+              <p className="text-2xl font-bold">{serverPending ?? pendingCount}</p>
             </div>
             <FileText className="h-8 w-8 text-chart-1" />
           </div>
@@ -56,7 +80,7 @@ export default async function OverVieewStats({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Attendance Rate</p>
-              <p className="text-2xl font-bold">{attendanceRate}%</p>
+              <p className="text-2xl font-bold">{(serverAttendanceRate ?? attendanceRate)}%</p>
             </div>
             <TrendingUp className="h-8 w-8 text-chart-2" />
           </div>
@@ -80,7 +104,7 @@ export default async function OverVieewStats({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Active Teachers</p>
-              <p className="text-2xl font-bold">1</p>
+              <p className="text-2xl font-bold">{serverActiveTeachers ?? 1}</p>
             </div>
             <Users className="h-8 w-8 text-chart-4" />
           </div>
