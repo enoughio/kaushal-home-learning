@@ -24,6 +24,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import toast from "react-hot-toast";
 import { gradeAssignmentSchema } from "@/helper/validation/assignmentSchema";
 import { ZodError } from "zod";
+import type { ZodIssue } from "zod";
 
 interface GradeSubmissionDialogProps {
   assignmentId: number;
@@ -61,7 +62,7 @@ const GradeSubmissionDialog: React.FC<GradeSubmissionDialogProps> = ({
       return true;
     } catch (err) {
       if (err instanceof ZodError) {
-        err.issues.forEach((issue: any) => {
+        err.issues.forEach((issue: ZodIssue) => {
           const field = issue.path[0] as string;
           errors[field] = issue.message;
         });

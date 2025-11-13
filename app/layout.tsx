@@ -4,6 +4,7 @@ import { Urbanist, Syne,Gothic_A1 } from "next/font/google";
 import "./globals.css";
 // import NavBar from '@/components/NavBar';
 import Fotter from "@/components/Fotter";
+import ToastProvider from "@/components/ui/ToastProvider";
 
 
 // Configure Google Fonts
@@ -44,6 +45,7 @@ export default function RootLayout({
         className={`${urbanist.variable} ${gothicA1.variable}  ${syne.variable} antialiased`}
       >
         {/* <NavBar /> */}
+        <ToastProvider />
         {children}
         <Fotter />
       </body>

@@ -703,3 +703,20 @@ export interface AssignmentStats {
   submitted: number
   graded: number
 }
+
+// --- Attendance API types for teacher attendance page ---
+export interface AttendanceDay {
+  date: string // YYYY-MM-DD
+  status: string // generic string to match DB enum (e.g. 'present'|'absent'|'excused')
+}
+
+export interface TeacherStudentAttendanceResponse {
+  studentId: string
+  teacherId: string
+  month: number
+  year: number
+  attendanceRecords: AttendanceDay[]
+  page: number
+  totalPages: number
+  totalRecords: number
+}

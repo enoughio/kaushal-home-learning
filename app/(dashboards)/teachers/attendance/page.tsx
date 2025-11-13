@@ -2,40 +2,83 @@ import React, { Suspense } from "react";
 import { MonthCalendar } from "@/components/teachersPages/attendence/MonthCalendar";
 import MarkAttendence from "@/components/teachersPages/attendence/MarkAttendence";
 import AttendanceStats from "@/components/teachersPages/attendence/AttendanceStats";
-import { DayAttendance } from "@/lib/types";
-// import { DayAttendance } from "@/lib/types";
-
-// Placeholder students data
-const students = [
-  { id: "1", name: "John Doe" },
-  { id: "2", name: "Sarah Wilson" },
-  { id: "3", name: "Raj Patel" },
-];
-
-// Placeholder selected student (could be set via search params or default)
-const selectedStudentId = students[0].id;
-// const selectedStudent = students.find((s) => s.id === selectedStudentId);
-const studentData = [ { id: "1", name: "John Doe" },
-{ id: "2", name: "Sarah Wilson" },
-{ id: "3", name: "Raj Patel" },];
-
-// Placeholder attendance records
-const monthRecords : DayAttendance[] = [
-  { date: "2025-10-01", status: "PRESENT" },
-  { date: "2025-10-02", status: "PRESENT" },
-  { date: "2025-10-03", status: "EXCUSED" },
-];
+import {
+  DayAttendance,
+  TeacherStudentData,
+  TeacherStudentAttendanceResponse,
+} from "@/lib/types";
+import myFetch from "@/lib/requestHelper";
 
 const AttendancePage = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>;
+  searchParams: Promise<{
+    month?: string;
+    year?: string;
+    studentId?: string;
+    page?: string;
+  }>;
 }) => {
-  const month = (await searchParams).month || "";
+  const {
+    month: monthParam = "",
+    year: yearParam = "",
+    studentId: studentIdParam = "",
+    page: pageParam = "1",
+  } = await searchParams;
+  const month = monthParam || "";
   // const { month = "" } = await searchParams;
 
   console.log("Query month param:", month);
-  // In future, fetch students, selectedStudentId, monthRecords from API
+
+  // Fetch students assigned to teacher
+  let students: TeacherStudentData[] = [];
+  try {
+    const studentsRes = await myFetch(`/api/teacher/my-students`);
+    if (studentsRes.ok) {
+      const j = await studentsRes.json();
+      students = (j?.data?.students ?? []) as TeacherStudentData[];
+    } else {
+      console.error("Failed fetching students", studentsRes.status);
+    }
+  } catch (e) {
+    console.error("Error fetching students", e);
+  }
+
+  // Determine selected student id (from query or first student)
+  const selectedStudentId =
+    studentIdParam || (students[0] ? String(students[0].id) : "");
+
+  // Default to current month/year if not provided
+  const now = new Date();
+  const year = yearParam ? Number(yearParam) : now.getFullYear();
+  const monthNumber = month ? Number(month) : now.getMonth() + 1;
+
+  // Fetch attendance for selected student (if available)
+  let monthRecords: DayAttendance[] = [];
+  try {
+    if (selectedStudentId) {
+      const attRes = await myFetch(
+        `/api/teacher/attendence/${selectedStudentId}?month=${monthNumber}&year=${year}&page=${pageParam}`
+      );
+
+      if (attRes.ok) {
+        const aj = await attRes.json();
+        const data = aj?.data as TeacherStudentAttendanceResponse | undefined;
+        if (data?.attendanceRecords) {
+          // Normalize statuses to uppercase strings so calendar component can map easily
+          monthRecords = data.attendanceRecords.map((r) => ({
+            date: r.date,
+            // convert to uppercase token, fallback to original string
+            status: String(r.status).toUpperCase(),
+          })) as DayAttendance[];
+        }
+      } else {
+        console.error("Failed fetching attendance", attRes.status);
+      }
+    }
+  } catch (e) {
+    console.error("Error fetching attendance", e);
+  }
 
   const MonthCalendarSkeleton = () => {
     return (
@@ -127,19 +170,24 @@ const AttendancePage = async ({
             </p>
           </div>
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            {/* Student dropdown */}
+            {/* Student dropdown - server-rendered; for interactive selection convert to client component */}
             <label className="text-sm">
               <span className="mr-2">Student</span>
               <select
                 defaultValue={selectedStudentId}
                 className="rounded-md border bg-background px-3 py-2 text-sm"
-                // In a real app, use state or search params to control selected student
               >
-                {students.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
+                {students.length > 0 ? (
+                  students.map((s) => (
+                    <option key={s.id} value={String(s.id)}>
+                      {s.user?.first_name
+                        ? `${s.user.first_name} ${s.user.last_name ?? ""}`
+                        : `Student ${s.id}`}
+                    </option>
+                  ))
+                ) : (
+                  <option value="">No students</option>
+                )}
               </select>
             </label>
           </div>
@@ -149,15 +197,21 @@ const AttendancePage = async ({
           <div className="md:col-span-2">
             <Suspense fallback={<MonthCalendarSkeleton />}>
               <MonthCalendar
-                year={new Date().getFullYear()}
-                month={Number(month)}
+                year={year}
+                month={Number(monthNumber)}
                 records={monthRecords}
                 title="Monthly Calendar"
               />
             </Suspense>
           </div>
           <Suspense fallback={<AttendanceFormSkeleton />}>
-            <MarkAttendence student={{ id: "1", name : "jhon sena",  isMarkedToday : true }}  />
+            <MarkAttendence
+              student={{
+                id: selectedStudentId || "",
+                name: "",
+                isMarkedToday: false,
+              }}
+            />
           </Suspense>
         </div>
       </section>

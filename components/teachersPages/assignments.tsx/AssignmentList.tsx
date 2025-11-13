@@ -103,7 +103,6 @@ const AssignmentList: React.FC<AssignmentListProps> = ({
   assignments,
 }) => {
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const handleDelete = async (assignmentId: number) => {
     setDeleting(assignmentId);
@@ -150,7 +149,6 @@ const AssignmentList: React.FC<AssignmentListProps> = ({
             ? assignment.assignment_submissions[0]
             : null;
         const studentName = `${assignment.student.user.first_name} ${assignment.student.user.last_name}`;
-        const isExpanded = expandedId === assignment.id;
 
         return (
           <Card key={assignment.id} className="transition-all hover:shadow-md">
@@ -294,7 +292,7 @@ const AssignmentList: React.FC<AssignmentListProps> = ({
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete Assignment?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. The assignment "{assignment.title}" will be permanently deleted.
+                      This action cannot be undone. The assignment <strong>{assignment.title}</strong> will be permanently deleted.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <div className="flex gap-3">

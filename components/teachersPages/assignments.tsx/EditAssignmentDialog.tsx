@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import toast from "react-hot-toast";
 import { editAssignmentSchema } from "@/helper/validation/assignmentSchema";
 import { ZodError } from "zod";
+import type { ZodIssue } from "zod";
 
 interface EditAssignmentDialogProps {
   assignmentId: number;
@@ -35,9 +36,7 @@ const EditAssignmentDialog: React.FC<EditAssignmentDialogProps> = ({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string>
-  >({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState(initialData);
 
@@ -55,7 +54,7 @@ const EditAssignmentDialog: React.FC<EditAssignmentDialogProps> = ({
       return true;
     } catch (err) {
       if (err instanceof ZodError) {
-        err.issues.forEach((issue: any) => {
+        err.issues.forEach((issue: ZodIssue) => {
           const field = issue.path[0] as string;
           errors[field] = issue.message;
         });
@@ -75,7 +74,14 @@ const EditAssignmentDialog: React.FC<EditAssignmentDialogProps> = ({
 
     setLoading(true);
     try {
-      const updateData: Record<string, any> = {};
+      type UpdateData = Partial<{
+        title: string;
+        subject: string;
+        dueDate: string;
+        description: string | null;
+      }>;
+
+      const updateData: UpdateData = {};
 
       if (formData.title !== initialData.title) {
         updateData.title = formData.title;

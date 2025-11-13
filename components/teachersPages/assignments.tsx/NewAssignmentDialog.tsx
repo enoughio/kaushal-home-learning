@@ -25,6 +25,7 @@ import toast from "react-hot-toast";
 import { TeacherStudentData } from "@/lib/types";
 import { createAssignmentSchema } from "@/helper/validation/assignmentSchema";
 import { ZodError } from "zod";
+import type { ZodIssue } from "zod";
 
 interface NewAssignmentDialogProps {
   onAssignmentCreated?: () => void;
@@ -92,7 +93,7 @@ const NewAssignmentDialog: React.FC<NewAssignmentDialogProps> = ({
       return true;
     } catch (err) {
       if (err instanceof ZodError) {
-        err.issues.forEach((issue: any) => {
+        err.issues.forEach((issue: ZodIssue) => {
           const field = issue.path[0] as string;
           errors[field] = issue.message;
         });

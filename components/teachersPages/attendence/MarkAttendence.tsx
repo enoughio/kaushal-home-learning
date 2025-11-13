@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { AttendanceStatus } from "@/generated/prisma";
-
+import toast from "react-hot-toast";
 async function mark(
   studentId: number,
   date: string,
@@ -15,6 +15,8 @@ async function mark(
       headers: {
         "Content-Type": "application/json",
       },
+      // ensure cookies (auth) are sent from client
+      credentials: "same-origin",
       body: JSON.stringify({
         date,
         status: AttendanceStatus.PRESENT,
@@ -23,10 +25,16 @@ async function mark(
       }),
     });
 
-    if (!response.ok) throw new Error("Failed to mark attendance");
-    console.log("Attendance marked successfully");
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const message = payload?.message || payload?.error || response.statusText || "Failed to mark attendance";
+      return { success: false, message, details: payload };
+    }
+
+    return { success: true, data: payload?.data ?? null };
   } catch (error) {
-    console.error("Error marking attendance:", error);
+    return { success: false, message: (error instanceof Error && error.message) || String(error) };
   }
 }
 
@@ -51,9 +59,12 @@ const MarkAttendance = ({
   const [notes, setNotes] = useState("");
   const [date, setDate] = useState(today);
   const [checked, setChecked] = useState(false);
-  const [position, setPosition] = useState<{ lat: number; lon: number } | null>(
-    null
-  );
+  // normalized position shape used by API
+  const [position, setPosition] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isMarked, setIsMarked] = useState<boolean>(student.isMarkedToday ?? false);
 
   const handleCheckbox = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;
@@ -72,11 +83,12 @@ const MarkAttendance = ({
 
         console.log("Latitude:", lat);
         console.log("Longitude:", lon);
-        setPosition({ lat, lon });
+        // store normalized shape expected by API
+        setPosition({ latitude: lat, longitude: lon });
 
         // alert(`Your location:\nLatitude: ${lat}\nLongitude: ${lon}`);
       } catch  {
-        alert("Unable to fetch location: " + "Please allow location access." );
+        alert("Unable to fetch location: Please allow location access.");
       }
     } else {
       setPosition(null);
@@ -85,27 +97,58 @@ const MarkAttendance = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSuccessMessage(null);
+    setErrorMessage(null);
 
-    if (!checked || !position) {
-      alert("Please confirm your location before marking attendance.");
+    if (isMarked) {
+      setErrorMessage("Attendance already marked for today.");
       return;
     }
 
-    console.log("Submitting attendance with coordinates:", position);
-    await mark(parseInt(student.id), date, notes, {
-      latitude: position.lat,
-      longitude: position.lon,
-    });
+    if (!checked || !position) {
+      setErrorMessage("Please confirm your location before marking attendance.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const result = await mark(parseInt(student.id, 10), date, notes, position || undefined);
+      if (result.success) {
+        setSuccessMessage("Attendance marked successfully.");
+        toast.success("Attendance marked successfully.");
+        setIsMarked(true);
+      } else {
+        console.error("Mark error details:", result.details || result.message);
+        const msg = result.message || "Failed to mark attendance.";
+        setErrorMessage(msg);
+        toast.error(msg);
+      }
+    } catch (err) {
+      const em = (err instanceof Error && err.message) || String(err);
+      setErrorMessage(em);
+      toast.error(em);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className={`rounded-lg border bg-background p-4 space-y-3 ${ student.isMarkedToday
-            ? "border-green-500 border-4 text-foreground"
-            : "border-yellow-500 border-2 "
-        }`}
+      className={`rounded-lg border bg-background p-4 space-y-3 ${isMarked ? "border-green-500 border-4 text-foreground" : "border-yellow-500 border-2"}`}
+      aria-live="polite"
     >
+      {/* Feedback messages */}
+      {successMessage ? (
+        <div className="rounded-md bg-green-50 p-2 text-sm text-green-800" role="status">
+          {successMessage}
+        </div>
+      ) : null}
+      {errorMessage ? (
+        <div className="rounded-md bg-red-50 p-2 text-sm text-red-800" role="alert">
+          {errorMessage}
+        </div>
+      ) : null}
       <div className="text-sm font-medium">Mark Attendance</div>
       <div className="text-xs text-muted-foreground mb-2">
         {student
@@ -132,39 +175,25 @@ const MarkAttendance = ({
         </span>
       </label>
       <label className="block">
-        <div className="mb-1 text-sm text-muted-foreground">
-          Notes (optional)
-        </div>
+        <div className="mb-1 text-sm text-muted-foreground">Notes (optional)</div>
         <textarea
           rows={3}
-          disabled={student.isMarkedToday}
+          disabled={isMarked}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className={`w-full rounded-md border px-3 py-2 text-sm ${
-            student.isMarkedToday
-              ? "bg-green text-muted-foreground"
-              : "border-yellow-500 border-4  bg-gray-500 text-primary-foreground"
-          }`}
-          placeholder={
-            student.isMarkedToday
-              ? "Today's topics are already submitted"
-              : "Lesson topic, duration, or other remarks"
-          }
-          aria-disabled={student.isMarkedToday}
+          className={`w-full rounded-md border px-3 py-2 text-sm ${isMarked ? "bg-green text-muted-foreground" : "border-yellow-500 border-4 bg-gray-500 text-primary-foreground"}`}
+          placeholder={isMarked ? "Today's topics are already submitted" : "Lesson topic, duration, or other remarks"}
+          aria-disabled={isMarked}
         />
       </label>
 
       <button
         type="submit"
-        disabled={student.isMarkedToday}
-        className={`w-full rounded-md border px-3 py-2 text-sm font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
-          student.isMarkedToday
-            ? "bg-green-400 text-foreground"
-            : "border-yellow-500 border-4  bg-gray-500 text-primary-foreground"
-        }`}
-        aria-disabled={student.isMarkedToday}
+        disabled={isMarked || submitting}
+        className={`w-full rounded-md border px-3 py-2 text-sm font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${isMarked ? "bg-green-400 text-foreground" : "border-yellow-500 border-4 bg-gray-500 text-primary-foreground"}`}
+        aria-disabled={isMarked || submitting}
       >
-        {student.isMarkedToday ? "Already Marked" : "Mark Present"}
+        {submitting ? "Marking..." : isMarked ? "Already Marked" : "Mark Present"}
       </button>
 
       <p className="text-xs text-muted-foreground">

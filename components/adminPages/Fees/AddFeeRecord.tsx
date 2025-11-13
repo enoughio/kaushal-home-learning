@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertTriangle, Loader2, Plus } from "lucide-react"
 import { toast } from "react-hot-toast"
-import myFetch from "@/lib/requestHelper"
 
 interface StudentWithoutFee {
   id: number
@@ -135,7 +134,7 @@ export default function AddFeeRecord() {
         <DialogHeader>
           <DialogTitle>Add Fee Record</DialogTitle>
           <DialogDescription>
-            Assign a monthly fee to a student who doesn't have one yet.
+            Assign a monthly fee to a student who does not have one yet.
           </DialogDescription>
         </DialogHeader>
 

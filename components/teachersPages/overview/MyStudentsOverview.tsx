@@ -15,9 +15,6 @@ interface StudentData {
   }
 }
 
-interface MyStudentsResponse {
-  students: StudentData[]
-}
 
 /**
  * Fetch teacher's students from API

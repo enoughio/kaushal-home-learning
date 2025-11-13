@@ -87,7 +87,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           "Unknown",
         email: t.user.email || "",
         payDate: t.salary_pay_day?.toString() || "",
-        base: t.salary_assigned ? t.monthly_salary.toString() : "0",
+        // `base` should be a number as defined in `TeacherSalaryResponse`
+        base: t.salary_assigned ? Number(t.monthly_salary) : 0,
         thisMonthStatus: isPaidThisMonth ? "paid" : "due",  
         lastPayDate : latestPayment,
         thisMonthPaidDate: isPaidThisMonth ? latestPayment.toISOString() : "",

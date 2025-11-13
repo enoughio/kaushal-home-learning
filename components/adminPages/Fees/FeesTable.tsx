@@ -6,7 +6,7 @@ import MarkPaid from "./MarkPaid"
 import SendReminder from "./SendReminder"
 import FeesTablePagination from "./FeesTablePagination"
 import myFetch from "@/lib/requestHelper"
-import { StudentFeeResponse, FeesApiResponse } from "@/lib/types"
+import {  FeesApiResponse } from "@/lib/types"
 
 // Fetch fees with pagination and search
 async function fetchFees(page: number = 1, search?: string): Promise<FeesApiResponse | null> {
@@ -85,7 +85,7 @@ export default async function FeesTable({
     )
   }
 
-  const { studentFees, page: currentPage, totalPages, totalStudentFeeData } = feesData
+  const { studentFees, page: currentPage,  totalStudentFeeData } = feesData
   const pageSize = 20 // API returns 20 per page
 
   return (

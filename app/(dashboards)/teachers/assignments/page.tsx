@@ -63,15 +63,6 @@ const fetchAssignmentsData = async (): Promise<Assignment[] | null> => {
 const AssignmentPage = async () => {
   const assignments = await fetchAssignmentsData();
 
-  const NewAssignmentDialogSkeleton = () => {
-    return (
-      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-neutral-300 animate-pulse">
-        <div className="h-4 w-4 rounded-full bg-neutral-400" />
-        <div className="h-4 w-28 bg-neutral-400 rounded" />
-      </div>
-    );
-  };
-
   const AssignmentStatsSkeleton = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import Link from "next/link";
-import { User, Phone, MapPin, Calendar, BookOpen, AlertTriangle } from "lucide-react";
+import {  Phone, MapPin, Calendar, BookOpen, AlertTriangle } from "lucide-react";
 
 interface Student {
   id: number;
