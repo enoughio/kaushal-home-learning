@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
 
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
+    const statusParam = searchParams.get("status");
     const limit = 20;
     const skip = (page - 1) * limit;
 
@@ -32,11 +33,19 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // build where clause with optional status filter
+    const whereClause: any = { teacherId: teacher.id };
+    if (statusParam && statusParam !== "all") {
+      // map friendly status to Prisma enum values
+      const s = statusParam.toLowerCase();
+      if (s === "paid") whereClause.status = "PAID";
+      else if (s === "unpaid" || s === "pending") whereClause.status = "UNPAID";
+    }
+
     const [salaries, totalRecords] = await Promise.all([
-      
       prisma.salaryPayment.findMany({
-        where: { teacherId: teacher.id },        
-        select : {
+        where: whereClause,
+        select: {
           created_at: true,
           total_amount: true,
           date: true,
@@ -47,7 +56,7 @@ export async function GET(req: NextRequest) {
         orderBy: { created_at: "desc" },
       }),
 
-      prisma.salaryPayment.count({ where: { teacherId: teacher.id } }),
+      prisma.salaryPayment.count({ where: whereClause }),
     ]);
 
     const salaryHistory = salaries.map((salary) => ({
