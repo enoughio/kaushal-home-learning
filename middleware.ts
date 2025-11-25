@@ -19,6 +19,8 @@ const PUBLIC_PATHS = [
 	"/auth/login",
 	"/auth/verify",
 	"/auth/forgot",
+	"/student-reg",
+	"/teacher-reg",
 	"/favicon.ico",
 	"/register/"
 ];

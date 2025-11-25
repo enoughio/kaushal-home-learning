@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { respondWithError, respondWithSuccess } from "@/app/api/_lib/http";
 import { prisma } from "@/lib/db";
 import { getAuthUser } from "@/app/api/_lib/auth";
+import { SalaryStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -34,12 +35,12 @@ export async function GET(req: NextRequest) {
     }
 
     // build where clause with optional status filter
-    const whereClause: any = { teacherId: teacher.id };
+    const whereClause: { teacherId: number; status?: SalaryStatus } = { teacherId: teacher.id };
     if (statusParam && statusParam !== "all") {
       // map friendly status to Prisma enum values
       const s = statusParam.toLowerCase();
-      if (s === "paid") whereClause.status = "PAID";
-      else if (s === "unpaid" || s === "pending") whereClause.status = "UNPAID";
+      if (s === "paid") whereClause.status = SalaryStatus.PAID;
+      else if (s === "unpaid" || s === "pending") whereClause.status = SalaryStatus.UNPAID;
     }
 
     const [salaries, totalRecords] = await Promise.all([

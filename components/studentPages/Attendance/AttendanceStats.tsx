@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 import type { AttendanceRecord } from "@/lib/types";
-import { MockDataService } from "@/lib/mock-data";
+
 
 // type Props = {
 //   attendance?: AttendanceRecord[];
@@ -9,13 +9,16 @@ import { MockDataService } from "@/lib/mock-data";
 
 export default async function AttendanceStats() {
   // fetch own data (server-side)
-    let records: AttendanceRecord[] = [];
-    try {
-      // placeholder student id
-      records = await MockDataService.getAttendanceRecords("2");
-    } catch {
-      records = [];
-    }
+  const records: AttendanceRecord[] = [];
+  // TODO: Implement API call to fetch attendance records
+  // try {
+  //   const response = await fetch(`/api/student/attendance`, { cache: 'no-store' });
+  //   if (response.ok) {
+  //     records = await response.json();
+  //   }
+  // } catch {
+  //   records = [];
+  // }
   
 
   const presentCount = records.filter((r) => r.status === "present").length;

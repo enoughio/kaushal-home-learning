@@ -25,7 +25,7 @@ export default async function RecentAttendanceOverview() {
   try {
     const res = await myFetch("/api/student/(overview)/atten-ov");
     if (res.ok) {
-      const json = (await res.json()) as ApiResponse<Array<any>>;
+      const json = (await res.json()) as ApiResponse<Array<{ id: number | string; studentId?: string | null; teacherId?: string | null; teacherName?: string; subject?: string; date?: string | null; status?: string; duration?: number | null }>>;
       if (json && Array.isArray(json.data)) {
         recentAttendance = json.data.map((r) => ({
           id: String(r.id),

@@ -7,8 +7,7 @@ const Contact = () => {
       <div className="uppercase sm:w-[50%]">
         <p className="text-[#0A85D1] text-2xl font-semibold">Get In Touch</p>
         <p className="text-4xl tracking-wide text-[#181D1F]">
-          <span className="font-bold ">Contact</span> our support team to grow
-          your business
+          <span className="font-bold ">Contact</span> our support team.
         </p>
       </div>
       <div className="sm:hidden">

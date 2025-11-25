@@ -61,7 +61,7 @@ export async function POST(
     if (typeof jsonField === "string") {
       try {
         parsedJson = JSON.parse(jsonField);
-      } catch (err) {
+      } catch {
         return respondWithError({
           error: "BAD_REQUEST",
           message: "Invalid JSON payload in 'json' field",
@@ -72,7 +72,7 @@ export async function POST(
       try {
         const txt = await jsonField.text();
         parsedJson = JSON.parse(txt);
-      } catch (err) {
+      } catch {
         return respondWithError({
           error: "BAD_REQUEST",
           message: "Invalid JSON file in 'json' field",

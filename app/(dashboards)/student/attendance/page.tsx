@@ -1,36 +1,26 @@
 import { Suspense } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { type AttendanceRecord } from "@/lib/types";
 import AttendanceStats from "@/components/studentPages/Attendance/AttendanceStats";
 // import AttendanceCalender from "@/components/studentPages/Attendance/AttendanceCalender";
-
-type Props = {
-  searchParams?: { month?: string };
-};
-
-function normalizeMonth(month?: string) {
-  if (!month) {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  }
-  return month;
-}
 
 export default async function AttendancePage() {
 
   // const monthISO = normalizeMonth(searchParams?.month);
   // Server fetch attendance records once for this student (filtering client-side by month)
-  let records = [];
-  try {
-    // placeholder student id
-    records = await fetch(`/api/student/attendance`)
-    // sort most-recent-first
-    records = records.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-  } catch (e) {
-    records = [];
-  }
+  // const records: AttendanceRecord[] = [];
+  // TODO: Implement API call to fetch attendance records
+  // try {
+  //   const response = await fetch(`/api/student/attendance`, { cache: 'no-store' });
+  //   if (response.ok) {
+  //     records = await response.json();
+  //     // sort most-recent-first
+  //     records = records.sort(
+  //       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  //     );
+  //   }
+  // } catch (e) {
+  //   records = [];
+  // }
 
   // Filter down to entries for the month (YYYY-MM)
   // const monthRecords = records.filter((r) => r.date.startsWith(monthISO));

@@ -23,7 +23,7 @@ export default async function PendingAssignmentsOverview() {
   try {
     const res = await myFetch("/api/student/(overview)/asi-ov");
     if (res.ok) {
-      const json = (await res.json()) as ApiResponse<Array<any>>;
+      const json = (await res.json()) as ApiResponse<Array<{ id: number | string; title?: string; description?: string; subject?: string; teacherId?: string; teacherName?: string; dueDate?: string; status?: string }>>;
       if (json && Array.isArray(json.data)) {
         pendingAssignments = json.data.map((a) => ({
           id: String(a.id),

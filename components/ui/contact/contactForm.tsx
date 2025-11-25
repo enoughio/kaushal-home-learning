@@ -4,14 +4,14 @@ import { useState } from "react";
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
-    test: "",
     name: "",
-    version: "",
-    id: "",
+    email: "",
+    for: "",
+    message: "",
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -27,27 +27,8 @@ const ContactForm: React.FC = () => {
       onSubmit={handleSubmit}
     >
       <div className="flex flex-col gap-2">
-        <label htmlFor="test" className="text-sm text-gray-700">
-          Test
-        </label>
-        <div className="flex items-center relative">
-          <input
-            type="text"
-            name="test"
-            id="test"
-            value={formData.test}
-            onChange={handleChange}
-            placeholder="Enter"
-            required
-            className="w-full bg-white border border-gray-800 px-4 py-3 outline-none focus:-translate-x-[5px] focus:-translate-y-[5px] transition-transform duration-200 "
-          />
-          <div className="absolute bg-black h-full w-full -z-10" />
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
         <label htmlFor="name" className="text-sm text-gray-700">
-          Name
+          Full Name
         </label>
         <div className="flex items-center relative">
           <input
@@ -56,6 +37,25 @@ const ContactForm: React.FC = () => {
             id="name"
             value={formData.name}
             onChange={handleChange}
+            placeholder="Full Name"
+            required
+            className="w-full bg-white border border-gray-800 px-4 py-3 outline-none focus:-translate-x-[5px] focus:-translate-y-[5px] transition-transform duration-200 "
+          />
+          <div className="absolute bg-black h-full w-full -z-10" />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label htmlFor="email" className="text-sm text-gray-700">
+          Email
+        </label>
+        <div className="flex items-center relative">
+          <input
+            type="text"
+            name="email"
+            id="email"
+            value={formData.email}
+            onChange={handleChange}
             placeholder="Enter"
             required
             className="w-full bg-white border border-gray-800 px-4 py-3 outline-none focus:-translate-x-[5px] focus:-translate-y-[5px] transition-transform duration-200 "
@@ -65,43 +65,42 @@ const ContactForm: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="version" className="text-sm text-gray-700">
-          Version
+        <label htmlFor="for" className="text-sm text-gray-700">
+          Query For
         </label>
         <div className="flex items-center relative">
           <select
-            name="version"
-            id="version"
-            value={formData.version}
+            name="for"
+            id="for"
+            value={formData.for}
             onChange={handleChange}
             className={`border bg-white w-full border-gray-800 px-3 py-3 outline-none focus:-translate-x-[5px] focus:-translate-y-[5px] transition-transform duration-200  ${
-              formData.version === "" ? "text-gray-500" : "text-gray-800"
+              formData.for === "" ? "text-gray-500" : "text-gray-800"
             }`}
             required
           >
             <option value="" disabled hidden>
-              Enter
+              Query related to
             </option>
-            <option value="v1">v1</option>
-            <option value="v2">v2</option>
-            <option value="v3">v3</option>
+            <option value="teacher">Teacher</option>
+            <option value="student">Student</option>
           </select>
           <div className="absolute bg-black h-full w-full -z-10" />
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="id" className="text-sm text-gray-700">ID</label>
+        <label htmlFor="message" className="text-sm text-gray-700">Message</label>
         <div className="flex items-center relative">
-          <input
-            type="text"
-            name="id"
-            id="id"
-            value={formData.id}
+          <textarea
+            name="message"
+            id="message"
+            value={formData.message}
             onChange={handleChange}
-            placeholder="Enter"
+            placeholder="Enter your message"
             required
-            className="w-full bg-white border border-gray-800 px-4 py-3 outline-none focus:-translate-x-[5px] focus:-translate-y-[5px] transition-transform duration-200 "
+            rows={4}
+            className="w-full bg-white border border-gray-800 px-4 py-3 outline-none focus:-translate-x-[5px] focus:-translate-y-[5px] transition-transform duration-200 resize-none"
           />
           <div className="absolute bg-black h-full w-full -z-10" />
         </div>

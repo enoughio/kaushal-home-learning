@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const Registration = () => {
   return (
@@ -75,7 +76,7 @@ const Registration = () => {
                   <p className="text-lg md:text-xl">on their journey.</p>
                 </div>
 
-                <button className="flex items-center gap-3 bg-white border-2 border-black px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors duration-300 mt-8">
+                <Link href="/teacher-reg" className="flex items-center gap-3 bg-white border-2 border-black px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors duration-300 mt-8 w-fit">
                   <span>Join as Tutor</span>
                   <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white">
                     <svg
@@ -93,7 +94,7 @@ const Registration = () => {
                       />
                     </svg>
                   </div>
-                </button>
+                </Link>
               </div>
 
               {/* Join as Student Card - Right Side (White) */}
@@ -117,7 +118,7 @@ const Registration = () => {
                   </p>
                 </div>
 
-                <button className="flex items-center gap-3 bg-white border-2 border-black px-6 py-3 rounded-full font-semibold hover:bg-gray-50 transition-colors duration-300 mt-8">
+                <Link href="/student-reg" className="flex items-center gap-3 bg-white border-2 border-black px-6 py-3 rounded-full font-semibold hover:bg-gray-50 transition-colors duration-300 mt-8 w-fit">
                   <span>Join as Student</span>
                   <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white">
                     <svg
@@ -135,7 +136,7 @@ const Registration = () => {
                       />
                     </svg>
                   </div>
-                </button>
+                </Link>
               </div>
             </div>
           </div>

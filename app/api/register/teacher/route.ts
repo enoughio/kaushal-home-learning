@@ -48,8 +48,8 @@ const registrationFieldLimits: FieldLimits = {
   city: 100,
   pincode: 10,
   qualification: 500,
-  tenthPercentage: 4,
-  twelfthPercentage: 4,
+  tenthPercentage: 10,
+  twelfthPercentage: 10,
   aadharUrl: 500,
 };
 

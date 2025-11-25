@@ -5,6 +5,7 @@ import "./globals.css";
 // import NavBar from '@/components/NavBar';
 import Fotter from "@/components/Fotter";
 import ToastProvider from "@/components/ui/ToastProvider";
+import NavBar from "@/components/NavBar";
 
 
 // Configure Google Fonts
@@ -44,7 +45,7 @@ export default function RootLayout({
       <body
         className={`${urbanist.variable} ${gothicA1.variable}  ${syne.variable} antialiased`}
       >
-        {/* <NavBar /> */}
+        <NavBar />
         <ToastProvider />
         {children}
         <Fotter />

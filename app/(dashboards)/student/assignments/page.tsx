@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import OverVieewStats from "@/components/studentPages/overview/OverVieewStats";
 import AssignmentList from "@/components/studentPages/assignments/AssignmetList";
 import AssignmentsFallback from "@/components/studentPages/assignments/AssignmentsFallback";
 

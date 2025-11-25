@@ -10,7 +10,6 @@ import { Mail, Lock, Eye, EyeOff, LogIn, ArrowRight } from "lucide-react"
 import Link from 'next/link'
 import {toast} from 'react-hot-toast'
 import { LoginRequest } from '@/lib/types'
-import { useRouter } from 'next/navigation'
 
 // Define the login response type that matches the API
 interface LoginApiResponse {
@@ -32,7 +31,6 @@ interface LoginApiResponse {
 
 
 export default function LoginPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: ''
@@ -62,14 +60,17 @@ export default function LoginPage() {
       if (result.success) {
         // Success case
         toast.success(result.message || 'Login successful!')
+        
+        // Use window.location for full page reload to ensure middleware processes the new cookie
         if( result.user?.role == "admin" ){
-          router.push('/admin')
+          window.location.href = '/admin'
         } else if ( result.user?.role == "teacher" ) {
-          router.push('/teachers')
+          window.location.href = '/teachers'
         } else if ( result.user?.role == "student" ) {
-          router.push('/student')
+          window.location.href = '/student'
+        } else {
+          window.location.href = '/'
         }
-
       } else {
         // Error case
         const errorMessage =  result.message || 'Login failed'
