@@ -2,7 +2,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 import type { AttendanceRecord } from "@/lib/types";
 
-
 // type Props = {
 //   attendance?: AttendanceRecord[];
 // };

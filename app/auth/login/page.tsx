@@ -56,6 +56,7 @@ export default function LoginPage() {
       })
 
       const result: LoginApiResponse = await response.json()
+      console.log("Login response:", result)  
 
       if (result.success) {
         // Success case
